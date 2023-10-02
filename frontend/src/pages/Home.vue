@@ -8,10 +8,10 @@
 
             </div>
         </div>
-        <div class="mt-10 flex flex-col sm:w-1/3  w-2/3">
-            <router-link to="/gamerule?start" tag="button" class="btn btn-outline m-2">开始游戏</router-link>
-            <router-link to="/gamerule" tag="button" class="btn btn-outline m-2">游戏规则</router-link>
-            <router-link to="/about" tag="button" class="btn btn-outline m-2">关于</router-link>
+        <div class="mt-10 flex flex-col sm:w-1/3 w-2/3">
+            <router-link to="/gamerule?start" tag="button" class="btn btn-outline m-2 text-xl">开始游戏</router-link>
+            <router-link to="/gamerule" tag="button" class="btn btn-outline m-2 text-xl">游戏规则</router-link>
+            <router-link to="/about" tag="button" class="btn btn-outline m-2 text-xl">关于</router-link>
         </div>
     </div>
 </template>

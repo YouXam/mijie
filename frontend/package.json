@@ -5,6 +5,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "mermaid": "^10.5.0",
     "vue": "^3",
     "vue-router": "4"
   },

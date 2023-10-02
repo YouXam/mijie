@@ -17,6 +17,11 @@ const router = VueRouter.createRouter({
             path: '/about',
             name: 'about',
             component: () => import('./pages/About.vue'),
+        },
+        {
+            path: '/graph',
+            name: 'graph',
+            component: () => import('./pages/Graph.vue'),
         }
     ]
 })

@@ -8,7 +8,7 @@
                 <p>游戏规则...</p>
             </div>
             <div class="w-full" v-if="$route.query.hasOwnProperty('start')">
-                <button class="btn btn-outline w-1/2" @click="confirm">确认</button>
+                <button class="btn btn-outline w-1/2 text-xl" @click="confirm">确认</button>
             </div>
         </div>
     </div>
