@@ -61,6 +61,7 @@ function authRoutes(db) {
 
     return compose([
         router.routes(),
+        router.allowedMethods(),
         check_auth
     ]);
 }

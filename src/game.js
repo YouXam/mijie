@@ -3,6 +3,10 @@ const path = require('path');
 const clearModule = require('clear-module');
 const chokidar = require('chokidar');
 const Router = require('koa-router');
+const runCode = require('./games/glot');
+const Ranking = require('./rank');
+const compose = require('koa-compose');
+const send = require('koa-send');
 
 function haveCommonKeyValuePair(obj1, obj2) {
     const smallerObj = obj1, largerObj = obj2;
@@ -19,6 +23,34 @@ function haveCommonKeyValuePair(obj1, obj2) {
     }
     return false;
 }
+class TaskManager {
+    constructor() {
+        this.taskIntervals = {};
+        this.userLastRun = {};
+        this.minInterval = 0;
+    }
+    setInterval(name, interval) {
+        this.taskIntervals[name] = interval;
+        this.minInterval = Math.min(...Object.values(this.taskIntervals));
+    }
+    run(user, name) {
+        const now = Date.now();
+        if (!this.userLastRun[user]) this.userLastRun[user] = {};
+        if (!this.userLastRun[user][name]) this.userLastRun[user][name] = 0;
+
+        const timeSinceLastRun = now - this.userLastRun[user][name];
+        const timeSinceLastRunAny = now - Math.max(...Object.values(this.userLastRun[user]));
+        if ((!this.taskIntervals[name] || timeSinceLastRun >= this.taskIntervals[name]) && 
+            timeSinceLastRunAny >= this.minInterval) {
+            this.userLastRun[user][name] = now;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+const taskManager = new TaskManager();
 
 class Plugins {
     constructor() {
@@ -45,8 +77,12 @@ class Plugins {
             clearModule(pluginPath);
             try {
                 const plugin = require(pluginPath);
-                if (!plugin.name || !plugin.slug || !plugin.checker || (!plugin.description && !plugin.description_file)) {
-                    console.log(`Failed to load plugin ${folder}: missing name, slug, checker or description`);
+                if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function') {
+                    console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
+                    return
+                }
+                if (!plugin.name || plugin.points === undefined || !plugin.pid || !plugin.checker || (!plugin.description && !plugin.description_file)) {
+                    console.log(`Failed to load plugin ${folder}: missing name, pid, points, checker or description`);
                     return
                 }
                 if (plugin.description_file) {
@@ -57,14 +93,15 @@ class Plugins {
                 }
                 if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
                     plugin.next.forEach((value, index) => {
-                        const plugi = this.pluginPre.get(value.slug) || {};
-                        this.pluginPre.set(value.slug, {
+                        const plugi = this.pluginPre.get(value.pid) || {};
+                        this.pluginPre.set(value.pid, {
                             ...plugi,
-                            [plugin.slug]: true
+                            [plugin.pid]: true
                         });
                     });
                 }
-                if (plugin.first) this.first = plugin.slug
+                taskManager.setInterval(plugin.pid, plugin.interval || 2000);
+                if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
                 this.plugins[folder] = plugin;
                 this.loaded(folder);
@@ -78,9 +115,9 @@ class Plugins {
         if (fs.existsSync(pluginPath) && this.plugins[folder]) {
             if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
                 plugin.next.forEach((value, index) => {
-                    const plugi = this.pluginPre.get(value.slug) || {};
-                    delete plugi[plugin.slug];
-                    this.pluginPre.set(value.slug, plugi);
+                    const plugi = this.pluginPre.get(value.pid) || {};
+                    delete plugi[plugin.pid];
+                    this.pluginPre.set(value.pid, plugi);
                 });
             }
             clearModule(pluginPath);
@@ -106,7 +143,7 @@ class Plugins {
 
     loaded(folder) {
         console.log(`Plugin "${this.plugins[folder].name}" has been loaded/reloaded`);
-        this.pluginMap.set(this.plugins[folder].slug, this.plugins[folder]);
+        this.pluginMap.set(this.plugins[folder].pid, this.plugins[folder]);
     }
 
     unloaded(folder) {
@@ -117,19 +154,14 @@ class Plugins {
 
 const plugins = new Plugins();
 
+let rank;
+
 module.exports = function (db) {
     const router = new Router();
-
-    router.get('/problem', async (ctx) => {
-        const problems = Object.keys(ctx.state.gameprocess.passed)
+    rank = new Ranking(db);
+    router.get('/rank', async (ctx) => {
         ctx.body = {
-            problems: problems.map(slug => {
-                const cur = plugins.pluginMap.get(slug);
-                return {
-                    slug: cur.slug,
-                    next: cur.next?.map(value => value.slug)
-                }
-            })
+            rank: await rank.getRank()
         }
     })
 
@@ -139,7 +171,20 @@ module.exports = function (db) {
         }
     })
 
-    router.get('/problem/:name', async (ctx) => {
+    router.get('/problem', async (ctx) => {
+        const problems = Object.keys(ctx.state.gameprocess.passed)
+        ctx.body = {
+            problems: problems.map(pid => {
+                const cur = plugins.pluginMap.get(pid);
+                return {
+                    pid: cur.pid,
+                    next: cur.next?.map(value => value.pid)
+                }
+            })
+        }
+    })
+
+    function checkPre(ctx) {
         const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
         if (!cur) {
             ctx.throw(404, `Level "${name}" not found`);
@@ -147,6 +192,11 @@ module.exports = function (db) {
         if (pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
             ctx.throw(404, `Level "${name}" not found`);
         }
+        return cur
+    }
+
+    router.get('/problem/:name', async (ctx) => {
+        const cur = checkPre(ctx);
         ctx.body = {
             name: cur.name,
             description: cur.description,
@@ -155,35 +205,66 @@ module.exports = function (db) {
     });
 
     router.post('/problem/:name', async (ctx) => {
-        const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
-        if (!cur) {
-            ctx.throw(404, `Level "${name}" not found`);
+        const cur = checkPre(ctx);
+        if (!taskManager.run(ctx.state.username, cur.name)) {
+            ctx.body = {
+                passed: false,
+                msg: "You are sending too many requests. Please try again later."
+            };
+            return;
         }
-        if (pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
-            ctx.throw(404, `Level "${name}" not found`);
-        }
-        if (ctx.state.gameprocess.passed[name]) {
+        if (ctx.state.gameprocess.passed[cur.name]) {
             ctx.body = {
                 passed: true,
                 next: cur.next
             };
         } else {
-            if (cur.checker(ctx.request.body.ans)) {
-                ctx.state.gameprocess.pass(name)
-                await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + name]: true} });
-                ctx.body = { 
+            let msg = ''
+            let res = cur.checker(ctx.request.body.ans, {
+                runCode,
+                username: ctx.state.username,
+                gameprocess: ctx.state.gameprocess,
+                msg: (str) => {
+                    msg += str;
+                }
+            });
+            if (res instanceof Promise) {
+                res = await res;
+            }
+            if (res) {
+                ctx.state.gameprocess.pass(cur.name)
+                await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + cur.name]: cur.points } });
+                await rank.update();
+                ctx.body = {
                     passed: true,
+                    points: cur.points,
                     next: cur.next,
-                    gameover: cur.gameover
+                    gameover: cur.gameover,
+                    msg
                 };
             } else {
                 ctx.body = {
-                    passed: false
+                    passed: false,
+                    msg
                 };
             }
         }
     })
 
+    
+    router.get('/files/:name/:path*', async (ctx) => {
+        const { path: filePath } = ctx.params;
+        if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
+        const cur = checkPre(ctx);
+        if (!cur.files?.length || !cur.files?.includes(filePath)) {
+            ctx.throw(403, `Access denied`)
+        }
+        await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.name) });
+    });
+    
 
-    return router.routes();
+    return compose([
+        router.routes(),
+        router.allowedMethods()
+    ])
 };
