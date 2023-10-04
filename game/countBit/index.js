@@ -26,7 +26,7 @@ module.exports = {
         }`;
         const res = await ctx.runCode(code, 'cpp');
         if (res.code) {
-            ctx.msg("Error:" + res.stdout);
+            ctx.msg(res.error);
             return false;
         }
         function countBit(x) {
@@ -40,7 +40,7 @@ module.exports = {
         const stdout = res.stdout.split(',').map(x => parseInt(x));
         for (let i = 0; i < 100; i++) {
             if (isNaN(stdout[i]) || stdout[i] != countBit(testNumbers[i])) {
-                ctx.msg("Wrong Answer");
+                ctx.msg("Wrong answer on test " + testNumbers[i]);
                 return false;
             }
         }

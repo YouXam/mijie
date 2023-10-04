@@ -49,14 +49,19 @@ async function runCode(code, language) {
                 }
             }
         )
+        let error = ''
+        if (response.data.stderr) error = response.data.stderr
+        if (response.data.error) error += (error && '\n') + response.data.error
         return {
-            ...response.data,
-            code: 0,
+            stdout: response.data.stdout,
+            stderr: response.data.stderr,
+            error,
+            code: response.data.error ? 1 : 0,
         };
     } catch (err) {
         return {
             code: 1,
-            stdout: err.response.data.message
+            error: err.response.data.message
         }
     }
 
