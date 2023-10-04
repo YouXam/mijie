@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto text-center h-[100vh] flex flex-col items-center justify-center">
+    <div class="container mx-auto text-center h-[calc(100vh-5rem)] flex flex-col items-center justify-center">
         <div class="mt-10 relative">
             <h1 class="text-7xl font-extrabold tracking-tight gradient-text mb-10">
                 解谜游戏
@@ -9,14 +9,20 @@
             </div>
         </div>
         <div class="mt-10 flex flex-col sm:w-1/3 w-2/3">
-            <router-link to="/gamerule?start" tag="button" class="btn btn-outline m-2 text-xl">开始游戏</router-link>
+            <router-link to="/gamerule?start" tag="button" class="btn btn-outline m-2 text-xl" @click.stop="start">开始游戏</router-link>
             <router-link to="/gamerule" tag="button" class="btn btn-outline m-2 text-xl">游戏规则</router-link>
             <router-link to="/about" tag="button" class="btn btn-outline m-2 text-xl">关于</router-link>
         </div>
     </div>
 </template>
   
-<script>
+<script setup>
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function start() {
+    if (localStorage.getItem('hasReadRule') !== null) router.push('/start');
+    else router.push('/gamerule?start');
+}
 </script>
   
 <style scoped>
