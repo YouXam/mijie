@@ -5,6 +5,12 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "github-markdown-css": "^5.2.0",
+    "highlight.js": "^11.8.0",
+    "katex": "^0.16.9",
+    "markdown-it": "^13.0.2",
+    "markdown-it-highlightjs": "^4.0.1",
+    "markdown-it-katex": "^2.0.3",
     "mermaid": "^10.5.0",
     "vue": "^3",
     "vue-router": "4"
