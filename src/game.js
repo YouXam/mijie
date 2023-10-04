@@ -9,7 +9,7 @@ const compose = require('koa-compose');
 const send = require('koa-send');
 
 function haveCommonKeyValuePair(obj1, obj2) {
-    const smallerObj = obj1, largerObj = obj2;
+    let smallerObj = obj1, largerObj = obj2;
     if (Object.keys(obj1).length > Object.keys(obj2).length) {
         smallerObj = obj2;
         largerObj = obj1;
@@ -91,19 +91,11 @@ class Plugins {
                         plugin.description = fs.readFileSync(descriptionPath, 'utf8');
                     }
                 }
-                if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
-                    plugin.next.forEach((value, index) => {
-                        const plugi = this.pluginPre.get(value.pid) || {};
-                        this.pluginPre.set(value.pid, {
-                            ...plugi,
-                            [plugin.pid]: true
-                        });
-                    });
-                }
                 taskManager.setInterval(plugin.pid, plugin.interval || 2000);
                 if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
                 this.plugins[folder] = plugin;
+                this.computePre();
                 this.loaded(folder);
             } catch (error) {
                 console.error(`Failed to load plugin ${folder}:`, error);
@@ -113,21 +105,30 @@ class Plugins {
     unloadPlugin(folder) {
         const pluginPath = path.join(this.pluginsPath, folder, 'index.js');
         if (fs.existsSync(pluginPath) && this.plugins[folder]) {
-            if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
-                plugin.next.forEach((value, index) => {
-                    const plugi = this.pluginPre.get(value.pid) || {};
-                    delete plugi[plugin.pid];
-                    this.pluginPre.set(value.pid, plugi);
-                });
-            }
             clearModule(pluginPath);
             try {
                 delete this.plugins[folder];
-                this.loaded(folder);
+                this.computePre();
+                this.unloaded(folder);
             } catch (error) {
                 console.error(`Failed to unload plugin ${folder}:`, error);
             }
         }
+    }
+    computePre() {
+        this.pluginPre.clear();
+        Object.keys(this.plugins).forEach(folder => {
+            const plugin = this.plugins[folder];
+            if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
+                plugin.next.forEach((value, index) => {
+                    const plugi = this.pluginPre.get(value.pid) || {};
+                    this.pluginPre.set(value.pid, {
+                        ...plugi,
+                        [plugin.pid]: true
+                    });
+                });
+            }
+        });
     }
     watchPlugins() {
         const watcher = chokidar.watch(this.pluginsPath, { persistent: true, ignoreInitial: true });
@@ -201,6 +202,7 @@ module.exports = function (db) {
             name: cur.name,
             description: cur.description,
             description_file: cur.description_file,
+            points: cur.points,
         };
     });
 
@@ -213,41 +215,34 @@ module.exports = function (db) {
             };
             return;
         }
-        if (ctx.state.gameprocess.passed[cur.name]) {
+        let msg = ''
+        let res = cur.checker(ctx.request.body.ans, {
+            runCode,
+            username: ctx.state.username,
+            gameprocess: ctx.state.gameprocess,
+            msg: (str) => {
+                msg += str;
+            }
+        });
+        if (res instanceof Promise) {
+            res = await res;
+        }
+        if (res) {
+            ctx.state.gameprocess.pass(cur.pid)
+            await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + cur.pid]: cur.points } });
+            await rank.update();
             ctx.body = {
                 passed: true,
-                next: cur.next
+                points: cur.points,
+                next: cur.next,
+                gameover: cur.gameover,
+                msg
             };
         } else {
-            let msg = ''
-            let res = cur.checker(ctx.request.body.ans, {
-                runCode,
-                username: ctx.state.username,
-                gameprocess: ctx.state.gameprocess,
-                msg: (str) => {
-                    msg += str;
-                }
-            });
-            if (res instanceof Promise) {
-                res = await res;
-            }
-            if (res) {
-                ctx.state.gameprocess.pass(cur.name)
-                await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + cur.name]: cur.points } });
-                await rank.update();
-                ctx.body = {
-                    passed: true,
-                    points: cur.points,
-                    next: cur.next,
-                    gameover: cur.gameover,
-                    msg
-                };
-            } else {
-                ctx.body = {
-                    passed: false,
-                    msg
-                };
-            }
+            ctx.body = {
+                passed: false,
+                msg
+            };
         }
     })
 
