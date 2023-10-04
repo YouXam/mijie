@@ -39,7 +39,7 @@ module.exports = {
         }
         const stdout = res.stdout.split(',').map(x => parseInt(x));
         for (let i = 0; i < 100; i++) {
-            if (!isNaN(stdout[i]) && stdout[i] != countBit(testNumbers[i])) {
+            if (isNaN(stdout[i]) || stdout[i] != countBit(testNumbers[i])) {
                 ctx.msg("Wrong Answer");
                 return false;
             }
