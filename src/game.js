@@ -203,6 +203,10 @@ module.exports = function (db) {
 
     router.get('/problem/:name', async (ctx) => {
         const cur = checkPre(ctx);
+        if (ctx.query.simple) {
+            ctx.body = {  name: cur.name };
+            return;
+        }
         ctx.body = {
             name: cur.name,
             points: cur.points,
@@ -235,13 +239,25 @@ module.exports = function (db) {
         if (res instanceof Promise) {
             res = await res;
         }
+
+        const record = {
+            username: ctx.state.username,
+            pid: cur.pid,
+            ans: ctx.request.body.ans,
+            time: Date.now(),
+            name: cur.name,
+            msg
+        };
         await gameStorage.save();
         if (res) {
-            ctx.state.gameprocess.pass(cur.pid, cur.points)
+            ctx.state.gameprocess.pass(cur.pid, cur.points);
+            record.passed = true;
+            record.points = cur.points;
             const setValue = {
                 ["gameprocess." + cur.pid]: cur.points,
-            }
+            };
             if (cur.gameover) {
+                record.gameover = true;
                 setValue.gameover = true;
                 ctx.state.gameprocess.setGameover();
             }
@@ -258,11 +274,13 @@ module.exports = function (db) {
                 msg
             };
         } else {
+            record.passed = false;
             ctx.body = {
                 passed: false,
                 msg
             };
         }
+        db.collection('records').insertOne(record);
     })
 
     
@@ -276,6 +294,18 @@ module.exports = function (db) {
         await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.folder) });
     });
     
+    router.get('/record', async (ctx) => {
+        let { pid, user, all }  = ctx.query;
+        if (!user) user = ctx.state.username;
+        if ((user != ctx.state.username || all) && !ctx.state.admin)
+            ctx.throw(403, `Access denied`)
+        let query = {};
+        if (!all) query.username = user;
+        if (pid) query.pid = pid;
+        ctx.body = {
+            records: await db.collection('records').find(query, {projection: { _id: 0 }}).sort({ time: -1 }).toArray()
+        }
+    })
 
     return compose([
         router.routes(),

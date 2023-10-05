@@ -65,7 +65,7 @@ function authRoutes(db) {
         try {
             const payload = jwt.verify(token, jwtSecret);
             ctx.state.username = payload.username;
-            ctx.state.gameprocess = new GameProcess(payload.gameprocess);
+            ctx.state.gameprocess = new GameProcess(payload.gameprocess, payload.gameover);
             ctx.state.gamestorage = new GameStorage(db, payload.username);
         } catch (err) {
             ctx.throw(401, 'Invalid JWT token');
