@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 async function runCode(code, language) {
-    const apiKey = process.env.GLOT_IO_API_KEY;  // 从环境变量中获取 API key
+    const apiKey = process.env.GLOT_IO_API_KEY;
 
     if (!apiKey) {
         throw new Error('Please set the GLOT_IO_API_KEY environment variable');

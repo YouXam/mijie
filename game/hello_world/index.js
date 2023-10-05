@@ -10,6 +10,7 @@ module.exports = {
     },
     first: true,
     points: 0,
+    files: ['index.js', "test.txt"],
     next: [
         {
             pid: "a-plus-b-problem",

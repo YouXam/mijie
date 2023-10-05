@@ -41,3 +41,34 @@ export function api(url, body) {
       })
   })
 }
+
+export async function downloadFile(fileUrl, fileName) {
+  try {
+    const headers = {}
+    if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+    const response = await fetch(fileUrl, { method: 'GET', headers: headers });
+    if (!response.ok) {
+      notificationManager.add({
+        message: await response.text(),
+        type: 'error',
+        time: 5000,
+      })
+      return
+    }
+    const blob = await response.blob();
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    notificationManager.add({
+      message: error.message,
+      type: 'error'
+    })
+  }
+}

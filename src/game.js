@@ -91,6 +91,7 @@ class Plugins {
                         plugin.description = fs.readFileSync(descriptionPath, 'utf8');
                     }
                 }
+                plugin.folder = folder;
                 taskManager.setInterval(plugin.pid, plugin.interval || 2000);
                 if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
@@ -204,6 +205,7 @@ module.exports = function (db) {
             description: cur.description,
             description_file: cur.description_file,
             points: cur.points,
+            files: cur.files
         };
     });
 
@@ -250,14 +252,14 @@ module.exports = function (db) {
     })
 
     
-    router.get('/files/:name/:path*', async (ctx) => {
+    router.get('/file/:name/:path*', async (ctx) => {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
         const cur = checkPre(ctx);
         if (!cur.files?.length || !cur.files?.includes(filePath)) {
             ctx.throw(403, `Access denied`)
         }
-        await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.name) });
+        await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.folder) });
     });
     
 

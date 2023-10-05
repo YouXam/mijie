@@ -11,6 +11,7 @@
         <div class="min-h-[100px] items-center justify-center flex flex-col">
             <Problem :content="problem"></Problem>
         </div>
+        <FileList :files="files" @download="downloadFile"/>
     </TitleCard>
     <div class="mx-auto text-center flex flex-col items-center justify-center mb-20">
         <div class="card container mt-10 mb-10">
@@ -54,10 +55,11 @@
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
 import { ref, computed, nextTick } from 'vue'
-import { api } from '@/tools/api'
+import { api, downloadFile as download } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
 import Problem from '@/components/Problem.vue'
+import FileList from '@/components/FileList.vue'
 const router = useRouter()
 const title = ref('')
 const problem = ref(`**Loading...**`)
@@ -67,6 +69,7 @@ const loading = ref(false)
 const records = ref([])
 const ansInput = ref(null)
 const showDown = ref(false)
+const files = ref([])
 let lastSubmit = null
 const state = computed(() => {
     if (!records.value.length) return 0;
@@ -85,6 +88,9 @@ function down() {
         top: rect.top - 100,
         behavior: 'smooth'
     })
+}
+function downloadFile(file) {
+    download(`/api/file/${router.currentRoute.value.params.pid}/${file}`, file)
 }
 function checkIfResultInViewport() {
     const res = document.getElementsByClassName('result');
@@ -128,6 +134,7 @@ async function submit() {
         title.value = res.name
         problem.value = res.description
         score.value = res.points
+        if (res.files && res.files.length) files.value = res.files
     } catch (err) {
         if (err.status == 401) {
             localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
