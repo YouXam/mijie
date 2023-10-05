@@ -1,0 +1,5 @@
+your_domain.com {
+    tls your_email@email.com
+    proxy /api localhost:3001
+    root /app/frontend/dist
+}
