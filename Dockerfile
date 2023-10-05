@@ -8,8 +8,6 @@ RUN apt-get install -y caddy
 
 WORKDIR /app
 
-COPY frontend /app/frontend
-
 RUN cd /app/frontend && yarn install
 
 ENV MONGODB_URI="mongodb://localhost:27017/baituan"
