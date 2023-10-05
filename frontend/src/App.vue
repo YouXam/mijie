@@ -1,5 +1,5 @@
 <template>
-  <div class="navbar bg-transparent">
+  <div class="navbar fixed z-50 bg-base-100 shadow-sm">
     <a tabindex="0" @keydown.enter="$router.push('/')" @click="$router.push('/')"
       class="btn btn-ghost text-xl">
       首页
@@ -43,6 +43,7 @@
       </router-link>
     </div>
   </div>
+  <div class="h-[72px]"></div>
   <router-view></router-view>
   <NotificationContainer />
 </template>

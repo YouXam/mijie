@@ -10,11 +10,11 @@ const router = useRouter()
 ;(async function(){
     try {
         const res = await api("/api/start")
-        router.push("/game/" + res.first)
+        router.replace("/game/" + res.first)
     } catch (err) {
         if (err.status == 401) {
             localStorage.setItem("afterLogin", "/start")
-            router.push("/login")
+            router.replace("/login")
         }
     }
 })();

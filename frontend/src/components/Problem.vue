@@ -7,7 +7,7 @@ import MarkdownIt from 'markdown-it'
 import hljs from 'markdown-it-highlightjs'
 import latex from 'markdown-it-katex'
 import '@/assets/css/hljs-github-dark.min.css'
-import 'github-markdown-css/github-markdown.css'
+import 'github-markdown-css/github-markdown-dark.css'
 
 export default {
     props: {
@@ -31,6 +31,6 @@ export default {
 <style>
 .markdown-body {
     background-color: transparent;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 </style>
