@@ -199,6 +199,7 @@ module.exports = function (db) {
         const cur = checkPre(ctx);
         ctx.body = {
             name: cur.name,
+            points: cur.points,
             description: cur.description,
             description_file: cur.description_file,
         };

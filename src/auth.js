@@ -16,11 +16,11 @@ function authRoutes(db) {
         }
         const existingUser = await db.collection('users').findOne({ username });
         if (existingUser) {
-            ctx.throw(409, 'Username already taken');
+            ctx.throw(409, '该用户名已经被使用');
         }
         const newUser = { username, password };
         await db.collection('users').insertOne(newUser);
-        ctx.body = { message: 'User registered successfully' };
+        ctx.body = { message: '注册成功' };
     });
 
     router.post('/login', async (ctx) => {
@@ -30,16 +30,29 @@ function authRoutes(db) {
         }
         const user = await db.collection('users').findOne({ username });
         if (!user || user.password != password) {
-            ctx.throw(401, 'Invalid username or password');
+            ctx.throw(401, '用户名或密码错误');
         }
         const token = jwt.sign({ username, gameprocess: user.gameprocess }, jwtSecret, { expiresIn: '1d' });
-        ctx.body = { message: 'Login successful', token  };
+        ctx.body = { message: '登录成功', token, username  };
     });
+
+    router.post('/change-password', async (ctx) => {
+        const { username, password, newPassword } = ctx.request.body;
+        if (!username || !password || !newPassword) {
+            ctx.throw(400, 'Missing username or password');
+        }
+        const user = await db.collection('users').findOne({ username });
+        if (!user || user.password != password) {
+            ctx.throw(401, '旧密码错误');
+        }
+        await db.collection('users').updateOne({ username }, { $set: { password: newPassword } });
+        ctx.body = { message: '密码修改成功' };
+    })
 
     const check_auth = async (ctx, next) => {
         const authHeader = ctx.request.headers.authorization;
         if (!authHeader) {
-            ctx.throw(401, 'Missing authorization header');
+            ctx.throw(401, '未登录');
         }
         const [scheme, token] = authHeader.split(' ');
         if (scheme !== 'Bearer') {
