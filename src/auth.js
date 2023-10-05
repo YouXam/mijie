@@ -32,7 +32,11 @@ function authRoutes(db) {
         if (!user || user.password != password) {
             ctx.throw(401, '用户名或密码错误');
         }
-        const token = jwt.sign({ username, gameprocess: user.gameprocess }, jwtSecret, { expiresIn: '1d' });
+        const token = jwt.sign({
+            username,
+            gameprocess: user.gameprocess,
+            gameover: user.gameover
+        }, jwtSecret, { expiresIn: '1d' });
         ctx.body = { message: '登录成功', token, username  };
     });
 
@@ -68,7 +72,11 @@ function authRoutes(db) {
         }
         await next();
         if (ctx?.state?.gameprocess && ctx.state.gameprocess.changed) {
-            const token = jwt.sign({ username: ctx.state.username, gameprocess: ctx.state.gameprocess.passed }, jwtSecret, { expiresIn: '1d' });
+            const token = jwt.sign({
+                    username: ctx.state.username,
+                    gameprocess: ctx.state.gameprocess.passed,
+                    gameover: ctx.state.gameprocess.gameover
+                }, jwtSecret, { expiresIn: '1d' });
             ctx.body = { token, ...ctx.body };
         }
     };

@@ -7,17 +7,19 @@ class User {
     update() {
         const token = localStorage.getItem("token")
         if (token) {
-            if (this.login) this.login.value = true
-            else this.login = ref(true)
-            const username = JSON.parse(atob(token.split('.')[1])).username
-            if (this.username) this.username.value = username
-            else this.username = ref(username)
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            this.set('login', true)
+            this.set('username', payload.username)
+            this.set('gameover', payload.gameover || false)
         } else {
-            if (this.login) this.login.value = false
-            else this.login = ref(false)
-            if (this.username) this.username.value = ''
-            else this.username = ref('')
+            this.set('login', false)
+            this.set('username', '')
+            this.set('gameover', false)
         }
+    }
+    set(key, value) {
+        if (this[key]) this[key].value = value
+        else this[key] = ref(value)
     }
 }
 

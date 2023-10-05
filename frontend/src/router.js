@@ -58,6 +58,18 @@ const router = VueRouter.createRouter({
             meta: { title: '游戏' }
         },
         {
+            path: '/gameover',
+            name: 'gameover',
+            component: () => import('./pages/Gameover.vue'),
+            meta: { title: '游戏结束' }
+        },
+        {
+            path: '/rank',
+            name: 'rank',
+            component: () => import('./pages/Rank.vue'),
+            meta: { title: '排行榜' }
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'notfound',
             component: () => import('./pages/NotFound.vue'),
@@ -67,7 +79,7 @@ const router = VueRouter.createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-    document.title = to.meta.title ? to.meta.title + ' | 解谜游戏' : '解谜游戏'
+    document.title = to.meta.title ? to.meta.title + ' | 哈士奇再现' : '哈士奇再现'
     next();
 });
   

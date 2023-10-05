@@ -1,14 +1,20 @@
 class GameProcess {
     passed;
     changed = false;
-    constructor(data) {
+    gameover = false;
+    constructor(data, gameover) {
         this.passed = {}
+        this.gameover = gameover || false;
         if (data && typeof data === 'object') {
             this.passed = data;
         }
     }
     pass(level) {
         this.passed[level] = true;
+        this.changed = true;
+    }
+    setGameover() {
+        this.gameover = true;
         this.changed = true;
     }
 }

@@ -12,7 +12,7 @@ class Ranking {
     }
     async update() {
         this.rank = (await this.db.collection('users')
-            .find({}, { projection: { username: 1, gameprocess: 1 } })
+            .find({}, { projection: { username: 1, gameprocess: 1, gameover: 1 } })
             .toArray())
             .map(user => {
                 const gameprocess = user.gameprocess || {};
@@ -21,7 +21,8 @@ class Ranking {
                 return {
                     username: user.username,
                     passed: passed,
-                    points: points
+                    points: points,
+                    gameover: user.gameover
                 };
             }).sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;

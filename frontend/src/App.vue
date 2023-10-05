@@ -1,9 +1,48 @@
 <template>
   <div class="navbar fixed z-50 bg-base-100 shadow-sm">
-    <a tabindex="0" @keydown.enter="$router.push('/')" @click="$router.push('/')"
-      class="btn btn-ghost text-xl">
+    <router-link tabindex="0" @keydown.enter="$router.push('/')" @click="$router.push('/')" to = '/'
+      class="btn btn-ghost text-lg">
       首页
-    </a>
+    </router-link>
+    <div class="sm:block hidden">
+      <router-link tabindex="0" @keydown.enter="$router.push('/rank')" @click.stop="$router.push('/rank')"
+        to = '/rank'
+        class="btn btn-ghost text-lg ml-3">
+        <svg xmlns="http://www.w3.org/2000/svg" height="0.8em" viewBox="0 0 640 512"><path d="M353.8 54.1L330.2 6.3c-3.9-8.3-16.1-8.6-20.4 0L286.2 54.1l-52.3 7.5c-9.3 1.4-13.3 12.9-6.4 19.8l38 37-9 52.1c-1.4 9.3 8.2 16.5 16.8 12.2l46.9-24.8 46.6 24.4c8.6 4.3 18.3-2.9 16.8-12.2l-9-52.1 38-36.6c6.8-6.8 2.9-18.3-6.4-19.8l-52.3-7.5zM256 256c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H384c17.7 0 32-14.3 32-32V288c0-17.7-14.3-32-32-32H256zM32 320c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H160c17.7 0 32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zm416 96v64c0 17.7 14.3 32 32 32H608c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32H480c-17.7 0-32 14.3-32 32z" fill="white"/></svg>
+        排行榜
+      </router-link>
+      <router-link tabindex="0" @keydown.enter="$router.push('/graph')" @click.stop="$router.push('/graph')"
+        to = '/graph'
+        class="btn btn-ghost text-lg ml-3">
+        <svg xmlns="http://www.w3.org/2000/svg" height="0.8em" viewBox="0 0 448 512"><path d="M80 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm32.4 97.2c28-12.4 47.6-40.5 47.6-73.2c0-44.2-35.8-80-80-80S0 35.8 0 80c0 32.8 19.7 61 48 73.3V358.7C19.7 371 0 399.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-32.8-19.7-61-48-73.3V272c26.7 20.1 60 32 96 32h86.7c12.3 28.3 40.5 48 73.3 48c44.2 0 80-35.8 80-80s-35.8-80-80-80c-32.8 0-61 19.7-73.3 48H208c-49.9 0-91-38.1-95.6-86.8zM80 408a24 24 0 1 1 0 48 24 24 0 1 1 0-48zM344 272a24 24 0 1 1 48 0 24 24 0 1 1 -48 0z" fill="white"/></svg>
+        流程图
+      </router-link>
+    </div>
+
+    <div class="sm:hidden" >
+      <div class="flex items-stretch">
+        <div class="dropdown dropdown-hover dropdown-bottom">
+          <a tabindex="0" class="btn btn-ghost text-lg">
+            功能
+          </a>
+          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-[8rem]">
+            <li>
+              <router-link to="/settings">
+                <svg xmlns="http://www.w3.org/2000/svg" height="1em" width="1em" viewBox="0 0 640 512"><path d="M353.8 54.1L330.2 6.3c-3.9-8.3-16.1-8.6-20.4 0L286.2 54.1l-52.3 7.5c-9.3 1.4-13.3 12.9-6.4 19.8l38 37-9 52.1c-1.4 9.3 8.2 16.5 16.8 12.2l46.9-24.8 46.6 24.4c8.6 4.3 18.3-2.9 16.8-12.2l-9-52.1 38-36.6c6.8-6.8 2.9-18.3-6.4-19.8l-52.3-7.5zM256 256c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H384c17.7 0 32-14.3 32-32V288c0-17.7-14.3-32-32-32H256zM32 320c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H160c17.7 0 32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zm416 96v64c0 17.7 14.3 32 32 32H608c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32H480c-17.7 0-32 14.3-32 32z" fill="white"/></svg>
+                排行榜
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/graph">
+                <svg xmlns="http://www.w3.org/2000/svg" height="1em" width="1em" viewBox="0 0 448 512"><path d="M80 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm32.4 97.2c28-12.4 47.6-40.5 47.6-73.2c0-44.2-35.8-80-80-80S0 35.8 0 80c0 32.8 19.7 61 48 73.3V358.7C19.7 371 0 399.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-32.8-19.7-61-48-73.3V272c26.7 20.1 60 32 96 32h86.7c12.3 28.3 40.5 48 73.3 48c44.2 0 80-35.8 80-80s-35.8-80-80-80c-32.8 0-61 19.7-73.3 48H208c-49.9 0-91-38.1-95.6-86.8zM80 408a24 24 0 1 1 0 48 24 24 0 1 1 0-48zM344 272a24 24 0 1 1 48 0 24 24 0 1 1 -48 0z" fill="white"/></svg>
+                流程图
+              </router-link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <div v-if="user.login.value" class="flex justify-end flex-1 px-2" >
       <div class="flex items-stretch">
         <div class="dropdown dropdown-hover dropdown-bottom dropdown-end">
@@ -44,7 +83,7 @@
     </div>
   </div>
   <div class="h-[72px]"></div>
-  <router-view></router-view>
+  <router-view :key="$route.fullPath"></router-view>
   <NotificationContainer />
 </template>
 

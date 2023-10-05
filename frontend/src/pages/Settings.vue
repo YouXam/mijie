@@ -45,7 +45,8 @@ const password = ref('')
 const password2 = ref('')
 const error = ref('')
 if (!user.login.value) {
-    router.push('/login')
+    localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
+    router.replace('/login')
 }
 watch(password, () => {
     if (!password.value.length) {

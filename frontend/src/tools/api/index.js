@@ -1,5 +1,5 @@
 import notificationManager from '@/tools/notification.js'
-
+import { user } from '@/tools/bus.js'
 
 export function api(url, body) {
   const headers = {
@@ -23,7 +23,10 @@ export function api(url, body) {
           reject(res)
         }
       }).then(res => {
-        if (res?.token && res?.token?.length) localStorage.setItem("token", res.token)
+        if (res?.token && res?.token?.length) {
+          localStorage.setItem("token", res.token)
+          user.update()
+        }
         if (res?.message && res?.message?.length) {
           notificationManager.add({
             message: res.message,

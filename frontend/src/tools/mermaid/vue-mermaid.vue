@@ -1,5 +1,5 @@
 <template>
-  <div id="mermaid" class="mermaid">{{ parseCode }}</div>
+  <div id="mermaid" class="mermaid" style="color: transparent">{{ parseCode }}</div>
 </template>
 
 <script>
@@ -224,20 +224,25 @@ export default {
         var container = document.getElementById("mermaid");
         if (container) {
           container.removeAttribute("data-processed");
-          container.replaceChild(
-            document.createTextNode(code),
-            container.firstChild
-          );
+          if (container.firstChild) {
+            container.replaceChild(
+              document.createTextNode(code),
+              container.firstChild
+            );
+          } else {
+            container.appendChild(document.createTextNode(code));
+          }
           try {
-            // mermaid.init(undefined, container);
-            mermaid.run({
-              querySelector: '.mermaid',
-              postRenderCallback: (id) => {
-                document.querySelectorAll(".arrowMarkerPath").forEach(item => {
-                  item.style.fill = "white";
-                });
-              }
-            });
+            setTimeout(async () => {
+              mermaid.run({
+                querySelector: '.mermaid',
+                postRenderCallback: (id) => {
+                  document.querySelectorAll(".arrowMarkerPath").forEach(item => {
+                    item.style.fill = "white";
+                  });
+                }
+              });
+            }, 0);
           } catch (error) {
             if (this.stopOnError) {
               throw error;

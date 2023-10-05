@@ -180,7 +180,11 @@ module.exports = function (db) {
                 const cur = plugins.pluginMap.get(pid);
                 return {
                     pid: cur.pid,
-                    next: cur.next?.map(value => value.pid)
+                    name: cur.name,
+                    next: cur.next?.map(value => ({
+                        pid: value.pid,
+                        name: plugins.pluginMap.get(value.pid).name
+                    }))
                 }
             })
         }
@@ -234,12 +238,22 @@ module.exports = function (db) {
         await gameStorage.save();
         if (res) {
             ctx.state.gameprocess.pass(cur.pid)
-            await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + cur.pid]: cur.points } });
+            const setValue = {
+                ["gameprocess." + cur.pid]: cur.points,
+            }
+            if (cur.gameover) {
+                setValue.gameover = true;
+                ctx.state.gameprocess.setGameover();
+            }
+            await db.collection('users').updateOne({ username: ctx.state.username }, { $set: setValue });
             await rank.update();
             ctx.body = {
                 passed: true,
                 points: cur.points,
-                next: cur.next,
+                next: cur.next ? cur.next.map(n => ({
+                    name: plugins.pluginMap.get(n.pid).name,
+                    ...n
+                })) : undefined,
                 gameover: cur.gameover,
                 msg
             };
