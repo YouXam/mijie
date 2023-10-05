@@ -75,7 +75,7 @@ export default {
     customStyle() {
       const { nodes, styles } = this;
       const nodeStyles = nodes
-        .map(node => `style ${node.id} fill:#fff,stroke:#fff`);
+        .map(node => `style ${node.id} ${node.style || "fill:#fff,stroke:#fff"}`);
       return nodeStyles.concat(styles)
     },
     parseCode() {

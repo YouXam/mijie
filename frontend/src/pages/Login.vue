@@ -1,6 +1,6 @@
 <template>
-    <TitleCard title="登录">
-        <div class="form-control w-full max-w-xs flex flex-col m-auto">
+    <TitleCard title="登录" :minHeight="100">
+        <div class="form-control w-full max-w-xs flex flex-col m-auto mb-5">
             <label class="label">
                 <span class="label-text">用户名</span>
             </label>

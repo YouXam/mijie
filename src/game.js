@@ -16,9 +16,7 @@ function haveCommonKeyValuePair(obj1, obj2) {
     }
     for (const key in smallerObj) {
         if (smallerObj.hasOwnProperty(key) && largerObj.hasOwnProperty(key)) {
-            if (smallerObj[key] === largerObj[key]) {
-                return true;
-            }
+            return true;
         }
     }
     return false;
@@ -181,6 +179,8 @@ module.exports = function (db) {
                 return {
                     pid: cur.pid,
                     name: cur.name,
+                    gameover: cur.gameover,
+                    first: cur.first,
                     next: cur.next?.map(value => ({
                         pid: value.pid,
                         name: plugins.pluginMap.get(value.pid).name
@@ -237,7 +237,7 @@ module.exports = function (db) {
         }
         await gameStorage.save();
         if (res) {
-            ctx.state.gameprocess.pass(cur.pid)
+            ctx.state.gameprocess.pass(cur.pid, cur.points)
             const setValue = {
                 ["gameprocess." + cur.pid]: cur.points,
             }

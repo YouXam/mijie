@@ -42,8 +42,11 @@
         </div>
       </div>
     </div>
-
-    <div v-if="user.login.value" class="flex justify-end flex-1 px-2" >
+    <span style="font-family: 'Neutraface Text', sans-serif;" class="flex justify-end flex-1" v-if="user.login.value">
+      <svg class="mr-2" xmlns="http://www.w3.org/2000/svg" height="1em" width="1em" viewBox="0 0 512 512"><path d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zm96 96c0-17.7 14.3-32 32-32l192 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0c-17.7 0-32-14.3-32-32zm32 64H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H160c-17.7 0-32-14.3-32-32s14.3-32 32-32zm0 96H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H160c-17.7 0-32-14.3-32-32s14.3-32 32-32z" fill="white"/></svg>
+      {{ user.points.value + " pts" }}
+    </span>
+    <div v-if="user.login.value" class="flex justify-end px-2" >
       <div class="flex items-stretch">
         <div class="dropdown dropdown-hover dropdown-bottom dropdown-end">
           <label tabindex="0" class="btn m-1 btn-ghost normal-case text-lg" style="font-family: 'Neutraface Text', sans-serif;">
@@ -97,7 +100,7 @@ const setAfterLogin = () => {
   localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
 }
 function logout() {
-  localStorage.removeItem("token")
+  localStorage.removeItem('token')
   user.update()
   notificationManager.add({
     message: '成功退出登录',

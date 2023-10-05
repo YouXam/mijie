@@ -2,7 +2,7 @@
     <div class="container mx-auto text-center h-[calc(100vh-5rem)] flex flex-col items-center justify-center">
         <div class="mt-10 relative">
             <h1 class="text-7xl font-extrabold tracking-tight gradient-text mb-10">
-                解谜游戏
+                哈士奇再现
             </h1>
             <div class="background w-full h-full">
 

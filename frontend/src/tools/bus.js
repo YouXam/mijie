@@ -11,10 +11,12 @@ class User {
             this.set('login', true)
             this.set('username', payload.username)
             this.set('gameover', payload.gameover || false)
+            this.set('points', Object.values(payload.gameprocess || {}).reduce((a, b) => a + b, 0))
         } else {
             this.set('login', false)
             this.set('username', '')
             this.set('gameover', false)
+            this.set('points', 0)
         }
     }
     set(key, value) {

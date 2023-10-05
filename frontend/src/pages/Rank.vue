@@ -4,34 +4,21 @@
       <table class="table">
         <!-- head -->
         <thead>
-          <tr>
+          <tr class="text-white">
             <th></th>
-            <th>Name</th>
-            <th>Job</th>
-            <th>Favorite Color</th>
+            <th>用户名</th>
+            <th>通过题数</th>
+            <th>分数</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          <!-- row 1 -->
-          <tr>
-            <th>1</th>
-            <td>Cy Ganderton</td>
-            <td>Quality Control Specialist</td>
-            <td>Blue</td>
-          </tr>
-          <!-- row 2 -->
-          <tr>
-            <th>2</th>
-            <td>Hart Hagerty</td>
-            <td>Desktop Support Technician</td>
-            <td>Purple</td>
-          </tr>
-          <!-- row 3 -->
-          <tr>
-            <th>3</th>
-            <td>Brice Swyre</td>
-            <td>Tax Accountant</td>
-            <td>Red</td>
+          <tr v-for="(user, index) in rank" :key="user.username">
+            <th>{{ index + 1 }}</th>
+            <td>{{ user.username }}</td>
+            <td>{{ user.passed }}</td>
+            <td>{{ user.points }}</td>
+            <td>{{ user.gameover ? "已通关": "" }}</td>
           </tr>
         </tbody>
       </table>
@@ -50,7 +37,6 @@ const rank = ref([]);
   try {
     const res = await api("/api/rank")
     rank.value = res.rank
-    console.log(res)
   } catch (err) {
     if (err.status == 401) {
       localStorage.setItem("afterLogin", "/rank")

@@ -9,8 +9,8 @@ class GameProcess {
             this.passed = data;
         }
     }
-    pass(level) {
-        this.passed[level] = true;
+    pass(level, points) {
+        this.passed[level] = points;
         this.changed = true;
     }
     setGameover() {

@@ -22,6 +22,8 @@ export default {
     },
     methods: {
         clickNode(node) {
+            if (node == '__first__') return this.$router.push("/start")
+            if (node == '__gameover__') return this.$router.push("/gameover")
             this.$router.push("/game/" + node)
         }
     },
@@ -30,15 +32,22 @@ export default {
             const res = await api("/api/problem")
             if (!res.problems) return
             const hashMap = {}
-            res.problems.forEach(x => hashMap[x.pid] = x)
+            let hasGameOver = false, firsts = []
+            res.problems.forEach(x => {
+                hashMap[x.pid] = x
+                if (x.gameover) hasGameOver = true
+                if (x.first) firsts.push(x.pid)
+            })
             this.data = res.problems.map(x => ({
                 id: x.pid,
-                text: x.name + " ✔️",
-                next: x.next?.map(x => x.pid)
+                text: x.name,
+                style:"fill:lime,stroke:lime,stroke-width:0px;",
+                next: (x.next?.map(x => x.pid) || []).concat(x.gameover ? ["__gameover__"] : [])
             })).concat(res.problems.reduce((a, b) => a.concat(b?.next?.filter(x => !hashMap[x.pid]) || []), []).map(x => ({
                 id: x.pid,
                 text: x.name
-            })))
+            }))).concat(hasGameOver ? [{id: "__gameover__", text: "游戏结束", style:"fill:#1e2329,stroke:#a7adb9,color:#a7adb9;"}] : [])
+            .concat(firsts.length ? [{id: "__first__", text: "游戏开始", next: firsts, style:"fill:#1e2329,stroke:#a7adb9,color:#a7adb9;"}] : [])
             this.loaded = true
         } catch (err) {
             if (err.status == 401) {
