@@ -1,5 +1,5 @@
 const Router = require('koa-router');
-const GameProcess = require('./gameprocess');
+const { GameProcess, GameStorage } = require('./gameprocess');
 const jwt = require('jsonwebtoken');
 const compose = require('koa-compose');
 
@@ -62,6 +62,7 @@ function authRoutes(db) {
             const payload = jwt.verify(token, jwtSecret);
             ctx.state.username = payload.username;
             ctx.state.gameprocess = new GameProcess(payload.gameprocess);
+            ctx.state.gamestorage = new GameStorage(db, payload.username);
         } catch (err) {
             ctx.throw(401, 'Invalid JWT token');
         }

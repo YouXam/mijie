@@ -216,11 +216,12 @@ module.exports = function (db) {
             };
             return;
         }
-        let msg = ''
+        let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid);
         let res = cur.checker(ctx.request.body.ans, {
             runCode,
             username: ctx.state.username,
-            gameprocess: ctx.state.gameprocess,
+            gameProcess: ctx.state.gameprocess,
+            gameStorage,
             msg: (str) => {
                 msg += str;
             }
@@ -228,6 +229,7 @@ module.exports = function (db) {
         if (res instanceof Promise) {
             res = await res;
         }
+        await gameStorage.save();
         if (res) {
             ctx.state.gameprocess.pass(cur.pid)
             await db.collection('users').updateOne({ username: ctx.state.username }, { $set: { ["gameprocess." + cur.pid]: cur.points } });

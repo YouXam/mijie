@@ -2,7 +2,12 @@ module.exports = {
     name: 'hello world', // 显示的名称
     pid: "hello-world", // 用于标识题目的唯一字符串，不可重复，只能包含字母、数字、下划线和连字符
     description: '### Answer is "hello world"',
-    checker: "hello world",
+    checker(ans, ctx) {
+        const cnt = ctx.gameStorage.get('cnt') || 0;
+        ctx.gameStorage.set('cnt', cnt + 1);
+        ctx.msg(`You have tried ${cnt + 1} times.\n`)
+        return ans === 'hello world';
+    },
     first: true,
     points: 0,
     next: [

@@ -33,6 +33,8 @@ async function runCode(code, language) {
         'typescript': 'ts',
         'plain': 'txt'
     }
+
+
     try {
         const response = await axios.post(
             'https://glot.io/api/run/' + language + '/latest',
