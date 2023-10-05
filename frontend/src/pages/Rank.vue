@@ -1,5 +1,6 @@
 <template>
   <TitleCard title="排行榜">
+    <template #subtitle><div class="mt-10"></div></template>
     <div class="overflow-x-auto">
       <table class="table">
         <!-- head -->

@@ -58,6 +58,12 @@ const router = VueRouter.createRouter({
             meta: { title: '游戏' }
         },
         {
+            path: '/record/:pid?',
+            name: 'record',
+            component: () => import('./pages/Record.vue'),
+            meta: { title: '提交记录' }
+        },
+        {
             path: '/gameover',
             name: 'gameover',
             component: () => import('./pages/Gameover.vue'),

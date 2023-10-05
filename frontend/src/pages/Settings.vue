@@ -1,5 +1,6 @@
 <template>
     <TitleCard title="账户设置">
+        <template #subtitle><div class="mt-10"></div></template>
         <div class="form-control w-full max-w-xs flex flex-col m-auto">
             <label class="label">
                 <span class="label-text">旧密码</span>

@@ -2,7 +2,7 @@
     <div class="mx-auto text-center flex flex-col items-center justify-center">
         <div class="mt-10 title">
             <h1 class="text-5xl font-extrabold tracking-tight mb-5">{{ title }}</h1>
-            <div class="mb-10">
+            <div class="mb-5">
                 <slot name="subtitle"></slot>
             </div>
         </div>
