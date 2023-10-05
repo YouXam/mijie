@@ -1,14 +1,12 @@
 {$DOMAIN} {
-    tls {$EMAIL}
-    log stdout
-    route /api/* {
+	handle /api/* {
         uri strip_prefix /api
         reverse_proxy nodejs:3001
-    }
-    root /app/frontend/dist
-    file_server
-}
-
-:80 {
-    redir https://{$DOMAIN}{uri}
+	}
+	handle {
+		root * /app/frontend/dist
+		try_files {path} /index.html
+		file_server
+        encode zstd gzip
+	}
 }
