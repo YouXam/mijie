@@ -1,5 +1,14 @@
-your_domain.com {
-    tls your_email@email.com
-    proxy /api localhost:3001
+{$DOMAIN} {
+    tls {$EMAIL}
+    log stdout
+    route /api/* {
+        uri strip_prefix /api
+        reverse_proxy nodejs:3001
+    }
     root /app/frontend/dist
+    file_server
+}
+
+:80 {
+    redir https://{$DOMAIN}{uri}
 }

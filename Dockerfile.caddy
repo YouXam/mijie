@@ -1,14 +1,12 @@
 FROM node:18
 
-RUN apt-get update && apt-get install -y mongodb-server
-
-RUN mkdir -p /data/db
-
 RUN apt-get install -y caddy
+
+RUN npm install -g yarn
 
 WORKDIR /app
 
-RUN cd /app/frontend && yarn install
+RUN cd /app/frontend && yarn install --production && yarn build
 
 ENV MONGODB_URI="mongodb://localhost:27017/baituan"
 ENV JWT_SECRET=""
@@ -20,4 +18,4 @@ COPY Caddyfile /etc/caddy/Caddyfile
 EXPOSE 80
 EXPOSE 443
 
-CMD service mongodb start && cd /app && yarn start
+CMD caddy run --config /etc/caddy/Caddyfile
