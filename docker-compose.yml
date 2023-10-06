@@ -6,6 +6,8 @@ services:
       - 27017
     networks:
       - my_network
+    volumes:
+      - mongodb_data:/data/db
 
   caddy:
     build:
@@ -40,3 +42,6 @@ services:
 
 networks:
   my_network:
+
+volumes:
+  mongodb_data:
