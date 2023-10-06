@@ -330,17 +330,31 @@ module.exports = function (db) {
     });
     
     router.get('/record', async (ctx) => {
-        let { pid, user, all }  = ctx.query;
+        let { pid, user, all, page = 1, size = 50 } = ctx.query;
         if (!user) user = ctx.state.username;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
+        page = Math.max(1, parseInt(page, 10) || 1);
+        size = Math.min(200, Math.max(1, parseInt(size, 10) || 50));
         let query = {};
         if (!all) query.username = user;
         if (pid) query.pid = pid;
+        const [records, total] = await Promise.all([
+            db.collection('records')
+                .find(query)
+                .sort({ time: -1 })
+                .skip((page - 1) * size)
+                .limit(size)
+                .toArray(),
+            db.collection('records').countDocuments(query)
+        ]);
         ctx.body = {
-            records: await db.collection('records').find(query, {projection: { _id: 0 }}).sort({ time: -1 }).toArray()
+            page: page,
+            total: total,
+            records: records
         }
-    })
+    });
+    
 
     return compose([
         router.routes(),
