@@ -1,11 +1,15 @@
 <template>
-    <TitleCard title="注册"  :minHeight="100">
+    <TitleCard title="注册"  :minHeight="100" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="form-control w-full max-w-xs flex flex-col m-auto mb-5">
             <label class="label">
                 <span class="label-text">用户名</span>
             </label>
             <input type="text" class="input input-bordered w-full max-w-xs" autocomplete="username" v-model="username"/>
+            <label class="label">
+                <span class="label-text">学号</span>
+            </label>
+            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID"/>
             <label class="label">
                 <span class="label-text">密码</span>
             </label>
@@ -28,7 +32,7 @@
                     'opacity-100': password2.length && password2 != password
                 }">密码不匹配</span>
             </label>
-            <button class="btn btn-accent" @click="register" :disabled="error.length || !username.length || !password.length || !password2.length || password != password2">注册</button>
+            <button class="btn btn-accent" @click="register" :disabled="error.length || !username.length  || studentID.length != 10 || !password.length || !password2.length || password != password2">注册</button>
             <router-link tag="button" to="/login" class="btn btn-accent btn-outline mt-2">登录</router-link>
         </div>
     </TitleCard>
@@ -44,6 +48,7 @@ import { user } from '@/tools/bus'
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 const username = ref('')
+const studentID = ref('')
 const password = ref('')
 const password2 = ref('')
 const error = ref('')
@@ -74,6 +79,7 @@ async function register() {
     try {
         await api('/api/register', {
             username: username.value,
+            studentID: studentID.value,
             password: hash
         })
         router.push('/login')

@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto text-center flex flex-col items-center justify-center">
+    <div class="container mx-auto text-center flex flex-col items-center justify-center mb-20">
         <div class="mt-10">
             <h1 class="text-5xl font-extrabold tracking-tight">流程图</h1>
         </div>

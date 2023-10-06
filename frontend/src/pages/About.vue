@@ -1,5 +1,5 @@
 <template>
-    <TitleCard title="关于">
+    <TitleCard title="关于" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <p>欢迎来到解谜游戏——哈士奇再现！</p>
     </TitleCard>

@@ -1,5 +1,5 @@
 <template>
-    <TitleCard title="登录" :minHeight="100">
+    <TitleCard title="登录" :minHeight="100" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="form-control w-full max-w-xs flex flex-col m-auto mb-5">
             <label class="label">

@@ -10,15 +10,19 @@ function authRoutes(db) {
     const router = new Router();
 
     router.post('/register', async (ctx) => {
-        const { username, password } = ctx.request.body;
-        if (!username || !password) {
-            ctx.throw(400, 'Missing username or password');
+        const { username, password, studentID } = ctx.request.body;
+        if (!username || !password || !studentID) {
+            ctx.throw(400, 'Missing username or password or studentID');
         }
         const existingUser = await db.collection('users').findOne({ username });
         if (existingUser) {
             ctx.throw(409, '该用户名已经被使用');
         }
-        const newUser = { username, password };
+        const existingUser2 = await db.collection('users').findOne({ studentID });
+        if (existingUser2) {
+            ctx.throw(409, '该学号已经被使用');
+        }
+        const newUser = { username, password, studentID };
         await db.collection('users').insertOne(newUser);
         ctx.body = { message: '注册成功' };
     });

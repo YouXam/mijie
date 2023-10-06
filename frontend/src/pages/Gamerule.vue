@@ -1,5 +1,5 @@
 <template>
-    <TitleCard title="游戏规则">
+    <TitleCard title="游戏规则" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="p-8 min-h-[300px]">
             <p>游戏规则...</p>
