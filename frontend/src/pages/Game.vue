@@ -35,7 +35,7 @@
                     <div class="container alert alert-error text-white result" v-if="!record.passed">
                         <div>
                             <h2 class="font-bold">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="inline mb-1 stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <font-awesome-icon  :icon="['fas', 'circle-xmark']" />
                                 答案错误！
                             </h2>
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
@@ -44,7 +44,7 @@
                     <div class="container alert alert-success text-white mt-5 result" v-else>
                         <div>
                             <h2 class="font-bold">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="inline mb-1 stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <font-awesome-icon :icon="['fas', 'circle-check']" />
                                 答案正确{{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameState == 3 ? "您已通关。": "" }}
                             </h2>
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
@@ -76,7 +76,7 @@
             </Transition>
             <Transition name="down">
                 <button class="btn btn-circle down shadow-lg fixed bottom-3 right-5" @click="down" :class="{'btn-success': state == 1, 'btn-error': state == 2}" v-if="showDown">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M246.6 470.6c-12.5 12.5-32.8 12.5-45.3 0l-160-160c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L224 402.7 361.4 265.4c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-160 160zm160-352l-160 160c-12.5 12.5-32.8 12.5-45.3 0l-160-160c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L224 210.7 361.4 73.4c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3z" fill="white"/></svg>
+                    <font-awesome-icon :icon="['fas', 'angles-down']" />
                 </button>
             </Transition>
             <router-link 
