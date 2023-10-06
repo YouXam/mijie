@@ -21,6 +21,8 @@ services:
       - "443:443"
     networks:
       - my_network
+    volumes:
+      - caddy_data:/root/.local/share/caddy
     depends_on:
       - nodejs
 
@@ -45,3 +47,4 @@ networks:
 
 volumes:
   mongodb_data:
+  caddy_data:
