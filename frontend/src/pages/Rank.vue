@@ -1,7 +1,7 @@
 <template>
   <TitleCard title="排行榜">
     <template #subtitle><div class="mt-10"></div></template>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto" v-if="!loading">
       <table class="table ">
         <!-- head -->
         <thead>
@@ -24,6 +24,7 @@
         </tbody>
       </table>
     </div>
+    <div v-else class="mt-10">Loading...</div>
   </TitleCard>
 </template>
   
@@ -34,6 +35,7 @@ import { api } from '@/tools/api'
 import { useRouter } from 'vue-router';
 const router = useRouter()
 const rank = ref([]);
+const loading = ref(true)
 ; (async function () {
   try {
     const res = await api("/api/rank")
@@ -43,6 +45,8 @@ const rank = ref([]);
       localStorage.setItem("afterLogin", "/rank")
       router.push("/login")
     }
+  } finally {
+    loading.value = false
   }
 })();
 </script>
