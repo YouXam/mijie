@@ -1,5 +1,8 @@
-{$DOMAIN} {
+{
     email {$EMAIL}
+}
+
+{$DOMAIN} {
     handle /api/* {
         uri strip_prefix /api
         reverse_proxy nodejs:3001
