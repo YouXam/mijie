@@ -42,15 +42,10 @@ async function login() {
             password: hash
         })
         const afterLogin = localStorage.getItem("afterLogin")
+        localStorage.removeItem("afterLogin")
         user.update();
-        if (afterLogin) {
-            localStorage.removeItem("afterLogin")
+        if (afterLogin && !afterLogin.startsWith('/login') && !afterLogin.startsWith('/register')) {
             router.push(afterLogin)
-        } else if (history.state?.back?.path) {
-            if (!history.state.back.path.startsWith('/register') && !history.state.back.path.startsWith('/login'))
-                router.push(history.state?.back?.path)
-            else
-                router.push('/')
         } else {
             router.push('/')
         }

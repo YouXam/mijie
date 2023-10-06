@@ -1,6 +1,6 @@
 <template>
     <div class="mx-10 text-center flex flex-col items-center justify-center mb-20">
-        <h1 class="title text-5xl font-extrabold mt-10 mb-5">{{ problem.name }} 提交记录</h1>
+        <h1 class="title text-5xl font-extrabold mt-10 mb-5 leading-tight">{{ problem.name }} 提交记录</h1>
         <router-link 
             tag="button" 
             class="btn btn-link text-base-content"

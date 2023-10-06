@@ -1,5 +1,5 @@
 <template>
-    <div ref="card" class="card p-5" :style="{ minHeight: minHeight + 'px' }">
+    <div ref="card" class="card p-5 sm:min-w-[80%] min-w-full rounded-none sm:rounded-2xl" :style="{ minHeight: minHeight + 'px' }">
         <slot></slot>
     </div>
 </template>
@@ -42,9 +42,7 @@ export default {
 
 <style scoped>
 .card {
-    background-color: rgba(255, 255, 255, 0.1); 
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     width: 800px;
     max-width: 80%;
