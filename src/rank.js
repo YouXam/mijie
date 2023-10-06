@@ -3,6 +3,7 @@ class Ranking {
         this.db = db;
         this.rank = [];
         this.updated = false;
+        this.update_cnt = 0
     }
     async getRank() {
         if (!this.updated) {
@@ -11,24 +12,21 @@ class Ranking {
         return this.rank;
     }
     async update() {
-        this.rank = (await this.db.collection('users')
-            .find({}, { projection: { username: 1, gameprocess: 1, gameover: 1 } })
-            .toArray())
-            .map(user => {
-                const gameprocess = user.gameprocess || {};
-                const passed = Object.keys(gameprocess).length;
-                const points = Object.values(gameprocess).reduce((sum, score) => sum + score, 0);
-                return {
-                    username: user.username,
-                    passed: passed,
-                    points: points,
-                    gameover: user.gameover
-                };
-            }).sort((a, b) => {
-                if (b.points !== a.points) return b.points - a.points;
-                if (b.passed !== a.passed) return b.passed - a.passed;
-                return a.username.localeCompare(b.username);
-            });
+        const now_cnt = ++this.update_cnt;
+        const rank = await this.db.collection('users').aggregate([
+            {
+                $project: {
+                    username: 1,
+                    points: { $ifNull: [ "$points", 0 ] },
+                    gameover: { $ifNull: [ "$gameover", false ] },
+                    passed: { $ifNull: [ "$passed", 0 ] },
+                    _id: 0
+                }
+            },
+            { $sort: { points: -1, passed: -1, username: 1 }}
+        ]).toArray();
+        if (now_cnt === this.update_cnt) 
+            this.rank = rank;
     }
 }
 

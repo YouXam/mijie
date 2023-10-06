@@ -40,11 +40,20 @@ import { ref, watch } from 'vue'
 import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router'
+import { user } from '@/tools/bus'
+import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const password2 = ref('')
 const error = ref('')
+if (user.login.value) {
+    notificationManager.add({
+        message: '您已登录',
+        type: 'info'
+    })
+    router.replace(history.state?.back?.path || '/')
+}
 watch(password, () => {
     if (!password.value.length) {
         error.value = ''

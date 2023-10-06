@@ -250,19 +250,54 @@ module.exports = function (db) {
         };
         await gameStorage.save();
         if (res) {
+            let flag = false
+            if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
             ctx.state.gameprocess.pass(cur.pid, cur.points);
             record.passed = true;
             record.points = cur.points;
-            const setValue = {
-                ["gameprocess." + cur.pid]: cur.points,
-            };
+            const setValue = {};
             if (cur.gameover) {
                 record.gameover = true;
                 setValue.gameover = true;
                 ctx.state.gameprocess.setGameover();
             }
-            await db.collection('users').updateOne({ username: ctx.state.username }, { $set: setValue });
-            await rank.update();
+            const pipeline = [
+                {
+                    $match: { username: ctx.state.username }
+                },
+                {
+                  $set: { [`gameprocess.${cur.pid}`]: cur.points }
+                },
+                {
+                  $set: {
+                    points: {
+                      $reduce: {
+                        input: { $objectToArray: "$gameprocess" },
+                        initialValue: 0,
+                        in: { $add: ["$$this.v", "$$value"] }
+                      }
+                    },
+                    passed: {
+                        $reduce: {
+                            input: { $objectToArray: "$gameprocess" },
+                            initialValue: 0,
+                            in: { $add: [1, "$$value"] }
+                        }
+                    },
+                    ...setValue
+                  }
+                },
+                {
+                  $merge: {
+                    into: "users",
+                    whenMatched: "merge"
+                  }
+                }
+              ];
+          
+              await db.collection("users").aggregate(pipeline).toArray();
+
+            if (flag) rank.update()
             ctx.body = {
                 passed: true,
                 points: cur.points,
