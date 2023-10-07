@@ -8,7 +8,7 @@
             v-if="$route.params.pid"
         >返回题目</router-link>
 
-        <Pagination :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
+        <Pagination v-if="records.length && totalPages > 1" :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
         <template v-for="record in records" :key="record._id">
             <div 
                 class="alert text-white mt-5 result text-left sm:min-w-[50%] min-w-full w-[500px] max-w-full"
@@ -39,7 +39,15 @@
         </template>
         <h1 v-if="!records.length && !loading" class="mt-10">暂无</h1>
         <h1 v-if="!records.length && loading" class="mt-10">Loading...</h1>
-        <Pagination class="mt-5" :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
+        <Pagination v-if="records.length && totalPages > 1"  class="mt-5" :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
+        <button
+            :disabled="loading"
+            class="btn btn-circle btn-success refresh shadow-lg fixed bottom-3 right-5"
+            @click="update"
+            :class="{rotate: loading}"
+        >
+            <font-awesome-icon :icon="['fas', 'arrows-rotate']" />
+        </button>
     </div>
 </template>
 
@@ -48,6 +56,7 @@ import { ref, reactive } from 'vue'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router';
 import Pagination from '@/components/Pagination.vue'
+import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 function formatDate(date) {
   const year = date.getFullYear();
@@ -68,10 +77,9 @@ function onPageChange(p) {
     page.value = p
     update();
 }
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+let first = true
 async function update () {
+    loading.value = true
     try {
         const query = new URLSearchParams()
         if (router.currentRoute.value.params.pid) {
@@ -84,16 +92,25 @@ async function update () {
         if (router.currentRoute.value.query.user) query.append('user', router.currentRoute.value.query.user)
         query.append('page', page.value)
         query.append('size', size)
+        if (router.currentRoute.value.query.hasOwnProperty('all')) query.append('all', 'true')
         const res = await api('/api/record?' + query.toString())
-        loading.value = false;
         records.value = res.records
         totalPages.value = Math.ceil(res.total / size)
+        if (!first) {
+            notificationManager.add({
+                message: '刷新成功',
+                type: 'success'
+            })
+        }
+        first = false
     } catch (err) {
         if (err.status == 401) {
             localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
             router.push('/login')
         }
         console.log(err)
+    } finally {
+        loading.value = false
     }
 }
 update();
@@ -107,5 +124,16 @@ div.msg div {
 
 .title {
     font-family: "Neutraface Text", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";;
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.rotate {
+  animation: rotate 2s linear infinite;
 }
 </style>

@@ -154,11 +154,11 @@ class Plugins {
 
 const plugins = new Plugins();
 
-let rank;
+let rank = Ranking;
 
 module.exports = function (db) {
     const router = new Router();
-    rank = new Ranking(db);
+    rank.setDB(db);
     router.get('/rank', async (ctx) => {
         ctx.body = {
             rank: await rank.getRank()

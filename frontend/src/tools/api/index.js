@@ -1,14 +1,15 @@
 import notificationManager from '@/tools/notification.js'
 import { user } from '@/tools/bus.js'
 
-export function api(url, body) {
+export function apiMethod(method, url, body) {
   const headers = {
     'Content-Type': 'application/json',
   }
   if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
   return new Promise((resolve, reject) => {
     fetch(url, {
-      method: body ? 'POST' : 'GET',
+      // method: body ? 'POST' : 'GET',
+      method,
       headers,
       body: body ? JSON.stringify(body) : null
     })
@@ -43,6 +44,14 @@ export function api(url, body) {
         reject(err)
       })
   })
+}
+
+export function api(url, body) {
+  return apiMethod(body ? 'POST' : 'GET', url, body)
+}
+
+export function apiPut(url, body) {
+  return apiMethod('PUT', url, body)
 }
 
 export async function downloadFile(fileUrl, fileName) {

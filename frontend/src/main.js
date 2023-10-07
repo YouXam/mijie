@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faRankingStar, faCodeMerge, faChartBar, faUser, faGear, faBarsStaggered, faRightFromBracket,
     faFileArrowDown, faCircleInfo, faCircleCheck, faTriangleExclamation, faCircleXmark,
-    faAnglesDown, faArrowsRotate
+    faAnglesDown, faArrowsRotate, faXmark, faAddressBook
 } from '@fortawesome/free-solid-svg-icons';
 
 [
@@ -26,7 +26,9 @@ import {
     faTriangleExclamation,
     faCircleXmark,
     faAnglesDown,
-    faArrowsRotate
+    faArrowsRotate,
+    faXmark,
+    faAddressBook
 ].forEach(icon => library.add(icon));
 
 createApp(App)

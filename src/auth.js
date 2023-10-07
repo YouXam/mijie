@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const { GameProcess, GameStorage } = require('./gameprocess');
 const jwt = require('jsonwebtoken');
+const rank = require('./rank')
 const compose = require('koa-compose');
 
 require('dotenv').config();
@@ -14,13 +15,18 @@ function authRoutes(db) {
         if (!username || !password || !studentID) {
             ctx.throw(400, 'Missing username or password or studentID');
         }
-        const existingUser = await db.collection('users').findOne({ username });
+        const existingUser = await db.collection('users').findOne({
+            $or: [
+                { username: username },
+                { studentID: studentID }
+            ]
+        });
         if (existingUser) {
-            ctx.throw(409, '该用户名已经被使用');
-        }
-        const existingUser2 = await db.collection('users').findOne({ studentID });
-        if (existingUser2) {
-            ctx.throw(409, '该学号已经被使用');
+            if (existingUser.username === username) {
+                ctx.throw(409, '该用户名已经被使用');
+            } else if (existingUser.studentID === studentID) {
+                ctx.throw(409, '该学号已经被使用');
+            }
         }
         const newUser = { username, password, studentID };
         await db.collection('users').insertOne(newUser);
@@ -39,7 +45,8 @@ function authRoutes(db) {
         const token = jwt.sign({
             username,
             gameprocess: user.gameprocess,
-            gameover: user.gameover
+            gameover: user.gameover,
+            admin: user.admin
         }, jwtSecret, { expiresIn: '1d' });
         ctx.body = { message: '登录成功', token, username  };
     });
@@ -71,6 +78,7 @@ function authRoutes(db) {
             ctx.state.username = payload.username;
             ctx.state.gameprocess = new GameProcess(payload.gameprocess, payload.gameover);
             ctx.state.gamestorage = new GameStorage(db, payload.username);
+            ctx.state.admin = payload.admin;
         } catch (err) {
             ctx.throw(401, 'Invalid JWT token');
         }
@@ -92,4 +100,50 @@ function authRoutes(db) {
     ]);
 }
 
-module.exports = authRoutes
+function amdinRoutes(db) {
+    const router = new Router();
+
+    router.use(async (ctx, next) => {
+        if (ctx.state.admin > 0) {
+            await next();
+        } else {
+            ctx.throw(403, 'Access denied');
+        }
+    });
+
+    router.get('/users', async (ctx) => {
+        ctx.body = { users: await rank.getAdminRank() };
+    })
+
+    router.put('/user', async (ctx) => {
+        const { username } = ctx.request.query;
+        const { admin, banned, hidden, remark } = ctx.request.body;
+        if (!username) {
+            ctx.throw(400, 'Missing username');
+        }
+        if (admin && ctx.state.admin < 2) {
+            ctx.throw(403, 'Access denied');
+        }
+        if (admin && (isNaN(admin) || admin > 2 || admin < 0)) {
+            ctx.throw(400, 'Invalid admin value');
+        }
+        const setValue = {};
+        if (admin != undefined) setValue.admin = admin;
+        if (banned != undefined) setValue.banned = banned;
+        if (hidden != undefined) setValue.hidden = hidden;
+        if (remark != undefined) setValue.remark = remark;
+        await db.collection('users').updateOne({ username }, { $set: setValue });
+        ctx.body = { message: "修改成功" };
+        if (hidden != undefined || banned != undefined) rank.update();
+    })
+
+    return compose([
+        router.routes(),
+        router.allowedMethods()
+    ]);
+}
+
+module.exports = {
+    authRoutes,
+    amdinRoutes
+}

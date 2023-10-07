@@ -1,7 +1,7 @@
 <template>
   <div class="navbar fixed z-50 bg-base-100 shadow-sm">
     <router-link tabindex="0" @keydown.enter="$router.push('/')" @click="$router.push('/')" to = '/'
-      class="btn btn-ghost text-lg">
+      class="btn btn-ghost sm:text-lg px-2 sm:px-4">
       首页
     </router-link>
     <div class="sm:block hidden">
@@ -22,7 +22,7 @@
     <div class="sm:hidden" >
       <div class="flex items-stretch">
         <div class="dropdown dropdown-hover dropdown-bottom">
-          <a tabindex="0" class="btn btn-ghost text-lg">
+          <a tabindex="0" class="btn btn-ghost sm:text-lg px-2 sm:px-4">
             功能
           </a>
           <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-[8rem]">
@@ -35,21 +35,21 @@
             <li>
               <router-link to="/graph">
                 <font-awesome-icon :icon="['fas', 'code-merge']" />
-                流程图
+                <span class="ml-1">流程图</span>
               </router-link>
             </li>
           </ul>
         </div>
       </div>
     </div>
-    <span style="font-family: 'Neutraface Text', sans-serif;" class="flex justify-end flex-1" v-if="user.login.value">
+    <span style="font-family: 'Neutraface Text', sans-serif;" class="text-sm flex justify-end flex-1" v-if="user.login.value">
       <font-awesome-icon class="mr-2" :icon="['fas', 'chart-bar']" />
       {{ user.points.value + " pts" }}
     </span>
-    <div v-if="user.login.value" class="flex justify-end px-2" >
+    <div v-if="user.login.value" class="flex justify-end" >
       <div class="flex items-stretch">
         <div class="dropdown dropdown-hover dropdown-bottom dropdown-end">
-          <label tabindex="0" class="btn m-1 btn-ghost normal-case text-lg" style="font-family: 'Neutraface Text', sans-serif;">
+          <label tabindex="0" class="btn m-1 btn-ghost normal-case text-sm sm:text-lg" style="font-family: 'Neutraface Text', sans-serif;">
             <font-awesome-icon :icon="['fas', 'user']" />
             {{ user.username.value }}
           </label>
@@ -58,6 +58,12 @@
               <router-link to="/settings">
                 <font-awesome-icon :icon="['fas', 'gear']" />
                 账户设置
+              </router-link>
+            </li>
+            <li v-if="user.admin.value > 0">
+              <router-link to="/users">
+                <font-awesome-icon :icon="['fas', 'address-book']" />
+                用户列表
               </router-link>
             </li>
             <li>
