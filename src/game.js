@@ -355,6 +355,10 @@ module.exports = function (db) {
         }
     });
     
+    router.get("/notice", async (ctx) => {
+        const notices = await db.collection("notices").find({}).sort({ time: -1 }).toArray();
+        ctx.body = { notices };
+    });
 
     return compose([
         router.routes(),

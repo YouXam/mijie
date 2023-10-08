@@ -5,7 +5,7 @@
                 <h1 class="text-5xl font-extrabold tracking-tight mb-5 leading-tight">用户列表</h1>
                 <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
             </div>
-            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl">
+            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl mb-20">
                 <div class="overflow-x-auto" v-if="!loading">
                     <table class="table text-center">
                         <!-- head -->
@@ -101,9 +101,9 @@
 </template>
     
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, onUnmounted } from 'vue'
 import { api, apiPut } from '@/tools/api'
-import { user } from '@/tools/bus'
+import { user, rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router';
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
@@ -126,11 +126,13 @@ const drawerUser = computed(() => {
 watch(() => refDrawerUser?.value?.remark, () => {
     remark.value = refDrawerUser.value.remark
 })
+let lastUUID = null
 function put(id) {
+    console.log('put', id)
     const setValue = {}
     if (id == 1) {
         refDrawerUser.value.admin = !refDrawerUser.value.admin
-        setValue.admin = refDrawerUser.value.admin
+        setValue.admin = refDrawerUser.value.admin ? 1 : 0
     } else if (id == 2) {
         refDrawerUser.value.hidden = !refDrawerUser.value.hidden
         setValue.hidden = refDrawerUser.value.hidden
@@ -144,13 +146,15 @@ function put(id) {
     }
     const query = new URLSearchParams()
     query.set('username', refDrawerUser.value.username)
-    apiPut('/api/user?' + query.toString(), setValue).catch(err => {
-        if (err.status == 401) {
-            localStorage.setItem("afterLogin", "/users")
-            router.push("/login")
-        }
-        console.log(err)
-    })
+    apiPut('/api/user?' + query.toString(), setValue)
+        .then(x => lastUUID = x.uuid)
+        .catch(err => {
+            if (err.status == 401) {
+                localStorage.setItem("afterLogin", "/users")
+                router.push("/login")
+            }
+            console.log(err)
+        })
     if (id == 2 || id == 3) {
         users.value = calculateRank(users.value, true)
     }
@@ -213,6 +217,14 @@ async function refresh(first = false) {
     }
 }
 refresh(true);
+function notification(data) {
+    if (data.detail.uuid != lastUUID)
+        refresh(true)
+}
+rankEventListener.addEventListener('update', notification)
+onUnmounted(() => {
+  rankEventListener.removeEventListener('update', notification)
+})
 </script>
   
 <style scoped>

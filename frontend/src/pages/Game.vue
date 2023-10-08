@@ -1,9 +1,8 @@
 <template>
     <div>
         <TitleCard :title="title" :minHeight="100">
-            <!-- slot:subtitle -->
             <template #subtitle>
-                <div class="flex flex-row items-center justify-center" v-if="score != null && score != undefined">
+                <div class="flex title flex-row items-center justify-center" v-if="score != null && score != undefined">
                     <div class="flex flex-col items-center justify-center">
                         <div class="text-2xl font-bold">
                             {{ score }} pts 
@@ -20,7 +19,7 @@
 
             <div class="card container">
                 <template v-if="gameState == 1">
-                    <textarea ref="ansInput" class="mt-5 textarea textarea-white " style="border-color: hsl(var(--bc) / 1)" placeholder="输入答案" v-model="ans"
+                    <textarea ref="ansInput" class="mt-5 textarea textarea-white" style="border-color: hsl(var(--bc) / 1)" placeholder="输入答案" v-model="ans"
                         v-auto-expand
                         @keydown.ctrl.enter="submit"
                     ></textarea>
@@ -32,7 +31,7 @@
             </div>
             <transition-group name="list">
                 <template v-for="(record, index) in records" v-key="index">
-                    <div class="container alert alert-error text-white result" v-if="!record.passed">
+                    <div class="container alert alert-error text-white result rounded-lg" v-if="!record.passed">
                         <div>
                             <h2 class="font-bold">
                                 <font-awesome-icon  :icon="['fas', 'circle-xmark']" />
@@ -41,7 +40,7 @@
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
                         </div>
                     </div>
-                    <div class="container alert alert-success text-white mt-5 result" v-else>
+                    <div class="container alert alert-success text-white mt-5 result rounded-lg" v-else>
                         <div>
                             <h2 class="font-bold">
                                 <font-awesome-icon :icon="['fas', 'circle-check']" />
@@ -248,4 +247,9 @@ pre {
 .btn.down {
     animation: none;
 }
+
+.title {
+    font-family: "Neutraface Text", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";;
+}
+
 </style>

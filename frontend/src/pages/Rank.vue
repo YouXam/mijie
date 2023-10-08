@@ -41,8 +41,9 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { api } from '@/tools/api'
+import { rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router';
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
@@ -82,6 +83,10 @@ async function refresh() {
     loading2.value = false
   }
 }
+rankEventListener.addEventListener('update', refresh)
+onMounted(() => {
+  rankEventListener.removeEventListener('update', refresh)
+})
 ; (async function () {
   try {
     const res = await api("/api/rank")
@@ -91,6 +96,7 @@ async function refresh() {
       localStorage.setItem("afterLogin", "/rank")
       router.push("/login")
     }
+    console.log(err)
   } finally {
     loading.value = false
   }

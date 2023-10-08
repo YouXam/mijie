@@ -1,6 +1,7 @@
 import Notification from '@/components/Notification.vue'
 import { reactive } from 'vue'
 
+
 class NotificationManager {
   constructor() {
     this.notifications = reactive([])

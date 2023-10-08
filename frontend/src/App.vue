@@ -17,6 +17,12 @@
         <font-awesome-icon :icon="['fas', 'code-merge']" />
         流程图
       </router-link>
+      <router-link tabindex="0" @keydown.enter="$router.push('/notice')" @click.stop="$router.push('/notice')"
+        to = '/notice'
+        class="btn btn-ghost text-lg ml-3">
+        <font-awesome-icon :icon="['fas', 'note-sticky']" />
+        公告
+      </router-link>
     </div>
 
     <div class="sm:hidden" >
@@ -36,6 +42,12 @@
               <router-link to="/graph">
                 <font-awesome-icon :icon="['fas', 'code-merge']" />
                 <span class="ml-1">流程图</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/notice">
+                <font-awesome-icon :icon="['fas', 'note-sticky']" />
+                <span class="ml-1">公告</span>
               </router-link>
             </li>
           </ul>
@@ -105,8 +117,9 @@
 <script setup>
 import NotificationContainer from '@/components/NotificationContainer.vue'
 import notificationManager from '@/tools/notification.js'
-import { user } from '@/tools/bus'
+import { user, noticeEventListener, rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router'
+import { notice, rank } from './tools/subscribe'
 const router = useRouter()
 const setAfterLogin = () => {
   localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
@@ -120,5 +133,25 @@ function logout() {
   })
   router.push('/')
 }
+rank.subscribe('update', function (message) {
+  rankEventListener.dispatchEvent(new CustomEvent('update', {
+    detail: message.data
+  }))
+});
+notice.subscribe('update', function (message) {
+  notificationManager.add({
+    message: message.data.content ? ('公告: ' + message.data.content) : '有新公告',
+    type: 'success'
+  })
+  noticeEventListener.dispatchEvent(new Event('update'))
+});
+
+
+
 </script>
 
+<style scoped>
+.textarea {
+  animation: fadeIn var(--animation-duration, 0.5s) ease;
+}
+</style>

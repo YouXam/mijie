@@ -82,6 +82,12 @@ const router = VueRouter.createRouter({
             meta: { title: '用户列表' }
         },
         {
+            path: '/notice',
+            name: 'notice',
+            component: () => import('./pages/Notice.vue'),
+            meta: { title: '公告' }
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'notfound',
             component: () => import('./pages/NotFound.vue'),

@@ -9,6 +9,7 @@
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
+    "ably": "^1.2.45",
     "axios": "^1.5.1",
     "chokidar": "^3.5.3",
     "clear-module": "^4.1.2",

@@ -60,6 +60,10 @@ export function apiPut(url, body) {
   return apiMethod('PUT', url, body)
 }
 
+export function apiDelete(url, body) {
+  return apiMethod('DELETE', url, body)
+}
+
 export async function downloadFile(fileUrl, fileName) {
   try {
     const headers = {}

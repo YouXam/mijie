@@ -1,5 +1,5 @@
 <template>
-    <div ref="card" class="card p-5 sm:min-w-[50%] min-w-full rounded-none sm:rounded-2xl" :style="{ minHeight: minHeight + 'px' }">
+    <div ref="card" class="card p-5 sm:min-w-[50%] min-w-full rounded-none sm:rounded-lg" :style="{ minHeight: minHeight + 'px' }">
         <slot></slot>
     </div>
 </template>

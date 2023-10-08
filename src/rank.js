@@ -1,3 +1,4 @@
+const { rank: rankPublish } = require('./publish');
 class Ranking {
     constructor(db) {
         this.db = db || null;
@@ -21,7 +22,7 @@ class Ranking {
         }
         return this.adminRank;
     }
-    async update() {
+    async update(uuid) {
         const now_cnt = ++this.update_cnt;
         const rank = await this.db.collection('users').aggregate([
             {
@@ -49,6 +50,10 @@ class Ranking {
                 gameover: x.gameover
             }))
         }
+        rankPublish.publish('update', { uuid }, err => {
+            if (err) console.error(err);
+        });
+        this.updated = true;
     }
 }
 

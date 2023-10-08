@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 const rank = require('./rank')
 const compose = require('koa-compose');
 const banned = {}
+const { ObjectId } = require('mongodb');
+const { notice: noticePublish } = require('./publish');
+const uuidv4 = require('uuid').v4;
 
 require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
@@ -100,10 +103,11 @@ function authRoutes(db) {
         await next();
         if (ctx?.state?.gameprocess && ctx.state.gameprocess.changed) {
             const token = jwt.sign({
-                    username: ctx.state.username,
-                    gameprocess: ctx.state.gameprocess.passed,
-                    gameover: ctx.state.gameprocess.gameover
-                }, jwtSecret, { expiresIn: '1d' });
+                username: ctx.state.username,
+                gameprocess: ctx.state.gameprocess.passed,
+                gameover: ctx.state.gameprocess.gameover,
+                admin: ctx.state.admin
+            }, jwtSecret, { expiresIn: '1d' });
             ctx.body = { token, ...ctx.body };
         }
     };
@@ -126,6 +130,30 @@ function amdinRoutes(db) {
         }
     });
 
+    router.post('/notice', async ctx => {
+        const { content } = ctx.request.body;
+        if (!content) {
+            ctx.throw(400, 'Missing content');
+        }
+        await db.collection('notices').insertOne({ content, time: new Date(), author: ctx.state.username });
+        noticePublish.publish('update', {
+            content
+        }, err => {
+            if (err) console.error(err);
+        });
+        ctx.body = { message: '发布成功' };
+    })
+
+    router.delete('/notice/:id', async ctx => {
+        const { id } = ctx.params;
+        if (!id) {
+            ctx.throw(400, 'Missing id');
+        }
+        await db.collection('notices').deleteOne({ _id: new ObjectId(id) });
+        ctx.body = { message: '删除成功' };
+    })
+
+
     router.get('/users', async (ctx) => {
         ctx.body = { users: await rank.getAdminRank() };
     })
@@ -145,8 +173,8 @@ function amdinRoutes(db) {
         const setValue = {};
         if (admin != undefined) setValue.admin = admin;
         if (_banned != undefined) {
-            setValue.banned = banned;
-            db.collection('banned').updateOne({ username }, { $set: { _banned, time: new Date() } }, { upsert: true });
+            setValue.banned = _banned;
+            db.collection('banned').updateOne({ username }, { $set: { banned, time: new Date() } }, { upsert: true });
             if (_banned) {
                 banned[username] = true;
             } else {
@@ -156,8 +184,9 @@ function amdinRoutes(db) {
         if (hidden != undefined) setValue.hidden = hidden;
         if (remark != undefined) setValue.remark = remark;
         await db.collection('users').updateOne({ username }, { $set: setValue });
-        ctx.body = { message: "修改成功" };
-        if (hidden != undefined || banned != undefined) rank.update();
+        const uuid = uuidv4();
+        ctx.body = { message: "修改成功", uuid };
+        if (hidden != undefined || banned != undefined) rank.update(uuid);
     })
 
     return compose([

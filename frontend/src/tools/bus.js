@@ -37,4 +37,8 @@ class User {
     }
 }
 
+export const noticeEventListener = new EventTarget();
+
+export const rankEventListener = new EventTarget();
+
 export const user = new User()

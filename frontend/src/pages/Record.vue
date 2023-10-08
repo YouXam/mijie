@@ -11,7 +11,7 @@
         <Pagination v-if="records.length && totalPages > 1" :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
         <template v-for="record in records" :key="record._id">
             <div 
-                class="alert text-white mt-5 result text-left sm:min-w-[50%] min-w-full w-[500px] max-w-full"
+                class="rounded-lg alert text-white mt-5 result text-left sm:min-w-[50%] min-w-full w-[500px] max-w-full"
                 style="justify-items: normal"
                 :class="{ 'alert-error': !record.passed, 'alert-success': record.passed}"
             >
