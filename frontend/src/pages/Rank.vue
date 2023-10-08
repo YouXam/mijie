@@ -41,7 +41,7 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, onMounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { api } from '@/tools/api'
 import { rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router';
@@ -64,15 +64,17 @@ function calculateRank(ranks) {
   }
   return ranks
 }
-async function refresh() {
+async function refresh(noNotification) {
   loading2.value = true
   try {
     const res = await api("/api/rank")
     rank.value = calculateRank(res.rank)
-    notificationManager.add({
-      message: '刷新成功',
-      type: 'success'
-    })
+    if (!noNotification) {
+      notificationManager.add({
+        message: '刷新成功',
+        type: 'success'
+      })
+    }
   } catch (err) {
     if (err.status == 401) {
       localStorage.setItem("afterLogin", "/rank")
@@ -83,9 +85,12 @@ async function refresh() {
     loading2.value = false
   }
 }
-rankEventListener.addEventListener('update', refresh)
-onMounted(() => {
-  rankEventListener.removeEventListener('update', refresh)
+function refreshWithNotification() {
+  refresh(true)
+} 
+rankEventListener.addEventListener('update', refreshWithNotification)
+onUnmounted(() => {
+  rankEventListener.removeEventListener('update', refreshWithNotification)
 })
 ; (async function () {
   try {

@@ -136,8 +136,9 @@ function amdinRoutes(db) {
             ctx.throw(400, 'Missing content');
         }
         await db.collection('notices').insertOne({ content, time: new Date(), author: ctx.state.username });
+        const minimalContent = content.length > 20 ? content.slice(0, 20) + '...' : content;
         noticePublish.publish('update', {
-            content
+            content: minimalContent
         }, err => {
             if (err) console.error(err);
         });

@@ -1,6 +1,11 @@
 <template>
   <transition-group name="list" tag="div">
-    <Notification v-for="(notification, i) in notificationManager.notifications" :key="notification.id" :notification="notification" :index="i"/>
+    <Notification 
+      v-for="(notification, i) in notificationManager.notifications"
+      :key="notification.id"
+      :notification="notification"
+      :index="i"
+    />
   </transition-group>
 </template>
   

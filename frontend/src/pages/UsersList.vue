@@ -128,7 +128,6 @@ watch(() => refDrawerUser?.value?.remark, () => {
 })
 let lastUUID = null
 function put(id) {
-    console.log('put', id)
     const setValue = {}
     if (id == 1) {
         refDrawerUser.value.admin = !refDrawerUser.value.admin
@@ -193,13 +192,13 @@ watch(rankTh, () => {
     if (!rankTh.value) return
     left.value = rankTh.value.offsetWidth
 })
-async function refresh(first = false) {
+async function refresh(first = false, noNotification = false) {
     if (first) loading.value = true
     else loading2.value = true
     try {
         const res = await api("/api/users")
         users.value = calculateRank(res.users)
-        if (!first) {
+        if (!first && !noNotification) {
             notificationManager.add({
                 message: '刷新成功',
                 type: 'success'
@@ -219,7 +218,7 @@ async function refresh(first = false) {
 refresh(true);
 function notification(data) {
     if (data.detail.uuid != lastUUID)
-        refresh(true)
+        refresh(false, true)
 }
 rankEventListener.addEventListener('update', notification)
 onUnmounted(() => {
