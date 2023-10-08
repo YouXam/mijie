@@ -8,7 +8,6 @@ export function apiMethod(method, url, body) {
   if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
   return new Promise((resolve, reject) => {
     fetch(url, {
-      // method: body ? 'POST' : 'GET',
       method,
       headers,
       body: body ? JSON.stringify(body) : null
@@ -33,6 +32,13 @@ export function apiMethod(method, url, body) {
             message: res.message,
             type: 'success',
             time: 2000,
+          })
+        }
+        if (res?.error && res?.error?.length) {
+          notificationManager.add({
+            message: res.error,
+            type: 'error',
+            time: 5000,
           })
         }
         resolve(res)

@@ -1,5 +1,15 @@
 import { ref } from 'vue'
 
+function base64UrlDecode(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) {
+        str += '=';
+    }
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
+
 class User {
     constructor() {
         this.update()
@@ -7,7 +17,7 @@ class User {
     update() {
         const token = localStorage.getItem("token")
         if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]))
+            const payload = JSON.parse(base64UrlDecode(token.split('.')[1]))
             this.set('login', true)
             this.set('username', payload.username)
             this.set('admin', payload.admin || 0)

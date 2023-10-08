@@ -3,16 +3,17 @@ const { GameProcess, GameStorage } = require('./gameprocess');
 const jwt = require('jsonwebtoken');
 const rank = require('./rank')
 const compose = require('koa-compose');
+const banned = {}
 
 require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
 
 function authRoutes(db) {
     const router = new Router();
-
+    db.collection('banned').find({ banned: true }).toArray().then(x => x.forEach(y => banned[y.username] = true))
     router.post('/register', async (ctx) => {
         const { username, password, studentID } = ctx.request.body;
-        if (!username || !password || !studentID) {
+        if (!username || !password) {
             ctx.throw(400, 'Missing username or password or studentID');
         }
         const existingUser = await db.collection('users').findOne({
@@ -41,6 +42,9 @@ function authRoutes(db) {
         const user = await db.collection('users').findOne({ username });
         if (!user || user.password != password) {
             ctx.throw(401, '用户名或密码错误');
+        }
+        if (banned[username]) {
+            ctx.throw(403, '您已被封禁');
         }
         const token = jwt.sign({
             username,
@@ -75,12 +79,23 @@ function authRoutes(db) {
         }
         try {
             const payload = jwt.verify(token, jwtSecret);
+            if (payload.banned || banned[payload.username]) {
+                ctx.body = { error: '您已被封禁', action: 'logout' };
+                return
+            }
             ctx.state.username = payload.username;
             ctx.state.gameprocess = new GameProcess(payload.gameprocess, payload.gameover);
             ctx.state.gamestorage = new GameStorage(db, payload.username);
             ctx.state.admin = payload.admin;
         } catch (err) {
-            ctx.throw(401, 'Invalid JWT token');
+            if (err instanceof jwt.TokenExpiredError) {
+                ctx.body = { error: '登录过期，请重新登陆', action: 'logout' };
+            } else if (err instanceof jwt.JsonWebTokenError) {
+                ctx.throw(401, 'Invalid JWT token');
+            } else {
+                ctx.throw(500, 'Internal server error');
+                console.error(err);
+            }
         }
         await next();
         if (ctx?.state?.gameprocess && ctx.state.gameprocess.changed) {
@@ -117,7 +132,7 @@ function amdinRoutes(db) {
 
     router.put('/user', async (ctx) => {
         const { username } = ctx.request.query;
-        const { admin, banned, hidden, remark } = ctx.request.body;
+        const { admin, banned: _banned, hidden, remark } = ctx.request.body;
         if (!username) {
             ctx.throw(400, 'Missing username');
         }
@@ -129,7 +144,15 @@ function amdinRoutes(db) {
         }
         const setValue = {};
         if (admin != undefined) setValue.admin = admin;
-        if (banned != undefined) setValue.banned = banned;
+        if (_banned != undefined) {
+            setValue.banned = banned;
+            db.collection('banned').updateOne({ username }, { $set: { _banned, time: new Date() } }, { upsert: true });
+            if (_banned) {
+                banned[username] = true;
+            } else {
+                delete banned[username];
+            }
+        }
         if (hidden != undefined) setValue.hidden = hidden;
         if (remark != undefined) setValue.remark = remark;
         await db.collection('users').updateOne({ username }, { $set: setValue });

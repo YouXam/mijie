@@ -9,7 +9,7 @@
             <label class="label">
                 <span class="label-text">学号</span>
             </label>
-            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID"/>
+            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID" placeholder="领取奖品需要验证学号"/>
             <label class="label">
                 <span class="label-text">密码</span>
             </label>
@@ -32,7 +32,7 @@
                     'opacity-100': password2.length && password2 != password
                 }">密码不匹配</span>
             </label>
-            <button class="btn btn-accent" @click="register" :disabled="error.length || !username.length  || studentID.length != 10 || !password.length || !password2.length || password != password2">注册</button>
+            <button class="btn btn-accent" @click="register" :disabled="error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">注册</button>
             <router-link tag="button" to="/login" class="btn btn-accent btn-outline mt-2">登录</router-link>
         </div>
     </TitleCard>
