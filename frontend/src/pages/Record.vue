@@ -2,12 +2,25 @@
     <div class="mx-10 text-center flex flex-col items-center justify-center mb-20">
         <h1 class="title text-5xl font-extrabold mt-10 mb-5 leading-tight">{{ problem.name }} 提交记录</h1>
         <router-link 
-            tag="button" 
+            tag="button"
             class="btn btn-link text-base-content mb-5"
             :to="`/game/${$route.params.pid}`"
-            v-if="$route.params.pid"
+            v-if="$route.params.pid && !$route.query.user"
         >返回题目</router-link>
-
+        <template v-if="problem.manual && user.admin.value > 0 && router.currentRoute.value.params.pid && router.currentRoute.value.query.user">
+            <div class="flex flex-col sm:min-w-[50%] min-w-full w-[500px] max-w-[90%]">
+                <textarea class="mt-5 textarea" style="border-color: hsl(var(--bc) / 0.2)" placeholder="信息"
+                    v-model="content"
+                    v-auto-expand
+                    @keydown.ctrl.enter="submit"
+                ></textarea>
+                <input type="text" placeholder="分数" class="block input input-bordered w-full mt-5" style="font-size: 0.875rem;" v-model="score"/>
+                <button :disabled="loading2 || score.length === 0 || !/^\d+$/.test(score)" class="submit btn btn-outline mt-5 mb-5" @click="submit">
+                    <span class="loading loading-dots loading-xs" v-if="loading2"></span>
+                    提交
+                </button>
+            </div>
+        </template>
         <Pagination v-if="records.length && totalPages > 1" :totalPages="totalPages" :currentPage="page" @pageChange="onPageChange"/>
         <template v-for="record in records" :key="record._id">
             <div 
@@ -26,12 +39,12 @@
                             答案错误
                         </template>
                     </h2>
-                    <div class="mt-2 text-gray-100">{{ formatDate(new Date(record.time)) }}</div>
+                    <div class="mt-2 text-gray-100">{{ formatDate(new Date(record.time)) }} {{ record.manualScores ? "由管理员手动评分" : "" }}</div>
                     <div class="mt-2 msg">
                         <div><span class="font-extrabold">用户: </span>{{ record.username }}</div>
                         <div><span class="font-extrabold">题目: </span>{{ record.name }}</div>
                         <div v-if="record.points != undefined"><span class="font-extrabold">分数: </span>{{ record.points }} <span v-if="record.gameover" class="font-extrabold">已通关</span></div>
-                        <div><span class="font-extrabold">答案: </span><template v-if="record.ans?.length">{{ record.ans }}</template><span v-else class="italic">空</span></div>
+                        <div v-if="!record.manualScores"><span class="font-extrabold">答案: </span><template v-if="record.ans?.length">{{ record.ans }}</template><span v-else class="italic">空</span></div>
                         <div v-if="record.msg?.length"><span class="font-extrabold">日志: </span>{{ record.msg }}</div>
                     </div>
                 </div>
@@ -55,9 +68,11 @@
 import { ref, reactive } from 'vue'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router';
+import { user } from '@/tools/bus'
 import Pagination from '@/components/Pagination.vue'
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
+const content = ref('')
 function formatDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -69,16 +84,40 @@ function formatDate(date) {
 }
 const records = ref([]);
 const loading = ref(true);
-const problem = reactive({ name: '' })
+const loading2 = ref(false);
+const problem = reactive({ name: '', manual: false })
 const page = ref(1);
 const size =  10;
+const score = ref('');
 const totalPages = ref(1);
 function onPageChange(p) {
     page.value = p
-    update();
+    update(true);
 }
 let first = true
-async function update () {
+async function submit() {
+    try {
+        loading2.value = true
+        await api('/api/record/' + router.currentRoute.value.params.pid, {
+            pid: router.currentRoute.value.params.pid,
+            msg: content.value || undefined,
+            points: parseFloat(score.value),
+            username: router.currentRoute.value.query.user || undefined
+        });
+        content.value = ''
+        score.value = ''
+        update(true)
+    } catch (err) {
+        if (err.status == 401) {
+            localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
+            router.push('/login')
+        }
+        console.log(err)
+    } finally {
+        loading2.value = false
+    }
+}
+async function update(noNotification = false) {
     loading.value = true
     try {
         const query = new URLSearchParams()
@@ -86,6 +125,7 @@ async function update () {
             query.append('pid', router.currentRoute.value.params.pid)
             api("/api/problem/" + router.currentRoute.value.params.pid + "?simple=true").then(res => {
                 problem.name = res.name
+                problem.manual = res.manualScores
                 document.title = res.name + ' 提交记录 | ' + document.title.split(' | ')[1]
             })
         }
@@ -96,7 +136,7 @@ async function update () {
         const res = await api('/api/record?' + query.toString())
         records.value = res.records
         totalPages.value = Math.ceil(res.total / size)
-        if (!first) {
+        if (!first && !noNotification) {
             notificationManager.add({
                 message: '刷新成功',
                 type: 'success'

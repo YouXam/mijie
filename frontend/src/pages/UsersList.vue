@@ -18,7 +18,7 @@
                                 <td>分数</td>
                                 <td>状态</td>
                                 <td>备注</td>
-                                <td v-for="problem in problems" :key="problem">{{ problem }}</td>
+                                <td v-for="problem in problems" :key="problem.pid">{{ problem.name }}</td>
                             </tr>
                         </thead>
                         <tbody>
@@ -38,7 +38,7 @@
                                 <td>{{ user.points || 0 }}</td>
                                 <td class="p-0">{{ user.gameover ? "通关" : "" }}</td>
                                 <td>{{ user.remark }}</td>
-                                <td v-for="problem in problems" :key="problem">{{ user.gameprocess[problem] }}</td>
+                                <td v-for="problem in problems" :key="problem.pid">{{ user.gameprocess[problem.pid] }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -92,7 +92,17 @@
                             <div class="flex-1 mt-2">备注</div>
                             <input type="text" class="input input-bordered w-4/5" v-model="remark" @blur="put(4)"/>
                         </div>
-                        <router-link class="btn btn-link flex text-base-content" :to="'/record?user=' + encodeURIComponent(drawerUser.username)">提交记录</router-link>
+                        <h3 class="text-xl text-center mt-8">
+                            提交记录
+                        </h3>                      
+                        <ul class="menu bg-base-200 w-full rounded-box">
+                            <li>
+                                <router-link :to="'/record?user=' + encodeURIComponent(drawerUser.username)">全部提交记录</router-link>
+                            </li>
+                            <li v-for="problem in problems" :key="problem.pid">
+                                <router-link :to="'/record/' + problem.pid + '?user=' + encodeURIComponent(drawerUser.username)">{{ problem.name }}</router-link>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -166,14 +176,11 @@ function put(id) {
 function calculateRank(ranks, skipAssignment = false) {
     if (ranks.length > 0 && !ranks[0].__v_isReactive) 
         ranks = ranks.map(x => reactive(x))
-    let rank = 1, _problems = {}
+    let rank = 1
     let last = -1;
     for (let i = 0; i < ranks.length; i++) {
         if (!skipAssignment && ranks[i].username === refDrawerUser.value.username) {
             refDrawerUser.value = ranks[i]
-        }
-        for (let j in ranks[i].gameprocess || {}) {
-            if (!_problems[j]) _problems[j] = 1
         }
         if (!ranks[i].hidden && !ranks[i].banned && last == -1) last = i;
     }
@@ -189,7 +196,6 @@ function calculateRank(ranks, skipAssignment = false) {
         last = i
         
     }
-    problems.value = Object.keys(_problems).sort((a, b) => a.localeCompare(b))
     return ranks
 }
 
@@ -201,7 +207,11 @@ async function refresh(first = false, noNotification = false) {
     if (first) loading.value = true
     else loading2.value = true
     try {
-        const res = await api("/api/users")
+        const [res, problemList] = await Promise.all([
+            api("/api/users"),
+            api("/api/problemList")
+        ])
+        problems.value = problemList.problems
         users.value = calculateRank(res.users)
         if (!first && !noNotification) {
             notificationManager.add({

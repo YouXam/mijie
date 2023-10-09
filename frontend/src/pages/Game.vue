@@ -10,22 +10,32 @@
                     </div>
                 </div>
             </template>
-            <div class="min-h-[100px] items-center justify-center flex flex-col">
-                <Problem :content="problem"></Problem>
+            <template v-if="gameState == 1 || solved_description.length == 0">
+                <div class="min-h-[100px] items-center justify-center flex flex-col">
+                    <Problem :content="problem"></Problem>
+                </div>
+                <FileList v-if="files.length" :files="files" @download="downloadFile"/>
+            </template>
+            <div class="min-h-[100px] items-center justify-center flex flex-col" v-else>
+                <Problem :content="solved_description"></Problem>
             </div>
-            <FileList v-if="files.length" :files="files" @download="downloadFile"/>
         </TitleCard>
         <div class="mx-auto text-center flex flex-col items-center justify-center mb-20">
 
             <div class="card container">
                 <template v-if="gameState == 1">
-                    <textarea ref="ansInput" class="mt-5 textarea textarea-white" style="border-color: hsl(var(--bc) / 1)" placeholder="输入答案" v-model="ans"
+                    <textarea ref="ansInput" class="mt-5 textarea textarea-white" style="border-color: hsl(var(--bc) / 0.2)" placeholder="输入答案" v-model="ans"
                         v-auto-expand
+                        v-if="!manual"
                         @keydown.ctrl.enter="submit"
                     ></textarea>
+                    <div v-else class="mt-5 ">
+                        <font-awesome-icon :icon="['fas', 'circle-info']" />
+                        此题为现场题，您必须在现场完成任务后由管理员手动评分，然后刷新状态以更新分数和排行榜。 
+                    </div>
                     <button class="submit btn btn-outline mt-5 mb-5" @click="submit" :disabled="loading">
                         <span class="loading loading-dots loading-xs" v-if="loading"></span>
-                        提交
+                        {{ manual ? '刷新状态' : '提交' }}
                     </button>
                 </template>
             </div>
@@ -35,7 +45,7 @@
                         <div>
                             <h2 class="font-bold">
                                 <font-awesome-icon  :icon="['fas', 'circle-xmark']" />
-                                答案错误！
+                                {{ manual ? '未完成任务' : '答案错误' }}
                             </h2>
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
                         </div>
@@ -44,7 +54,8 @@
                         <div>
                             <h2 class="font-bold">
                                 <font-awesome-icon :icon="['fas', 'circle-check']" />
-                                答案正确{{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameState == 3 ? "您已通关。": "" }}
+                                {{ manual ? '完成任务' : '答案正确' }}
+                                {{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameState == 3 ? "您已通关。": "" }}
                             </h2>
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
                         </div>
@@ -58,7 +69,7 @@
                         <NextList :next="next"/>
                     </template>
                     <h3 class="mt-5 text-left" v-else>似乎没有下一关了，要不要试试<router-link to="/graph" class="link">其他路线</router-link>？</h3>
-                    <button class="btn btn-outline mt-5 mb-5" @click="gameState = 1, records = []">
+                    <button class="btn btn-outline mt-5 mb-5" @click="gameState = 1, records = []" v-if="!manual">
                         再试一次
                     </button>
                 </div>
@@ -107,7 +118,9 @@ const ansInput = ref(null)
 const showDown = ref(false)
 const files = ref([])
 const next = ref([])
+const manual = ref(false)
 const gameState = ref(1)
+const solved_description = ref('')
 let lastSubmit = null
 const state = computed(() => {
     if (!records.value.length) return 0;
@@ -149,14 +162,18 @@ async function submit() {
     loading.value = true
     showDown.value = false
     try {
-        const res = await api('/api/problem/' + router.currentRoute.value.params.pid, {
-            ans: ans.value
-        })
+        const res = await (manual.value ? 
+            api('/api/problemManual/' + router.currentRoute.value.params.pid) :
+            api('/api/problem/' + router.currentRoute.value.params.pid, {
+                ans: ans.value
+            })
+        )
         await sleep(500 - new Date().getTime() + lastSubmit.getTime())
         records.value.unshift(res)
         if (res.passed) gameState.value = 2
         if (res.next) next.value = res.next
         if (res.gameover) gameState.value = 3
+        if (res.solved_description) solved_description.value = res.solved_description
         nextTick(() => {
             if (!checkIfResultInViewport()) showDown.value = true
         })
@@ -175,6 +192,7 @@ async function submit() {
         title.value = res.name
         problem.value = res.description
         score.value = res.points
+        manual.value = res.manualScores
         if (res.files && res.files.length) files.value = res.files
         document.title = res.name + ' | ' + document.title.split(' | ')[1]
     } catch (err) {
@@ -204,7 +222,7 @@ async function submit() {
     animation: fadeIn var(--animation-duration, 0.5s) ease;
 }
 .textarea:focus {
-    outline-color: hsl(var(--bc) / 1);
+    outline-color: hsl(var(--bc) / 0.2);
 }
 .container {
     width: 800px;

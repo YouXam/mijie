@@ -4,7 +4,7 @@
             <h1 class="sm:text-5xl text-4xl mt-7 mb-5 font-extrabold tracking-tight">公告</h1>
             <template v-if="user.admin.value > 0">
                 <div class="flex flex-col w-full">
-                    <textarea class="mt-5 textarea" style="border-color: hsl(var(--bc) / 1)" placeholder="公告内容(Markdown格式)"
+                    <textarea class="mt-5 textarea" style="border-color: hsl(var(--bc) / 0.2)" placeholder="公告内容(Markdown格式)"
                         v-model="content"
                         v-auto-expand
                         @keydown.ctrl.enter="submit"

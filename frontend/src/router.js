@@ -1,4 +1,6 @@
 import * as VueRouter from 'vue-router'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
@@ -95,11 +97,18 @@ const router = VueRouter.createRouter({
         }
     ]
 })
+NProgress.configure({ showSpinner: false });
 
 router.beforeEach((to, from, next) => {
     document.title = to.meta.title ? to.meta.title + ' | 哈士奇再现' : '哈士奇再现'
+    NProgress.start()
     next();
 });
-  
+
+
+router.afterEach(() => {
+    NProgress.done()
+})
+
 
 export default router

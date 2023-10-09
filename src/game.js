@@ -75,12 +75,20 @@ class Plugins {
             clearModule(pluginPath);
             try {
                 const plugin = require(pluginPath);
-                if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function') {
+                if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function' && !plugin.manualScores) {
                     console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
                     return
                 }
-                if (!plugin.name || plugin.points === undefined || !plugin.pid || !plugin.checker || (!plugin.description && !plugin.description_file)) {
-                    console.log(`Failed to load plugin ${folder}: missing name, pid, points, checker or description`);
+                if (!plugin.name  || !plugin.pid) {
+                    console.log(`Failed to load plugin ${folder}: missing name or pid`);
+                    return
+                }
+                if (plugin.points !== undefined && (isNaN(plugin.points) || plugin.points < 0)) {
+                    console.log(`Failed to load plugin ${folder}: invalid points`);
+                    return
+                }
+                if ((plugin.points === undefined || !plugin.checker || (!plugin.description && !plugin.description_file)) && !plugin.manualScores) {
+                    console.log(`Failed to load plugin ${folder}: missing points, checker or description`);
                     return
                 }
                 if (plugin.description_file) {
@@ -89,8 +97,14 @@ class Plugins {
                         plugin.description = fs.readFileSync(descriptionPath, 'utf8');
                     }
                 }
+                if (plugin.solved_description_file) {
+                    const descriptionPath = path.join(this.pluginsPath, folder, plugin.solved_description_file);
+                    if (fs.existsSync(descriptionPath)) {
+                        plugin.solved_description = fs.readFileSync(descriptionPath, 'utf8');
+                    }
+                }
                 plugin.folder = folder;
-                taskManager.setInterval(plugin.pid, plugin.interval || 2000);
+                taskManager.setInterval(plugin.pid, plugin.interval || 10 * 1000);
                 if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
                 this.plugins[folder] = plugin;
@@ -171,6 +185,18 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/problemList', async (ctx) => {
+        if (!ctx.state.admin) {
+            ctx.throw(403, `Access denied`)
+        }
+        ctx.body = {
+            problems: Array.from(plugins.pluginMap.values()).map(cur => ({
+                pid: cur.pid,
+                name: cur.name
+            }))
+        }
+    })
+
     router.get('/problem', async (ctx) => {
         const problems = Object.keys(ctx.state.gameprocess.passed)
         ctx.body = {
@@ -184,16 +210,27 @@ module.exports = function (db) {
                     next: cur.next?.map(value => ({
                         pid: value.pid,
                         name: plugins.pluginMap.get(value.pid).name
-                    }))
+                    })),
+                    manualScores: cur.manualScores
                 }
             })
         }
     })
 
-    function checkPre(ctx) {
+    async function checkPre(ctx, manualUsername='') {
         const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
         if (!cur) {
             ctx.throw(404, `Level "${name}" not found`);
+        }
+        if (manualUsername.length) {
+            const gameprocess = await db.collection("users").findOne({ username: manualUsername }, { projection: { gameprocess: 1 } });
+            if (!gameprocess) {
+                ctx.throw(404, `没有找到用户 ${manualUsername}`);
+            }
+            if (pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(gameprocess.gameprocess, pre)) {
+                ctx.throw(403, `用户 ${manualUsername} 未完成前置关卡`);
+            }
+            return cur;
         }
         if (pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
             ctx.throw(404, `Level "${name}" not found`);
@@ -202,23 +239,126 @@ module.exports = function (db) {
     }
 
     router.get('/problem/:name', async (ctx) => {
-        const cur = checkPre(ctx);
+        const cur = await checkPre(ctx);
         if (ctx.query.simple) {
-            ctx.body = {  name: cur.name };
+            ctx.body = { name: cur.name, manualScores: cur.manualScores };
             return;
         }
         ctx.body = {
             name: cur.name,
             points: cur.points,
             description: cur.description,
-            description_file: cur.description_file,
+            // description_file: cur.description_file,
             points: cur.points,
+            manualScores: cur.manualScores,
             files: cur.files
         };
     });
 
+    router.post('/record/:name', async (ctx) => {
+        if (!ctx.state.admin) {
+            ctx.throw(403, `Access denied`)
+        }
+        if (!ctx.request.body.points || !ctx.request.body.username) {
+            ctx.throw(400, `Missing username or points`);
+        }
+        const cur = await checkPre(ctx, ctx.request.body.username);
+        const username = ctx.request.body.username;
+        if (isNaN(ctx.request.body.points) || parseInt(ctx.request.body.points) < 0) {
+            ctx.throw(400, `Invalid points`);
+        }
+        const points = parseFloat(ctx.request.body.points);
+        const record = {
+            username,
+            pid: cur.pid,
+            time: Date.now(),
+            name: cur.name,
+            msg: ctx.request.body.msg,
+            points,
+            manualScores: true,
+            passed: true,
+            gameover: cur.gameover
+        };
+        await db.collection('records').insertOne(record);
+        ctx.body = {
+            message: '添加成功'
+        }
+    })
+
+    router.get('/problemManual/:name', async (ctx) => {
+        const cur = await checkPre(ctx);
+        if (!cur.manualScores) {
+            ctx.throw(400, `This level must be manually scored.`);
+        }
+        const records = await db.collection('records').find({ pid: cur.pid, manualScores: true, passed: true, username: ctx.state.username }).sort({ time: -1 }).limit(1).toArray()
+        if (!records.length) {
+            ctx.body = {
+                passed: false,
+                msg: '你还没有通过该关卡'
+            }
+            return
+        }
+        const record = records[0];
+        let flag = false;
+        const setValue = {};
+        if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
+        ctx.state.gameprocess.pass(cur.pid, record.points);
+        if (record.gameover) {
+            ctx.state.gameprocess.setGameover();
+            setValue.gameover = true;
+        }
+        const pipeline = [
+            {
+                $match: { username: ctx.state.username }
+            },
+            {
+              $set: { [`gameprocess.${cur.pid}`]: record.points }
+            },
+            {
+              $set: {
+                points: {
+                  $reduce: {
+                    input: { $objectToArray: "$gameprocess" },
+                    initialValue: 0,
+                    in: { $add: ["$$this.v", "$$value"] }
+                  }
+                },
+                passed: {
+                    $reduce: {
+                        input: { $objectToArray: "$gameprocess" },
+                        initialValue: 0,
+                        in: { $add: [1, "$$value"] }
+                    }
+                },
+                ...setValue
+              }
+            },
+            {
+              $merge: {
+                into: "users",
+                whenMatched: "merge"
+              }
+            }
+        ];
+        await db.collection("users").aggregate(pipeline).toArray();
+        if (flag) rank.update()
+        ctx.body = {
+            passed: true,
+            msg: record.msg || '',
+            gameover: record.gameover || false,
+            next: cur.next ? cur.next.map(n => ({
+                name: plugins.pluginMap.get(n.pid).name,
+                ...n
+            })) : undefined,
+            solved_description: cur.solved_description
+        };
+    })
+
     router.post('/problem/:name', async (ctx) => {
-        const cur = checkPre(ctx);
+        const cur = await checkPre(ctx);
+        if (cur.manualScores) {
+            ctx.throw(400, `This level need to be automatically scored.`);
+        }
         if (!taskManager.run(ctx.state.username, cur.name)) {
             ctx.body = {
                 passed: false,
@@ -293,9 +433,9 @@ module.exports = function (db) {
                     whenMatched: "merge"
                   }
                 }
-              ];
+            ];
           
-              await db.collection("users").aggregate(pipeline).toArray();
+            await db.collection("users").aggregate(pipeline).toArray();
 
             if (flag) rank.update()
             ctx.body = {
@@ -306,7 +446,8 @@ module.exports = function (db) {
                     ...n
                 })) : undefined,
                 gameover: cur.gameover,
-                msg
+                msg,
+                solved_description: cur.solved_description
             };
         } else {
             record.passed = false;
@@ -322,7 +463,7 @@ module.exports = function (db) {
     router.get('/file/:name/:path*', async (ctx) => {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
-        const cur = checkPre(ctx);
+        const cur = await checkPre(ctx);
         if (!cur.files?.length || !cur.files?.includes(filePath)) {
             ctx.throw(403, `Access denied`)
         }
