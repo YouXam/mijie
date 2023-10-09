@@ -3,7 +3,7 @@
     <TitleCard title="排行榜">
       <template #subtitle><div class="mt-10"></div></template>
       <div class="overflow-x-auto" v-if="!loading">
-        <table class="table ">
+        <table class="table " v-if="rank.length">
           <!-- head -->
           <thead>
             <tr class="text-white">
@@ -24,6 +24,7 @@
             </tr>
           </tbody>
         </table>
+        <div v-else class="mt-10">暂无数据</div>
       </div>
       <div v-else class="mt-10">Loading...</div>
     </TitleCard>
@@ -51,6 +52,7 @@ const rank = ref([]);
 const loading = ref(true)
 const loading2 = ref(false)
 function calculateRank(ranks) {
+  if (ranks.length == 0) return []
   let rank = 1
   let last = ranks[0]
   last.rank = rank

@@ -71,9 +71,9 @@
                         </div>
                         <div class="flex mb-4">
                             <div class="flex-1">管理员</div>
-                            <input type="checkbox" class="toggle"
-                                :disabled="user.admin.value < 2 || user.username.value === drawerUser.username"
-                                :checked="drawerUser.admin"
+                            <input type="checkbox" class="toggle" ref="adminToggle"
+                                :disabled="user.admin.value < 2 || user.username.value === drawerUser.username || drawerUser.banned"
+                                :checked="drawerUser.admin > 0"
                                 @click="put(1)"
                             />
                         </div>
@@ -90,7 +90,7 @@
                         </div>
                         <div class="flex mb-2">
                             <div class="flex-1 mt-2">备注</div>
-                            <input type="text" class="input input-bordered" v-model="remark" @blur="put(4)"/>
+                            <input type="text" class="input input-bordered w-4/5" v-model="remark" @blur="put(4)"/>
                         </div>
                         <router-link class="btn btn-link flex text-base-content" :to="'/record?user=' + encodeURIComponent(drawerUser.username)">提交记录</router-link>
                     </div>
@@ -116,8 +116,13 @@ const left = ref(0)
 const drawer = ref(false)
 const refDrawerUser = ref({})
 const remark = ref('')
+const adminToggle = ref(null)
 function openDrawer(user) {
     drawer.value = true
+    user.admin = user.admin || 0
+    user.hidden = user.hidden || false
+    user.banned = user.banned || false
+    user.remark = user.remark || ''
     refDrawerUser.value = user
 }
 const drawerUser = computed(() => {

@@ -34,6 +34,7 @@ function authRoutes(db) {
         }
         const newUser = { username, password, studentID };
         await db.collection('users').insertOne(newUser);
+        rank.update()
         ctx.body = { message: '注册成功' };
     });
 
