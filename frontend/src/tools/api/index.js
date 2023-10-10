@@ -1,10 +1,12 @@
 import notificationManager from '@/tools/notification.js'
 import { user } from '@/tools/bus.js'
+import { useRouter } from 'vue-router'  
 
 export function apiMethod(method, url, body) {
   const headers = {
     'Content-Type': 'application/json',
   }
+  const router = useRouter()
   if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
   return new Promise((resolve, reject) => {
     fetch(url, {
@@ -23,6 +25,7 @@ export function apiMethod(method, url, body) {
           reject(res)
         }
       }).then(res => {
+        
         if (res?.token && res?.token?.length) {
           localStorage.setItem("token", res.token)
           user.update()
@@ -40,6 +43,12 @@ export function apiMethod(method, url, body) {
             type: 'error',
             time: 5000,
           })
+        }
+        if (res?.action && res?.action == 'logout') {
+          localStorage.removeItem('token')
+          user.update()
+          router.push('/login')
+          reject({status:0})
         }
         resolve(res)
       }).catch(err => {

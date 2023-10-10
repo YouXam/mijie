@@ -24,7 +24,7 @@ export default {
     }),
     created() {
         api('/api/game-config/about').then(res => {
-            this.about = res.about
+            this.about = res.about || ''
         })
     },
 };
