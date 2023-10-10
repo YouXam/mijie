@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faRankingStar, faCodeMerge, faChartBar, faUser, faGear, faBarsStaggered, faRightFromBracket,
     faFileArrowDown, faCircleInfo, faCircleCheck, faTriangleExclamation, faCircleXmark,
-    faAnglesDown, faArrowsRotate, faXmark, faAddressBook, faNoteSticky, faTrash
+    faAnglesDown, faArrowsRotate, faXmark, faAddressBook, faNoteSticky, faTrash, faChalkboard
 } from '@fortawesome/free-solid-svg-icons';
 
 [
@@ -30,7 +30,8 @@ import {
     faXmark,
     faAddressBook,
     faNoteSticky,
-    faTrash
+    faTrash,
+    faChalkboard
 ].forEach(icon => library.add(icon));
 
 createApp(App)
@@ -39,10 +40,11 @@ createApp(App)
     .component('font-awesome-icon', FontAwesomeIcon)
     .directive('auto-expand', {
         beforeMount(el) {
+            el.style.height = 'auto';
+            el.style.overflowY = 'hidden';
             el.addEventListener('input', function () {
                 el.style.height = 'auto';
                 el.style.height = (el.scrollHeight) + 'px';
-                el.style.overflowY = 'hidden';
             });
         }
     })

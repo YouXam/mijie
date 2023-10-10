@@ -78,6 +78,12 @@
                 用户列表
               </router-link>
             </li>
+            <li v-if="user.admin.value > 0">
+              <router-link to="/admin">
+                <font-awesome-icon :icon="['fas', 'chalkboard']" />
+                管理面板
+              </router-link>
+            </li>
             <li>
               <router-link to="/record">
                 <font-awesome-icon :icon="['fas', 'bars-staggered']" />

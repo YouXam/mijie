@@ -20,11 +20,13 @@ class User {
             const payload = JSON.parse(base64UrlDecode(token.split('.')[1]))
             this.set('login', true)
             this.set('username', payload.username)
+            this.set('studentID', payload.studentID)
             this.set('admin', payload.admin || 0)
             this.set('gameover', payload.gameover || false)
             this.set('points', Object.values(payload.gameprocess || {}).reduce((a, b) => a + b, 0))
         } else {
             this.set('login', false)
+            this.set('studentID', '')
             this.set('username', '')
             this.set('gameover', false)
             this.set('points', 0)

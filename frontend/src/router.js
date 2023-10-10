@@ -1,6 +1,7 @@
 import * as VueRouter from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { user } from '@/tools/bus'
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
@@ -81,13 +82,19 @@ const router = VueRouter.createRouter({
             path: '/users',
             name: 'users',
             component: () => import('./pages/UsersList.vue'),
-            meta: { title: '用户列表' }
+            meta: { title: '用户列表', admin: true }
         },
         {
             path: '/notice',
             name: 'notice',
             component: () => import('./pages/Notice.vue'),
             meta: { title: '公告' }
+        },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: () => import('./pages/Admin.vue'),
+            meta: { title: '管理面板', admin: true }
         },
         {
             path: '/:pathMatch(.*)*',
@@ -100,6 +107,10 @@ const router = VueRouter.createRouter({
 NProgress.configure({ showSpinner: false });
 
 router.beforeEach((to, from, next) => {
+    if (user.admin?.value < 1 && to.meta.admin) {
+        next({ path: '/404', replace: true,  })
+        return
+    }
     document.title = to.meta.title ? to.meta.title + ' | 哈士奇再现' : '哈士奇再现'
     NProgress.start()
     next();

@@ -10,7 +10,7 @@
                 <span class="label-text">密码</span>
             </label>
             <input type="password" class="input input-bordered w-full max-w-xs" autocomplete="current-password" v-model="password"/>
-            <button class="btn btn-accent mt-8" @click="login">登录</button>
+            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 16">登录</button>
             <router-link tag="button" to="/register" class="btn btn-accent btn-outline mt-2">注册</router-link>
         </div>
     </TitleCard>

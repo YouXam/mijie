@@ -2,7 +2,7 @@ const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
 const Router = require('koa-router');
 const MongoClient = require('mongodb').MongoClient;
-const { authRoutes, amdinRoutes } = require('./auth');
+const { authRoutes, afterAuthRoutes, amdinRoutes } = require('./auth');
 const game = require('./game');
 
 require('dotenv').config();
@@ -19,6 +19,7 @@ function httpServer(db) {
     app.use(bodyParser());
     app.use(beforeAuth.routes());
     app.use(authRoutes(db));
+    app.use(afterAuthRoutes(db));
     app.use(game(db));
     app.use(amdinRoutes(db));
 

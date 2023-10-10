@@ -7,6 +7,7 @@ const runCode = require('./games/glot');
 const Ranking = require('./rank');
 const compose = require('koa-compose');
 const send = require('koa-send');
+const { gameConfig } = require('./auth')
 
 function haveCommonKeyValuePair(obj1, obj2) {
     let smallerObj = obj1, largerObj = obj2;
@@ -59,6 +60,21 @@ class Plugins {
         this.pluginsPath = path.join(__dirname, '../game');
         this.loadPlugins();
         this.watchPlugins();
+        this.gamePercent = new Map();
+    }
+    async getPercent(pid, db) {
+        const percent = this.gamePercent.get(pid)
+        if (percent) return percent
+        const res = await db.collection("problems").findOne({ pid })
+        if (res) {
+            this.gamePercent.set(pid, res.percent)
+            return res.percent
+        }
+        return null
+    }
+    async setPercent(pid, percent, db) {
+        this.gamePercent.set(pid, percent)
+        db.collection('problems').updateOne({ pid }, { $set: { percent }}, { upsert: true });
     }
     loadPlugins() {
         const folders = fs.readdirSync(this.pluginsPath, { withFileTypes: true })
@@ -248,10 +264,10 @@ module.exports = function (db) {
             name: cur.name,
             points: cur.points,
             description: cur.description,
-            // description_file: cur.description_file,
             points: cur.points,
             manualScores: cur.manualScores,
-            files: cur.files
+            files: cur.files,
+            percent: await plugins.getPercent(cur.pid, db)
         };
     });
 
@@ -322,7 +338,7 @@ module.exports = function (db) {
             },
             {
                 $project: {
-                    isTrue: 0
+                    isUndefined: 0
                 }
             },
             {
@@ -334,6 +350,7 @@ module.exports = function (db) {
         ];
 
         await db.collection("users").aggregate(pipeline).toArray();
+
         rank.update()
         ctx.body = {
             message: '添加成功'
@@ -375,6 +392,9 @@ module.exports = function (db) {
         if (cur.manualScores) {
             ctx.throw(400, `This level need to be automatically scored.`);
         }
+        if (new Date(gameConfig.endTime).getTime() < Date.now()) {
+            ctx.throw(400, `游戏已结束，无法提交`);
+        }
         if (!taskManager.run(ctx.state.username, cur.name)) {
             ctx.body = {
                 passed: false,
@@ -405,6 +425,7 @@ module.exports = function (db) {
             msg
         };
         await gameStorage.save();
+        
         if (res) {
             let flag = false
             if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
@@ -457,7 +478,7 @@ module.exports = function (db) {
                 },
                 {
                     $project: {
-                        isTrue: 0
+                        isUndefined: 0
                     }
                 },
                 {
@@ -489,7 +510,26 @@ module.exports = function (db) {
                 msg
             };
         }
-        db.collection('records').insertOne(record);
+        await db.collection('records').insertOne(record);
+        const stat = await db.collection('records').aggregate([
+            {
+                $match: { pid: cur.pid }
+            },
+            {
+                $group: {
+                    _id: null,
+                    passed: { $sum: { $cond: [{ $eq: ["$passed", true] }, 1, 0] } },
+                    total: { $sum: 1 }
+                }
+            }
+        ]).toArray()
+        const { passed, total } = stat[0];
+        const percent = Math.round(passed / total * 10000) / 100;
+        ctx.body = {
+            percent,
+            ...ctx.body
+        }
+        plugins.setPercent(cur.pid, percent, db)
     })
 
 
@@ -533,6 +573,22 @@ module.exports = function (db) {
         const notices = await db.collection("notices").find({}).sort({ time: -1 }).toArray();
         ctx.body = { notices };
     });
+
+    router.post('/change-school-id', async ctx => {
+        const { studentID } = ctx.request.body;
+        if (!studentID) {
+            ctx.throw(400, 'Missing studentID');
+        }
+        const res = await db.collection('users').findOneAndUpdate(
+            { username: ctx.state.username, studentID: { $exists: false } },
+            { $set: { studentID } },
+            { returnDocument: 'after' }
+        )
+        if (!res) {
+            ctx.throw(400, '学号已存在');
+        }
+        ctx.body = { message: '学号修改成功' };
+    })
 
     return compose([
         router.routes(),

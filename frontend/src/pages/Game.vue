@@ -2,10 +2,10 @@
     <div>
         <TitleCard :title="title" :minHeight="100">
             <template #subtitle>
-                <div class="flex title flex-row items-center justify-center" v-if="score != null && score != undefined">
+                <div class="flex title flex-row items-center justify-center" v-if="score || percent">
                     <div class="flex flex-col items-center justify-center">
                         <div class="text-2xl font-bold">
-                            {{ score }} pts 
+                            {{ score }} {{ score !== undefined ? 'pts' : '' }} {{ percent ? (score !== undefined ? ", ": "") + percent + "% passed" : ""}}
                         </div>
                     </div>
                 </div>
@@ -120,6 +120,7 @@ const files = ref([])
 const next = ref([])
 const manual = ref(false)
 const gameState = ref(1)
+const percent = ref(null)
 const solved_description = ref('')
 let lastSubmit = null
 const state = computed(() => {
@@ -173,6 +174,7 @@ async function submit() {
         if (res.passed) gameState.value = 2
         if (res.next) next.value = res.next
         if (res.gameover) gameState.value = 3
+        if (res.percent) percent.value = res.percent
         if (res.solved_description) solved_description.value = res.solved_description
         nextTick(() => {
             if (!checkIfResultInViewport()) showDown.value = true
@@ -193,6 +195,7 @@ async function submit() {
         problem.value = res.description
         score.value = res.points
         manual.value = res.manualScores
+        percent.value = res.percent
         if (res.files && res.files.length) files.value = res.files
         document.title = res.name + ' | ' + document.title.split(' | ')[1]
     } catch (err) {

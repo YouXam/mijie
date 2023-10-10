@@ -50,6 +50,7 @@ class Ranking {
                 passed: x.passed,
                 gameover: x.gameover,
                 lastPassed: x.lastPassed,
+                noPrize: (x.studentID || '')?.length == 0
             }))
         }
         rankPublish.publish('update', { uuid }, err => {

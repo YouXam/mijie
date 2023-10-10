@@ -7,6 +7,7 @@ const banned = {}
 const { ObjectId } = require('mongodb');
 const { notice: noticePublish } = require('./publish');
 const uuidv4 = require('uuid').v4;
+const gameConfig = {}
 
 require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
@@ -14,6 +15,24 @@ const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
 function authRoutes(db) {
     const router = new Router();
     db.collection('banned').find({ banned: true }).toArray().then(x => x.forEach(y => banned[y.username] = true))
+    db.collection('config').findOne({ name: 'game-config' }).then(x => Object.assign(gameConfig, x))
+    router.get('/game-config', async ctx => {
+        ctx.body =  {
+            endTime: gameConfig.endTime || '3000-01-01 00:00:00',
+            gamerule: gameConfig.gamerule || '',
+            gameover: gameConfig.gameover || '',
+            about: gameConfig.about || ''
+        }
+    })
+
+    router.get('/game-config/:option', async ctx => {
+        const { option } = ctx.params;
+        if (!option) {
+            ctx.throw(400, 'Missing option');
+        }
+        ctx.body = { [option]: gameConfig[option] };
+    })
+
     router.post('/register', async (ctx) => {
         const { username, password, studentID } = ctx.request.body;
         if (!username || !password) {
@@ -53,7 +72,8 @@ function authRoutes(db) {
             username,
             gameprocess: user.gameprocess,
             gameover: user.gameover,
-            admin: user.admin
+            admin: user.admin,
+            studentID: user.studentID
         }, jwtSecret, { expiresIn: '1d' });
         ctx.body = { message: '登录成功', token, username  };
     });
@@ -119,6 +139,34 @@ function authRoutes(db) {
     ]);
 }
 
+function afterAuthRoutes(db) {
+    const router = new Router();
+    router.post('/change-school-id', async ctx => {
+        const { studentID } = ctx.request.body;
+        if (!studentID) {
+            ctx.throw(400, 'Missing studentID');
+        }
+        await db.collection('users').findOneAndUpdate(
+            { username: ctx.state.username },
+            { $set: { studentID } },
+            { returnOriginal: false }
+        )
+        const token = jwt.sign({
+            username: ctx.state.username,
+            gameprocess: ctx.state.gameprocess.passed,
+            gameover: ctx.state.gameprocess.gameover,
+            admin: ctx.state.admin,
+            studentID
+        }, jwtSecret, { expiresIn: '1d' });
+        ctx.body = { message: '学号修改成功', token };
+        user.update();
+    })
+    return compose([
+        router.routes(),
+        router.allowedMethods()
+    ]);
+}
+
 function amdinRoutes(db) {
     const router = new Router();
 
@@ -129,6 +177,13 @@ function amdinRoutes(db) {
             ctx.throw(403, 'Access denied');
         }
     });
+
+
+    router.put('/game-config', async ctx => {
+        await db.collection('config').updateOne({ name: 'game-config' }, { $set: ctx.request.body }, { upsert: true });
+        Object.assign(gameConfig, ctx.request.body);
+        ctx.body = { message: '修改成功' };
+    })
 
     router.post('/notice', async ctx => {
         const { content } = ctx.request.body;
@@ -198,5 +253,7 @@ function amdinRoutes(db) {
 
 module.exports = {
     authRoutes,
-    amdinRoutes
+    afterAuthRoutes,
+    amdinRoutes,
+    gameConfig
 }
