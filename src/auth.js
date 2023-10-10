@@ -19,11 +19,10 @@ function authRoutes(db) {
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password or studentID');
         }
+        const condition = [{ username: username }]
+        if (studentID) condition.push({ studentID: studentID })
         const existingUser = await db.collection('users').findOne({
-            $or: [
-                { username: username },
-                { studentID: studentID }
-            ]
+            $or: condition
         });
         if (existingUser) {
             if (existingUser.username === username) {

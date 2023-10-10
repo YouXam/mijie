@@ -37,9 +37,10 @@ class Ranking {
                     banned: 1,
                     remark: 1,
                     studentID: 1,
+                    lastPassed: { $ifNull: [ "$lastPassed", new Date('3000-01-01T00:00:00.000Z') ] }
                 }
             },
-            { $sort: { points: -1, passed: -1, username: 1 }}
+            { $sort: { points: -1, passed: -1, lastPassed: 1, username: 1 }}
         ]).toArray();
         if (now_cnt === this.update_cnt) {
             this.adminRank = rank;
@@ -47,7 +48,8 @@ class Ranking {
                 username: x.username,
                 points: x.points,
                 passed: x.passed,
-                gameover: x.gameover
+                gameover: x.gameover,
+                lastPassed: x.lastPassed,
             }))
         }
         rankPublish.publish('update', { uuid }, err => {

@@ -16,7 +16,8 @@
                                 <td>学号</td>
                                 <td>题数</td>
                                 <td>分数</td>
-                                <td>状态</td>
+                                <td>通关</td>
+                                <td>上次有效提交</td>
                                 <td>备注</td>
                                 <td v-for="problem in problems" :key="problem.pid">{{ problem.name }}</td>
                             </tr>
@@ -36,7 +37,8 @@
                                 <td>{{ user.studentID }}</td>
                                 <td>{{ user.passed || 0 }}</td>
                                 <td>{{ user.points || 0 }}</td>
-                                <td class="p-0">{{ user.gameover ? "通关" : "" }}</td>
+                                <td class="p-0">{{ user.gameover ? "是" : "" }}</td>
+                                <td :class="{'min-w-[21ch]': user.lastPassed < 32503651200000 }">{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>
                                 <td>{{ user.remark }}</td>
                                 <td v-for="problem in problems" :key="problem.pid">{{ user.gameprocess[problem.pid] }}</td>
                             </tr>
@@ -179,6 +181,7 @@ function calculateRank(ranks, skipAssignment = false) {
     let rank = 1
     let last = -1;
     for (let i = 0; i < ranks.length; i++) {
+        ranks[i].lastPassed = new Date(ranks[i].lastPassed)
         if (!skipAssignment && ranks[i].username === refDrawerUser.value.username) {
             refDrawerUser.value = ranks[i]
         }
@@ -188,7 +191,7 @@ function calculateRank(ranks, skipAssignment = false) {
     ranks[last].rank = rank
     for (let i = 1; i < ranks.length; i++) {
         if (ranks[i].hidden || ranks[i].banned) continue
-        if (ranks[i].passed == ranks[last].passed && ranks[i].points == ranks[last].points) {
+        if (ranks[i].passed == ranks[last].passed && ranks[i].points == ranks[last].points && ranks[i].lastPassed.getTime() == ranks[last].lastPassed.getTime()) {
             ranks[i].rank = rank
         } else {
             ranks[i].rank = ++rank

@@ -1,7 +1,12 @@
 <template>
   <div>
     <TitleCard title="排行榜">
-      <template #subtitle><div class="mt-10"></div></template>
+      <template #subtitle>
+        <div class="mt-10">
+          <font-awesome-icon :icon="['fas', 'circle-info']" />
+          按照题数降序、分数降序、上次有效提交时间升序排序，全部相同者排名相同。
+        </div>
+      </template>
       <div class="overflow-x-auto" v-if="!loading">
         <table class="table " v-if="rank.length">
           <!-- head -->
@@ -11,6 +16,11 @@
               <th>用户名</th>
               <th>题数</th>
               <th>分数</th>
+              <th>
+                <div class="tooltip tooltip-bottom" data-tip="有效提交指首次通过提交">
+                  上次有效提交
+                </div>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -20,7 +30,8 @@
               <td>{{ user.username }}</td>
               <td>{{ user.passed }}</td>
               <td>{{ user.points }}</td>
-              <td>{{ user.gameover ? "已通关": "" }}</td>
+              <td :class="{'min-w-[21ch]': user.lastPassed < 32503651200000 }">{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>
+              <td :class="{'min-w-[10ch]': user.gameover }">{{ user.gameover ? "已通关": "" }}</td>
             </tr>
           </tbody>
         </table>
@@ -56,8 +67,10 @@ function calculateRank(ranks) {
   let rank = 1
   let last = ranks[0]
   last.rank = rank
+  last.lastPassed = new Date(last.lastPassed)
   for (let i = 1; i < ranks.length; i++) {
-    if (ranks[i].passed == last.passed && ranks[i].points == last.points) {
+    ranks[i].lastPassed = new Date(ranks[i].lastPassed)
+    if (ranks[i].passed == last.passed && ranks[i].points == last.points && ranks[i].lastPassed.getTime() == last.lastPassed.getTime()) {
       ranks[i].rank = rank
     } else {
       ranks[i].rank = ++rank
@@ -123,4 +136,6 @@ onUnmounted(() => {
 .rotate {
   animation: rotate 2s linear infinite;
 }
+
+
 </style>

@@ -38,7 +38,7 @@ class TaskManager {
 
         const timeSinceLastRun = now - this.userLastRun[user][name];
         const timeSinceLastRunAny = now - Math.max(...Object.values(this.userLastRun[user]));
-        if ((!this.taskIntervals[name] || timeSinceLastRun >= this.taskIntervals[name]) && 
+        if ((!this.taskIntervals[name] || timeSinceLastRun >= this.taskIntervals[name]) &&
             timeSinceLastRunAny >= this.minInterval) {
             this.userLastRun[user][name] = now;
             return true;
@@ -79,7 +79,7 @@ class Plugins {
                     console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
                     return
                 }
-                if (!plugin.name  || !plugin.pid) {
+                if (!plugin.name || !plugin.pid) {
                     console.log(`Failed to load plugin ${folder}: missing name or pid`);
                     return
                 }
@@ -217,7 +217,7 @@ module.exports = function (db) {
         }
     })
 
-    async function checkPre(ctx, manualUsername='') {
+    async function checkPre(ctx, manualUsername = '') {
         const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
         if (!cur) {
             ctx.throw(404, `Level "${name}" not found`);
@@ -259,7 +259,7 @@ module.exports = function (db) {
         if (!ctx.state.admin) {
             ctx.throw(403, `Access denied`)
         }
-        if (!ctx.request.body.points || !ctx.request.body.username) {
+        if (ctx.request.body.points === undefined || !ctx.request.body.username) {
             ctx.throw(400, `Missing username or points`);
         }
         const cur = await checkPre(ctx, ctx.request.body.username);
@@ -280,6 +280,61 @@ module.exports = function (db) {
             gameover: cur.gameover
         };
         await db.collection('records').insertOne(record);
+        const setValue = {};
+        if (record.gameover) setValue.gameover = true;
+        const pipeline = [
+            {
+                $match: { username }
+            },
+            {
+                $set: { [`gameprocess.${cur.pid}`]: record.points }
+            },
+            {
+                $addFields: {
+                    isUndefined: { $eq: [`$gameprocess.${cur.pid}`, null] }
+                }
+            },
+            {
+                $set: {
+                    lastPassed: {
+                        $cond: {
+                            if: '$isUndefined',
+                            then: new Date(),
+                            else: { $ifNull: ['$lastPassed', new Date()] },
+                        }
+                    },
+                    points: {
+                        $reduce: {
+                            input: { $objectToArray: "$gameprocess" },
+                            initialValue: 0,
+                            in: { $add: ["$$this.v", "$$value"] }
+                        }
+                    },
+                    passed: {
+                        $reduce: {
+                            input: { $objectToArray: "$gameprocess" },
+                            initialValue: 0,
+                            in: { $add: [1, "$$value"] }
+                        }
+                    },
+                    ...setValue
+                }
+            },
+            {
+                $project: {
+                    isTrue: 0
+                }
+            },
+            {
+                $merge: {
+                    into: "users",
+                    whenMatched: "merge"
+                }
+            }
+        ];
+
+        await db.collection("users").aggregate(pipeline).toArray();
+        rank.update()
         ctx.body = {
             message: '添加成功'
         }
@@ -300,48 +355,9 @@ module.exports = function (db) {
         }
         const record = records[0];
         let flag = false;
-        const setValue = {};
         if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
         ctx.state.gameprocess.pass(cur.pid, record.points);
-        if (record.gameover) {
-            ctx.state.gameprocess.setGameover();
-            setValue.gameover = true;
-        }
-        const pipeline = [
-            {
-                $match: { username: ctx.state.username }
-            },
-            {
-              $set: { [`gameprocess.${cur.pid}`]: record.points }
-            },
-            {
-              $set: {
-                points: {
-                  $reduce: {
-                    input: { $objectToArray: "$gameprocess" },
-                    initialValue: 0,
-                    in: { $add: ["$$this.v", "$$value"] }
-                  }
-                },
-                passed: {
-                    $reduce: {
-                        input: { $objectToArray: "$gameprocess" },
-                        initialValue: 0,
-                        in: { $add: [1, "$$value"] }
-                    }
-                },
-                ...setValue
-              }
-            },
-            {
-              $merge: {
-                into: "users",
-                whenMatched: "merge"
-              }
-            }
-        ];
-        await db.collection("users").aggregate(pipeline).toArray();
-        if (flag) rank.update()
+        if (record.gameover) ctx.state.gameprocess.setGameover();
         ctx.body = {
             passed: true,
             msg: record.msg || '',
@@ -406,35 +422,52 @@ module.exports = function (db) {
                     $match: { username: ctx.state.username }
                 },
                 {
-                  $set: { [`gameprocess.${cur.pid}`]: cur.points }
+                    $set: { [`gameprocess.${cur.pid}`]: cur.points }
                 },
                 {
-                  $set: {
-                    points: {
-                      $reduce: {
-                        input: { $objectToArray: "$gameprocess" },
-                        initialValue: 0,
-                        in: { $add: ["$$this.v", "$$value"] }
-                      }
-                    },
-                    passed: {
-                        $reduce: {
-                            input: { $objectToArray: "$gameprocess" },
-                            initialValue: 0,
-                            in: { $add: [1, "$$value"] }
-                        }
-                    },
-                    ...setValue
-                  }
+                    $addFields: {
+                        isUndefined: { $eq: [`$gameprocess.${cur.pid}`, null] }
+                    }
                 },
                 {
-                  $merge: {
-                    into: "users",
-                    whenMatched: "merge"
-                  }
+                    $set: {
+                        lastPassed: {
+                            $cond: {
+                                if: '$isUndefined',
+                                then: new Date(),
+                                else: { $ifNull: ['$lastPassed', new Date()] },
+                            }
+                        },
+                        points: {
+                            $reduce: {
+                                input: { $objectToArray: "$gameprocess" },
+                                initialValue: 0,
+                                in: { $add: ["$$this.v", "$$value"] }
+                            }
+                        },
+                        passed: {
+                            $reduce: {
+                                input: { $objectToArray: "$gameprocess" },
+                                initialValue: 0,
+                                in: { $add: [1, "$$value"] }
+                            }
+                        },
+                        ...setValue
+                    }
+                },
+                {
+                    $project: {
+                        isTrue: 0
+                    }
+                },
+                {
+                    $merge: {
+                        into: "users",
+                        whenMatched: "merge"
+                    }
                 }
             ];
-          
+
             await db.collection("users").aggregate(pipeline).toArray();
 
             if (flag) rank.update()
@@ -459,7 +492,7 @@ module.exports = function (db) {
         db.collection('records').insertOne(record);
     })
 
-    
+
     router.get('/file/:name/:path*', async (ctx) => {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
@@ -469,7 +502,7 @@ module.exports = function (db) {
         }
         await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.folder) });
     });
-    
+
     router.get('/record', async (ctx) => {
         let { pid, user, all, page = 1, size = 50 } = ctx.query;
         if (!user) user = ctx.state.username;
@@ -495,7 +528,7 @@ module.exports = function (db) {
             records: records
         }
     });
-    
+
     router.get("/notice", async (ctx) => {
         const notices = await db.collection("notices").find({}).sort({ time: -1 }).toArray();
         ctx.body = { notices };
