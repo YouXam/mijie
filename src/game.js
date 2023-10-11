@@ -7,6 +7,7 @@ const runCode = require('./games/glot');
 const Ranking = require('./rank');
 const compose = require('koa-compose');
 const send = require('koa-send');
+const axios = require('axios');
 const { gameConfig } = require('./auth')
 
 function haveCommonKeyValuePair(obj1, obj2) {
@@ -185,6 +186,42 @@ class Plugins {
 const plugins = new Plugins();
 
 let rank = Ranking;
+
+class AI {
+    constructor() {
+        const keys = (process.env.CLOUDFLARE_API_KEYS || '').split(',');
+        this.cloudflare_api_keys = keys.filter(key => key.length > 0).map(x => {
+            const [id, key] = x.split(':');
+            return { id, key }
+        })
+        this.cloudflare_api_index = 0;
+    }
+    next_api_key() {
+        this.cloudflare_api_index = (this.cloudflare_api_index + 1) % this.cloudflare_api_keys.length;
+        return this.cloudflare_api_keys[this.cloudflare_api_index];
+    }
+    async run(inputs) {
+        const key = this.next_api_key()
+        const API_BASE_URL = `https://api.cloudflare.com/client/v4/accounts/${key.id}/ai/run/`;
+        const model = "@cf/meta/llama-2-7b-chat-int8";
+        const headers = {
+            "Authorization": `Bearer ${key.key}`
+        };
+
+        try {
+            const response = await axios.post(`${API_BASE_URL}${model}`, { messages: inputs }, { headers: headers });
+            return response.data;
+        } catch (error) {
+            console.error("Error during AI dialogue:", error);
+            if (error.data) {
+                console.error(error.data);
+            }
+            return 
+        }
+    }
+}
+
+const ai = new AI();
 
 module.exports = function (db) {
     const router = new Router();
@@ -402,19 +439,29 @@ module.exports = function (db) {
             };
             return;
         }
-        let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid);
-        let res = cur.checker(ctx.request.body.ans, {
-            runCode,
-            username: ctx.state.username,
-            gameProcess: ctx.state.gameprocess,
-            gameStorage,
-            msg: (str) => {
-                msg += str;
-            }
-        });
-        if (res instanceof Promise) {
-            res = await res;
+        let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid), res = null
+        try {
+            res = cur.checker(ctx.request.body.ans, {
+                runCode,
+                username: ctx.state.username,
+                gameProcess: ctx.state.gameprocess,
+                gameStorage,
+                ai: inputs => ai.run(inputs),
+                msg: (str) => {
+                    msg += str;
+                }
+            })
+        } catch (error) {
+            ctx.throw(500, "checker error, please contact admin");
         }
+
+        if (res instanceof Promise) {
+            res = await res.catch(err => {
+                console.log(cur.pid, err)
+                ctx.throw(500, "checker error, please contact admin");
+            })
+        }
+        
 
         const record = {
             username: ctx.state.username,
