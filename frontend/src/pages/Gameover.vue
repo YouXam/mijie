@@ -30,7 +30,7 @@ if (!user.gameover.value) {
     router.go(-1)
 }
 api('/api/game-config/gameover').then(res => {
-    gameover.value = res.gameover
+    gameover.value = res.gameover || ''
 })
 
 </script>

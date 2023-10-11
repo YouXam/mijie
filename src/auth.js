@@ -30,7 +30,15 @@ function authRoutes(db) {
         if (!option) {
             ctx.throw(400, 'Missing option');
         }
-        ctx.body = { [option]: gameConfig[option] };
+        if (!gameConfig[option]) {
+            if (option === 'endTime') {
+                ctx.body = { [option]: '3000-01-01 00:00:00' };
+            } else {
+                ctx.body = { [option]: null };
+            }
+        } else {
+            ctx.body = { [option]: gameConfig[option] };
+        }
     })
 
     router.post('/register', async (ctx) => {
@@ -113,11 +121,12 @@ function authRoutes(db) {
         } catch (err) {
             if (err instanceof jwt.TokenExpiredError) {
                 ctx.body = { error: '登录过期，请重新登陆', action: 'logout' };
+                return
             } else if (err instanceof jwt.JsonWebTokenError) {
                 ctx.throw(401, 'Invalid JWT token');
             } else {
-                ctx.throw(500, 'Internal server error');
                 console.error(err);
+                ctx.throw(500, 'Internal server error');
             }
         }
         await next();

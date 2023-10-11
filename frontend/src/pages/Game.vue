@@ -33,7 +33,7 @@
                         <font-awesome-icon :icon="['fas', 'circle-info']" />
                         此题为现场题，您必须在现场完成任务后由管理员手动评分，然后刷新状态以更新分数和排行榜。 
                     </div>
-                    <button class="submit btn btn-outline mt-5 mb-5" @click="submit" :disabled="loading">
+                    <button class="submit btn btn-outline mt-5 mb-5" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
                         <span class="loading loading-dots loading-xs" v-if="loading"></span>
                         {{ manual ? '刷新状态' : '提交' }}
                     </button>

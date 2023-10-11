@@ -41,6 +41,8 @@ services:
       - GLOT_IO_API_KEY=
     depends_on:
       - mongodb
+    volumes:
+      - ./game:/app/game
 
 networks:
   my_network:
