@@ -64,12 +64,18 @@ watch(password, () => {
         error.value = ''
         return
     }
-    if (password.value.length < 16) {
-        error.value = '密码长度不足 16 位'
+    const hasUppercase = /[A-Z]/.test(password.value);
+    const hasLowercase = /[a-z]/.test(password.value);
+    const hasDigits = /\d/.test(password.value);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password.value);
+
+    const isValid = [hasUppercase, hasLowercase, hasDigits, hasSpecial].filter(Boolean).length >= 3;
+    if (password.value.length < 8) {
+        error.value = '密码长度不足 8 位'
     } else if (password.value.length > 128) {
         error.value = '密码长度超过 128 位'
-    } else if (!password.value.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~!@#$%^&*()_+`\-={}:";'<>?,.\/]).{16,128}$/)) {
-        error.value = '密码必须包含大小写字母、数字和特殊符号'
+    } else if (!isValid) {
+        error.value = '密码必须包含大小写字母、数字和特殊符号中的三项及以上'
     } else {
         error.value = ''
     }
