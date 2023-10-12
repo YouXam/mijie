@@ -1,6 +1,6 @@
 module.exports = {
-    name: 'Braille',
-    pid: 'braille',
+    name: 'Embossing',
+    pid: 'embossing',
     description_file: 'problem.md',
     solved_description_file: "solved.md",
     points: 50,
