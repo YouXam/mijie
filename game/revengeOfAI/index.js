@@ -5,7 +5,7 @@ module.exports = {
     solved_description_file: "solved.md",
     interval: 10 * 1000,
     async checker(ans, ctx) {
-        const password = 'uniquely-cinema-outlet4-cache'
+        const password = 'uniquely-cinema-outlet-cache'
         if (ans === password) {
             ctx.msg("正确答案")
             return true
@@ -20,10 +20,9 @@ module.exports = {
         ])
         if (res.success) {
             const reply = res?.result?.response || '空'
+            ctx.msg(reply)
             if (reply.includes(password)) {
-                ctx.msg("I almost leaked the password just now, but luckily I remembered in time that I couldn't tell you!")
-            } else {
-                ctx.msg(reply)
+                return true
             }
             return false
         } 
