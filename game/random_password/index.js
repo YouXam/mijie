@@ -4,6 +4,7 @@ module.exports = {
     description_file: 'problem.md',
     solved_description_file: "solved.md",
     points: 60,
+    interval: 10 * 1000,
     async checker(ans, ctx) {
         const code = `import random
 password = random.random()

@@ -3,6 +3,7 @@ module.exports = {
     pid: "cheatAI",
     description_file: 'problem.md',
     solved_description_file: "solved.md",
+    interval: 10 * 1000,
     async checker(ans, ctx) {
         if (ans === '11.934') {
             ctx.msg("正确答案")
@@ -29,11 +30,11 @@ module.exports = {
     next: [
         {
             pid: "countBit",
-            description: "追踪哈士奇(周行算法爱好者协会)"
+            description: "追踪哈士奇（周行算法爱好者协会）"
         },
         {
             pid: "findMinMax",
-            description: "统计哈士奇造成的损失(周行算法爱好者协会)"
+            description: "统计哈士奇造成的损失（周行算法爱好者协会）"
         },
         {
             pid: 'ygmessage',
@@ -42,6 +43,10 @@ module.exports = {
         {
             pid: 'encrypted_video',
             description: "寻找更多的线索（天枢信息安全协会）"
+        },
+        {
+            pid: 'revengeOfAI',
+            description: "附加题，为想挑战自己的同学而准备"
         }
     ]
 }
