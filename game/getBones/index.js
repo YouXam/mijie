@@ -38,7 +38,7 @@ module.exports = {
         const stdout = res.stdout.split('\n').filter(Boolean);
         for (let i = 0; i < 10; i++) {
             const expected = testData[i].reduce((acc, x) => acc ^ x, 0) === 0 ? 'No' : 'Yes';
-            if (isNaN(stdout[i]) || stdout[i] != expected) {
+            if (stdout[i] != expected) {
                 ctx.msg("Wrong Answer");
                 return false;
             }
