@@ -496,7 +496,11 @@ module.exports = function (db) {
                 },
                 {
                     $addFields: {
-                        isUndefined: { $eq: [`$gameprocess.${cur.pid}`, null] }
+                        isUndefined: { $cond: {
+                            if: { $ifNull: ["$gameprocess." + cur.pid, null] },
+                            then: false,
+                            else: true
+                        } },
                     }
                 },
                 {

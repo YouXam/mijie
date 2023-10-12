@@ -4,7 +4,7 @@
       <template #subtitle>
         <div class="mt-10">
           <font-awesome-icon :icon="['fas', 'circle-info']" />
-          按照题数降序、分数降序、上次有效提交时间升序排序，全部相同者排名相同。
+          按照分数降序、题数降序、上次有效提交时间升序排序，全部相同者排名相同。
         </div>
       </template>
       <div class="overflow-x-auto" v-if="!loading">
