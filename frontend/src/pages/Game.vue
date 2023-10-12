@@ -5,7 +5,7 @@
                 <div class="flex title flex-row items-center justify-center" v-if="score || percent">
                     <div class="flex flex-col items-center justify-center">
                         <div class="text-2xl font-bold">
-                            {{ score }} {{ score !== undefined ? 'pts' : '' }} {{ percent ? (score !== undefined ? ", ": "") + percent + "% passed" : ""}}
+                            {{ score }} {{ score !== undefined ? 'pts' : '' }} {{ (percent !== null && percent !== undefined) ? (score !== undefined ? ", ": "") + percent + "% passed" : ""}}
                         </div>
                     </div>
                 </div>
@@ -175,7 +175,7 @@ async function submit() {
         if (res.passed) gameState.value = 2
         if (res.next) next.value = res.next
         if (res.gameover) gameState.value = 3
-        if (res.percent) percent.value = res.percent
+        if (res.percent != undefined && res.percent != null) percent.value = res.percent
         if (res.solved_description) solved_description.value = res.solved_description
         nextTick(() => {
             if (!checkIfResultInViewport()) showDown.value = true
