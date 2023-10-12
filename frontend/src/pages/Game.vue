@@ -128,6 +128,7 @@ const state = computed(() => {
     if (records.value[0].passed) return 1;
     return 2;
 })
+localStorage.setItem('continue', router.currentRoute.value.fullPath)
 if (!user.login.value) {
     localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
     router.push('/login')

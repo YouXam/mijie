@@ -41,7 +41,7 @@ export default {
             this.data = res.problems.map(x => ({
                 id: x.pid,
                 text: x.name,
-                style:"fill:lime,stroke:lime,stroke-width:0px;",
+                style:"fill:#90ff90,stroke:#90ff90,stroke-width:0px;",
                 next: (x.next?.map(x => x.pid) || []).concat(x.gameover ? ["__gameover__"] : [])
             })).concat(res.problems.reduce((a, b) => a.concat(b?.next?.filter(x => !hashMap[x.pid]) || []), []).map(x => ({
                 id: x.pid,

@@ -10,6 +10,7 @@
         </div>
         <div class=" flex flex-col sm:w-1/3 w-2/3">
             <router-link to="/gamerule?start" tag="button" class="btn btn-ghost m-2 text-xl" @click.stop="start">开始游戏</router-link>
+            <router-link v-if="continued.length" :to="continued" tag="button" class="btn btn-ghost m-2 text-xl">继续游戏</router-link>
             <router-link to="/gamerule" tag="button" class="btn btn-ghost m-2 text-xl">游戏规则</router-link>
             <router-link to="/about" tag="button" class="btn btn-ghost m-2 text-xl">关于</router-link>
         </div>
@@ -18,7 +19,12 @@
   
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 const router = useRouter()
+const continued = ref('')
+if (localStorage.getItem('continue')) {
+    continued.value = localStorage.getItem('continue');
+}
 function start() {
     if (localStorage.getItem('hasReadRule') !== null) router.push('/start');
     else router.push('/gamerule?start');
