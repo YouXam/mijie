@@ -6,7 +6,10 @@
             <font-awesome-icon v-if="notification.type=='warning'" :icon="['fas', 'triangle-exclamation']" />
             <font-awesome-icon v-if="notification.type=='error'" :icon="['fas', 'circle-xmark']" />
             <span>{{ notification.message }}</span>
-            <button class="btn btn-sm btn-ghost" @click="notificationManager.remove(notification.id)">OK</button>
+            
+            <button class="btn btn-sm btn-ghost btn-circle" @click.stop="notificationManager.remove(notification.id)">
+                <font-awesome-icon :icon="['fas', 'circle-xmark']" />
+            </button>
         </div>
     </div>
 </template>
