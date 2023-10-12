@@ -4,15 +4,22 @@ module.exports = {
     description_file: 'problem.md',
     solved_description_file: "solved.md",
     points: 60,
-    checker(ans, ctx) {
-        const password = Math.random();
-        const val = parseFloat(ans);
-        if (!(val>password) && !(val<password)) {
-            ctx.msg("Welcome to my blog");
-            return true;
+    async checker(ans, ctx) {
+        const code = `import random
+password = random.random()
+val = float(input())
+if not (val > password) and not (val < password):
+    print("Welcome to my blog")
+else:
+    print("Access denied")
+        `
+        const res = await ctx.runCode(code, 'python', ans);
+        if (res.code) {
+            ctx.msg(res.error);
+            return false;
         }
-        ctx.msg("Access denied");
-        return false;
+        ctx.msg(res.stdout);
+        return res.stdout.trim() === 'Welcome to my blog';
     },
     next: [
         {

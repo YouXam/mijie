@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function runCode(code, language) {
+async function runCode(code, language, stdin='') {
     const apiKey = process.env.GLOT_IO_API_KEY;
 
     if (!apiKey) {
@@ -39,6 +39,7 @@ async function runCode(code, language) {
         const response = await axios.post(
             'https://glot.io/api/run/' + language + '/latest',
             {
+                stdin,
                 files: [{
                     name: 'main.' + (ext[language] || 'txt'),
                     content: code
