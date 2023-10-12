@@ -285,7 +285,7 @@ module.exports = function (db) {
             }
             return cur;
         }
-        if (pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
+        if (!ctx.state.admin && pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
             ctx.throw(404, `Level "${name}" not found`);
         }
         return cur
@@ -420,7 +420,8 @@ module.exports = function (db) {
                 name: plugins.pluginMap.get(n.pid).name,
                 ...n
             })) : undefined,
-            solved_description: cur.solved_description
+            solved_description: cur.solved_description,
+            points: record.points
         };
     })
 
