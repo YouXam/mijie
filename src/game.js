@@ -260,7 +260,7 @@ module.exports = function (db) {
                     name: cur.name,
                     gameover: cur.gameover,
                     first: cur.first,
-                    next: cur.next?.map(value => ({
+                    next: cur.next?.filter(value => plugins.pluginMap.get(value.pid)).map(value => ({
                         pid: value.pid,
                         name: plugins.pluginMap.get(value.pid).name
                     })),
