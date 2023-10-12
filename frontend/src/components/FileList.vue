@@ -4,7 +4,14 @@
         <li v-for="file in files" :key="file.id" @click="downloadFile(file)">
             <a>
                 <font-awesome-icon :icon="['fas', 'file-arrow-down']" />
-                {{ file }}
+                <template v-if="typeof file === 'string'">
+                    {{ file }}
+                </template>
+                <template v-else>
+                    <div class="tooltip tooltip-top" :data-tip="file.info">
+                        {{ file.filename }}
+                    </div>
+                </template>
             </a>
         </li>
     </ul>
@@ -20,7 +27,7 @@ export default {
     },
     methods: {
         downloadFile(file) {
-            this.$emit('download', file);
+            this.$emit('download', typeof file === 'string' ? file : file.filename);
         }
     }
 }

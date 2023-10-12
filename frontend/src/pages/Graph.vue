@@ -3,7 +3,7 @@
         <div class="mt-10">
             <h1 class="text-5xl font-extrabold tracking-tight">流程图</h1>
         </div>
-        <div ref="card" class="card p-10">
+        <div ref="card" class="card p-10 w-[90%]">
             <vue-mermaid v-show="loaded && data.length" class="w-full" :nodes="data" @nodeClick="clickNode"></vue-mermaid>
             <span v-show="loaded && !data.length">还没有通过的题目，<router-link class="link" to="/start">点我</router-link>开始吧</span>
             <span v-show="!loaded">Loading...</span>

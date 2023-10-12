@@ -1,12 +1,11 @@
 module.exports = {
-    name: 'ai 测试',
-    pid: "aiTest",
-    description: '### Answer is "hello world"',
-    solved_description: "### You have solved this problem",
-    // solved_description_file: "solved.md",
+    name: 'Cheat AI',
+    pid: "cheatAI",
+    description_file: 'problem.md',
+    solved_description_file: "solved.md",
     async checker(ans, ctx) {
         if (ans === '11.934') {
-            ctx.msg("输入正确答案")
+            ctx.msg("正确答案")
             return true
         }
         const res = await ctx.ai([
@@ -26,5 +25,23 @@ module.exports = {
         ctx.msg("AI 响应出现异常，请稍后重试。如果多次出现此问题，请联系管理员。")
         return false
     },
-    points: 50
+    points: 50,
+    next: [
+        {
+            pid: "countBit",
+            description: "追踪哈士奇(周行算法爱好者协会)"
+        },
+        {
+            pid: "findMinMax",
+            description: "统计哈士奇造成的损失(周行算法爱好者协会)"
+        },
+        {
+            pid: 'ygmessage',
+            description: "修好被哈士奇破坏的校车（智能创新社）"
+        },
+        {
+            pid: 'encrypted_video',
+            description: "寻找更多的线索（天枢信息安全协会）"
+        }
+    ]
 }

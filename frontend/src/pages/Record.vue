@@ -45,7 +45,7 @@
                         <div v-if="user.admin.value == 0"><span class="font-extrabold">用户: </span>{{ record.username }}</div>
                         <div v-else><span class="font-extrabold">用户: </span><router-link :to="'/record?user=' + encodeURIComponent(record.username)">{{ record.username }}</router-link></div>
                         <div v-if="user.admin.value == 0"><span class="font-extrabold">题目: </span>{{ record.name }}</div>
-                        <div v-else><span class="font-extrabold">题目: </span><router-link :to="'/record/' + record.pid + '?all'">{{ record.username }}</router-link></div>
+                        <div v-else><span class="font-extrabold">题目: </span><router-link :to="'/record/' + record.pid + '?all'">{{ record.name }}</router-link></div>
                         <div v-if="record.points != undefined"><span class="font-extrabold">分数: </span>{{ record.points }} <span v-if="record.gameover" class="font-extrabold">已通关</span></div>
                         <div v-if="!record.manualScores"><span class="font-extrabold">答案: </span><template v-if="record.ans?.length">{{ record.ans }}</template><span v-else class="italic">空</span></div>
                         <div v-if="record.msg?.length"><span class="font-extrabold">日志: </span>{{ record.msg }}</div>

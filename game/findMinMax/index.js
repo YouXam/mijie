@@ -2,8 +2,12 @@ module.exports = {
     name: 'findMinMax',
     pid: 'findMinMax',
     description_file: 'problem.md',
-    points: 50, // 本题的分数
-    checker(ans) {
-        return ans == 207;
-    }
+    solved_description_file: "solved.md",
+    points: 40,
+    checker: '207',
+    next: [
+        {
+            pid: "coprimeCount"
+        }
+    ]
 }

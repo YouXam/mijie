@@ -1,13 +1,13 @@
 module.exports = {
-    name: 'rollDice',
-    pid: 'rollDice',
+    name: '神秘的串',
+    pid: 'MysteriousString',
     description_file: 'problem.md',
     solved_description_file: "solved.md",
-    points: 35,
-    checker: '35',
+    points: 20,
+    checker: 'puppy',
     next: [
         {
-            pid: "wirelessMystery"
+            pid: "guessNumber"
         }
     ]
 }

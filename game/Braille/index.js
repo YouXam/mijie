@@ -1,13 +1,13 @@
 module.exports = {
-    name: 'rollDice',
-    pid: 'rollDice',
+    name: 'Braille',
+    pid: 'braille',
     description_file: 'problem.md',
     solved_description_file: "solved.md",
-    points: 35,
-    checker: '35',
+    points: 50,
+    checker: '盲文',
     next: [
         {
-            pid: "wirelessMystery"
+            pid: "getBones"
         }
     ]
 }

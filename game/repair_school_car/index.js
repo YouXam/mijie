@@ -1,13 +1,12 @@
 module.exports = {
-    name: 'rollDice',
-    pid: 'rollDice',
+    name: '修好搁浅的校车',
+    pid: 'repair_school_car',
     description_file: 'problem.md',
     solved_description_file: "solved.md",
-    points: 35,
-    checker: '35',
+    manualScores: true,
     next: [
         {
-            pid: "wirelessMystery"
+            pid: "run_school_car"
         }
     ]
 }

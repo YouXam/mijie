@@ -1,13 +1,12 @@
 module.exports = {
-    name: 'rollDice',
-    pid: 'rollDice',
+    name: '传递YG的密信',
+    pid: 'ygmessage',
     description_file: 'problem.md',
     solved_description_file: "solved.md",
-    points: 35,
-    checker: '35',
+    manualScores: true,
     next: [
         {
-            pid: "wirelessMystery"
+            pid: "repair_school_car"
         }
     ]
 }

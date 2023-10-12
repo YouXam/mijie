@@ -253,7 +253,7 @@ module.exports = function (db) {
     router.get('/problem', async (ctx) => {
         const problems = Object.keys(ctx.state.gameprocess.passed)
         ctx.body = {
-            problems: problems.map(pid => {
+            problems: problems.filter(pid => plugins.pluginMap.get(pid)).map(pid => {
                 const cur = plugins.pluginMap.get(pid);
                 return {
                     pid: cur.pid,
@@ -452,6 +452,7 @@ module.exports = function (db) {
                 }
             })
         } catch (error) {
+            console.log(error)
             ctx.throw(500, "checker error, please contact admin");
         }
 
@@ -584,7 +585,13 @@ module.exports = function (db) {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
         const cur = await checkPre(ctx);
-        if (!cur.files?.length || !cur.files?.includes(filePath)) {
+        if (!cur.files?.length) {
+            ctx.throw(403, `Access denied`)
+        }
+        if (!cur.files.some(x => {
+            if (typeof x == "string") return x == filePath;
+            else return x.filename == filePath;
+        })) {
             ctx.throw(403, `Access denied`)
         }
         await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.folder) });
