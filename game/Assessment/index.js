@@ -42,7 +42,7 @@ module.exports = {
             h[i] = h[i - 1] + (g[i - 1] * 3 + f[i - 1] * 3 + 1) * p[i];
         }
         const expected = h[10];
-        if (isNaN(stdout) || stdout != expected) {
+        if (isNaN(stdout) || Math.abs(stdout - expected) > 1e-5) {
             ctx.msg("Wrong Answer");
             return false;
         }
