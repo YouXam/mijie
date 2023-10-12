@@ -28,7 +28,7 @@ module.exports = {
     
         const res = await ctx.runCode(code, 'cpp');
         if (res.code) {
-            ctx.msg("Error:" + res.stdout);
+            ctx.msg("Error:" + res.error);
             return false;
         }
         const stdout = parseFloat(res.stdout);
@@ -42,7 +42,7 @@ module.exports = {
             h[i] = h[i - 1] + (g[i - 1] * 3 + f[i - 1] * 3 + 1) * p[i];
         }
         const expected = h[10];
-        if (stdout[i] != expected) {
+        if (isNaN(stdout) || stdout != expected) {
             ctx.msg("Wrong Answer");
             return false;
         }
