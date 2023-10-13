@@ -23,7 +23,7 @@
         <div v-if="hints.length" class="mx-auto text-center flex flex-col items-center justify-center card container">
             <h2 class="text-xl my-5 font-bold">当前收集到的线索</h2>
             <ul class="menu bg-base-200 w-full rounded-box">
-                <li><a class="select-text"  :key="hint" v-for="hint in hints">{{ hint }}</a></li>
+                <li><a class="select-text"  :key="hint" v-for="hint in hints" style="white-space: pre-wrap; word-break: break-all;">{{ hint }}</a></li>
             </ul>
         </div>
         <div class="mx-auto text-center flex flex-col items-center justify-center mb-20">
