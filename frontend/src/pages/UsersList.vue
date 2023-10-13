@@ -3,6 +3,7 @@
         <div class="mx-auto text-center flex flex-col items-center justify-center">
             <div class="mt-10 mb-5">
                 <h1 class="text-5xl font-extrabold tracking-tight mb-5 leading-tight">用户列表</h1>
+                <btn class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</btn>
                 <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
             </div>
             <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl mb-20">
@@ -136,6 +137,9 @@ function openDrawer(user) {
     user.banned = user.banned || false
     user.remark = user.remark || ''
     refDrawerUser.value = user
+}
+function recalculate() {
+    api("/api/recalculate")
 }
 const drawerUser = computed(() => {
     return refDrawerUser.value || {}

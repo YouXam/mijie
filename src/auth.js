@@ -168,7 +168,7 @@ function afterAuthRoutes(db) {
             studentID
         }, jwtSecret, { expiresIn: '1d' });
         ctx.body = { message: '学号修改成功', token };
-        user.update();
+        rank.update();
     })
     return compose([
         router.routes(),
@@ -252,6 +252,12 @@ function amdinRoutes(db) {
         const uuid = uuidv4();
         ctx.body = { message: "修改成功", uuid };
         if (hidden != undefined || banned != undefined) rank.update(uuid);
+    })
+
+    router.get('/recalculate', async ctx => {
+        const uuid = uuidv4();
+        rank.update(uuid);
+        ctx.body = { message: "已重新计算", uuid };
     })
 
     return compose([
