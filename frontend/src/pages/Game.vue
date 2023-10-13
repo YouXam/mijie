@@ -20,8 +20,13 @@
                 <Problem :content="solved_description"></Problem>
             </div>
         </TitleCard>
+        <div v-if="hints.length" class="mx-auto text-center flex flex-col items-center justify-center card container">
+            <h2 class="text-xl my-5 font-bold">当前收集到的线索</h2>
+            <ul class="menu bg-base-200 w-full rounded-box">
+                <li><a class="select-text"  :key="hint" v-for="hint in hints">{{ hint }}</a></li>
+            </ul>
+        </div>
         <div class="mx-auto text-center flex flex-col items-center justify-center mb-20">
-
             <div class="card container">
                 <template v-if="gameState == 1">
                     <textarea ref="ansInput" class="mt-5 textarea textarea-white" style="border-color: hsl(var(--bc) / 0.2)" placeholder="输入答案" v-model="ans"
@@ -123,6 +128,18 @@ const gameState = ref(1)
 const percent = ref(null)
 const solved_description = ref('')
 let lastSubmit = null
+const hintr = localStorage.getItem('hints')
+const hints = ref([])
+if (hintr) {
+    try {
+        const hintk = JSON.parse(hintr)
+        if (hintk[router.currentRoute.value.params.pid]?.length) {
+            hints.value = hintk[router.currentRoute.value.params.pid]
+        }
+    } catch (err) {
+        console.error(err)
+    }
+}
 const state = computed(() => {
     if (!records.value.length) return 0;
     if (records.value[0].passed) return 1;

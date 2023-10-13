@@ -59,9 +59,10 @@ class Plugins {
         this.pluginMap = new Map();
         this.pluginPre = new Map();
         this.pluginsPath = path.join(__dirname, '../game');
+        this.gamePercent = new Map();
+        this.hints = new Map();
         this.loadPlugins();
         this.watchPlugins();
-        this.gamePercent = new Map();
     }
     async getPercent(pid, db) {
         const percent = this.gamePercent.get(pid)
@@ -118,6 +119,19 @@ class Plugins {
                     const descriptionPath = path.join(this.pluginsPath, folder, plugin.solved_description_file);
                     if (fs.existsSync(descriptionPath)) {
                         plugin.solved_description = fs.readFileSync(descriptionPath, 'utf8');
+                    }
+                }
+                if (plugin.hints && plugin.hints.length) {
+                    for (const hint of plugin.hints) {
+                        if (!hint.uid || !hint.content) {
+                            console.log(`Failed to load plugin ${folder}: missing uid or content in hint`);
+                            return
+                        }
+                        this.hints.set(hint.uid, {
+                            content: hint.content,
+                            pid: plugin.pid,
+                            uid: hint.uid
+                        });
                     }
                 }
                 plugin.folder = folder;
@@ -273,7 +287,7 @@ module.exports = function (db) {
     async function checkPre(ctx, manualUsername = '') {
         const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
         if (!cur) {
-            ctx.throw(404, `Level "${name}" not found`);
+            ctx.throw(404, `Problem "${name}" not found`);
         }
         if (manualUsername.length) {
             const gameprocess = await db.collection("users").findOne({ username: manualUsername }, { projection: { gameprocess: 1 } });
@@ -286,7 +300,7 @@ module.exports = function (db) {
             return cur;
         }
         if (!ctx.state.admin && pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
-            ctx.throw(404, `Level "${name}" not found`);
+            ctx.throw(404, `Problem "${name}" not found`);
         }
         return cur
     }
@@ -397,7 +411,7 @@ module.exports = function (db) {
     router.get('/problemManual/:name', async (ctx) => {
         const cur = await checkPre(ctx);
         if (!cur.manualScores) {
-            ctx.throw(400, `This level must be manually scored.`);
+            ctx.throw(400, `This problem must be manually scored.`);
         }
         const records = await db.collection('records').find({ pid: cur.pid, manualScores: true, passed: true, username: ctx.state.username }).sort({ time: -1 }).limit(1).toArray()
         if (!records.length) {
@@ -428,7 +442,7 @@ module.exports = function (db) {
     router.post('/problem/:name', async (ctx) => {
         const cur = await checkPre(ctx);
         if (cur.manualScores) {
-            ctx.throw(400, `This level need to be automatically scored.`);
+            ctx.throw(400, `This roblem need to be automatically scored.`);
         }
         if (new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束，无法提交`);
@@ -584,7 +598,6 @@ module.exports = function (db) {
         plugins.setPercent(cur.pid, percent, db)
     })
 
-
     router.get('/file/:name/:path*', async (ctx) => {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
@@ -646,6 +659,27 @@ module.exports = function (db) {
             ctx.throw(400, '学号已存在');
         }
         ctx.body = { message: '学号修改成功' };
+    })
+
+    router.get('/hint/:uid', async ctx => {
+        const hint = plugins.hints.get(ctx.params.uid);
+        if (!hint) {
+            ctx.throw(404, 'Hint not found');
+        }
+        const cur = plugins.pluginMap.get(hint.pid);
+        if (!cur) {
+            ctx.throw(404, 'Problem not found');
+        }
+        const pre = plugins.pluginPre.get(cur.pid);
+    
+        if (!ctx.state.admin && pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
+            ctx.throw(404, `Problem "${cur.name}" not found`);
+        }
+        
+        ctx.body = {
+            pid: cur.pid,
+            content: hint.content
+        }
     })
 
     return compose([
