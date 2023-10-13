@@ -48,9 +48,9 @@ module.exports = {
             for (int i = 1; i <= n; i++) {
                 long long temp = 0;
                 for (int j = 1; j <= i; j++) {
-                    ${ans[0]};
+                    ${ans[0] || "#error empty"};
                 }
-                ${ans[1]};
+                ${ans[1] || "#error empty"};
             }
             printf("%lld", ans);
             return 0;
@@ -58,7 +58,7 @@ module.exports = {
     
         const res = await ctx.runCode(code, 'cpp');
         if (res.code) {
-            ctx.msg("Error:" + res.error);
+            ctx.msg("Error:\n" + res.error);
             return false;
         }
         const stdout = parseInt(res.stdout);
