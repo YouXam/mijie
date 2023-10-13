@@ -51,6 +51,10 @@ module.exports = {
     next: [
         {
             pid: "wirelessMystery"
+        },
+        {
+            pid: "reassessment",
+            description: "附加题"
         }
     ]
 }

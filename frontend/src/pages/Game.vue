@@ -2,7 +2,7 @@
     <div>
         <TitleCard :title="title" :minHeight="100">
             <template #subtitle>
-                <div class="flex title flex-row items-center justify-center" v-if="score || percent">
+                <div class="flex title flex-row items-center justify-center" v-if="score !== undefined && score != null || percent != undefined && percent != null">
                     <div class="flex flex-col items-center justify-center">
                         <div class="text-2xl font-bold">
                             {{ score }} {{ score !== undefined ? 'pts' : '' }} {{ (percent !== null && percent !== undefined) ? (score !== undefined ? ", ": "") + percent + "% passed" : ""}}

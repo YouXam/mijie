@@ -62,9 +62,10 @@ async function runCode(code, language, stdin='') {
             code: response.data.error ? 1 : 0,
         };
     } catch (err) {
+        console.log(err)
         return {
             code: 1,
-            error: err.response.data.message
+            error: err?.response?.data?.message || 'error'
         }
     }
 
