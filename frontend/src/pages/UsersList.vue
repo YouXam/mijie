@@ -6,15 +6,15 @@
                 <btn class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</btn>
                 <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
             </div>
-            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl mb-20">
+            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl max-h-[calc(100vh-72px)]">
                 <div class="overflow-x-auto" v-if="!loading">
-                    <table class="table text-center">
+                    <table class="table text-center table-pin-rows table-pin-cols ">
                         <!-- head -->
                         <thead>
                             <tr class="text-white">
-                                <th ref="rankTh">排名</th>
-                                <th :style="{ left: left + 'px' }">用户名</th>
-                                <td>学号</td>
+                                <th ref="rankTh" style="z-index: 9999">排名</th>
+                                <th :style="{ left: left + 'px' }" style="z-index: 9999">用户名</th>
+                                <th>学号</th>
                                 <td>题数</td>
                                 <td>分数</td>
                                 <td>通关</td>
@@ -27,7 +27,7 @@
                             <tr v-for="(user, index) in users" :key="user._id">
                                 <th>{{ user.banned || user.hidden ? '*' : user.rank }}</th>
                                 <th :style="{ left: left + 'px' }" class="p-0 px-1" style="z-index: 0">
-                                    <div :class="{ tooltip: user.admin || user.banned }" :data-tip="Object.entries({ '管理员': user.admin > 0, '已隐藏': user.hidden || user.banned, '已封禁': user.banned }).filter(x => x[1]).map(x => x[0]).join(', ')">
+                                    <div :class="{ tooltip: user.admin || user.banned, 'tooltip-right': user.admin || user.banned }" :data-tip="Object.entries({ '管理员': user.admin > 0, '已隐藏': user.hidden || user.banned, '已封禁': user.banned }).filter(x => x[1]).map(x => x[0]).join(', ')">
                                         <button :class="{ 'text-red-600': user.admin > 0, 'line-through': user.banned }"
                                             class="btn btn-sm btn-ghost normal-case select-text"
                                             @click="openDrawer(user)">
@@ -220,6 +220,11 @@ async function refresh(first = false, noNotification = false) {
         ])
         problems.value = problemList.problems
         users.value = calculateRank(res.users)
+        users.value = users.value.concat(users.value)
+        users.value = users.value.concat(users.value)
+        users.value = users.value.concat(users.value)
+        users.value = users.value.concat(users.value)
+        users.value = users.value.concat(users.value)
         if (!first && !noNotification) {
             notificationManager.add({
                 message: '刷新成功',
