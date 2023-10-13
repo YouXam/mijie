@@ -492,9 +492,6 @@ module.exports = function (db) {
                     $match: { username: ctx.state.username }
                 },
                 {
-                    $set: { [`gameprocess.${cur.pid}`]: cur.points }
-                },
-                {
                     $addFields: {
                         isUndefined: { $cond: {
                             if: { $ifNull: ["$gameprocess." + cur.pid, null] },
@@ -502,6 +499,9 @@ module.exports = function (db) {
                             else: true
                         } },
                     }
+                },
+                {
+                    $set: { [`gameprocess.${cur.pid}`]: cur.points }
                 },
                 {
                     $set: {
@@ -531,7 +531,7 @@ module.exports = function (db) {
                 },
                 {
                     $project: {
-                        isUndefined: 0
+                        isUndefined: 0,
                     }
                 },
                 {
@@ -543,7 +543,6 @@ module.exports = function (db) {
             ];
 
             await db.collection("users").aggregate(pipeline).toArray();
-
             if (flag) rank.update()
             ctx.body = {
                 passed: true,
