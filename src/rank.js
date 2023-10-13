@@ -22,6 +22,7 @@ class Ranking {
         }
         return this.adminRank;
     }
+    
     async update(uuid) {
         const now_cnt = ++this.update_cnt;
         const rank = await this.db.collection('users').aggregate([

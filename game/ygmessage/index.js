@@ -6,7 +6,7 @@ module.exports = {
     manualScores: true,
     next: [
         {
-            pid: "repair_school_car"
+            pid: "last_problem"
         }
     ]
 }

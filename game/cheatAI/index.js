@@ -37,7 +37,7 @@ module.exports = {
             description: "统计哈士奇造成的损失（周行算法爱好者协会）"
         },
         {
-            pid: 'ygmessage',
+            pid: 'repair_school_car',
             description: "修好被哈士奇破坏的校车（智能创新社）"
         },
         {
