@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mb-20">
     <TitleCard title="排行榜">
       <template #subtitle>
         <div class="mt-10">
@@ -25,6 +25,19 @@
             </tr>
           </thead>
           <tbody>
+            <tr class="bg-base-200">
+              <th>{{ currentUser.rank }}</th>
+              <td v-if="!currentUser.noPrize">{{ currentUser.username }}</td>
+              <td v-else>
+                <div class="tooltip tooltip-right text-gray-400" data-tip="无评奖资格">
+                  {{ currentUser.username }}
+                </div>
+              </td>
+              <td>{{ currentUser.passed }}</td>
+              <td>{{ currentUser.points }}</td>
+              <td :class="{'min-w-[21ch]': currentUser.lastPassed < 32503651200000 }">{{ currentUser.lastPassed >= 32503651200000 ? "" : currentUser.lastPassed.toLocaleString() }}</td>
+              <td :class="{'min-w-[10ch]': currentUser.gameover }">{{ currentUser.gameover ? "已通关": "" }}</td>
+            </tr>
             <tr v-for="(user, index) in rank" :key="user.username">
               <th>{{ user.rank }}</th>
               <td v-if="!user.noPrize">{{ user.username }}</td>
@@ -60,20 +73,35 @@
 import TitleCard from '@/components/TitleCard.vue';
 import { ref, onUnmounted } from 'vue'
 import { api } from '@/tools/api'
-import { rankEventListener } from '@/tools/bus'
+import { rankEventListener, user } from '@/tools/bus'
 import { useRouter } from 'vue-router';
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 const rank = ref([]);
 const loading = ref(true)
 const loading2 = ref(false)
+const currentUser = ref({
+  rank: 0,
+  username: user.username.value,
+  passed: 0,
+  points: 0,
+  lastPassed: new Date(0),
+  noPrize: false,
+  gameover: false
+})
 function calculateRank(ranks) {
   if (ranks.length == 0) return []
   let rank = 1
   let last = ranks[0]
   last.rank = rank
   last.lastPassed = new Date(last.lastPassed)
+  if (last.username == user.username.value) {
+    currentUser.value = last
+  }
   for (let i = 1; i < ranks.length; i++) {
+    if (ranks[i].username == user.username.value) {
+      currentUser.value = ranks[i]
+    }
     ranks[i].lastPassed = new Date(ranks[i].lastPassed)
     if (ranks[i].passed == last.passed && ranks[i].points == last.points && ranks[i].lastPassed.getTime() == last.lastPassed.getTime()) {
       ranks[i].rank = rank

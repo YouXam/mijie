@@ -1,5 +1,5 @@
 <template>
-    <TitleCard title="账户设置">
+    <TitleCard title="账户设置" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="form-control w-full max-w-xs flex flex-col m-auto">
             <label class="label">

@@ -3,6 +3,7 @@
         <button :class="btnClass()" @click="onPageChange(currentPage - 1)">&laquo;</button>
         <button v-for="page in pagesToShow" :key="page" :class="btnClass(page)" @click="onPageChange(page)">{{ page }}</button>
         <button :class="btnClass()" @click="onPageChange(currentPage + 1)">&raquo;</button>
+        <input type="text" placeholder="page" v-model="page" @blur="onPageChange(page)" @keydown.enter="onPageChange(page)" class="input input-bordered join-item p-1 w-16 pl-3" />
     </div>
 </template>
   
@@ -16,6 +17,14 @@ export default {
         currentPage: {
             type: Number,
             required: true
+        }
+    },
+    data: () => ({
+        page: 1
+    }),
+    watch: {
+        currentPage() {
+            this.page = this.currentPage;
         }
     },
     computed: {
@@ -33,7 +42,7 @@ export default {
     },
     methods: {
         onPageChange(page) {
-            if (page < 1 || page > this.totalPages || page == this.currentPage) return;
+            if (page < 1 || page > this.totalPages || page == this.currentPage) return this.page = this.currentPage;
             this.$emit('pageChange', page);
         },
         btnClass(page) {
@@ -43,6 +52,9 @@ export default {
                 'btn-active': page === this.currentPage
             };
         }
+    },
+    created() {
+        this.page = this.currentPage;
     }
 }
 </script>

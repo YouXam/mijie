@@ -14,7 +14,9 @@ export default {
         content: String
     },
     data: () => ({
-        md: new MarkdownIt()
+        md: new MarkdownIt({
+            html: true
+        })
     }),
     computed: {
         html: function () {

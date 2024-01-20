@@ -3,13 +3,20 @@
         <div class="mx-auto text-center flex flex-col items-center justify-center">
             <div class="mt-10 mb-5">
                 <h1 class="text-5xl font-extrabold tracking-tight mb-5 leading-tight">用户列表</h1>
-                <btn class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</btn>
-                <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
+                <div class="flex flex-row">
+                    <button class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</button>
+                    <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
+                </div>
             </div>
-            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl max-h-[calc(100vh-72px)]">
+            <div class="px-3 w-full">
+                <input type="text" placeholder="搜索..." class="input input-bordered w-full max-w-lg mb-4" v-model="search"/>
+            </div>
+            <div class="px-3 w-full">
+                <Pagination v-if="searchedUsers.length && totalPages > 1"  class="my-5" :totalPages="totalPages" :currentPage="currentPage" @pageChange="onPageChange"/>
+            </div>
+            <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl ">
                 <div class="overflow-x-auto" v-if="!loading">
-                    <table class="table text-center table-pin-rows table-pin-cols ">
-                        <!-- head -->
+                    <table class="table text-center table-pin-rows table-pin-cols " v-if="searchedUsers.length">
                         <thead>
                             <tr class="text-white">
                                 <th ref="rankTh" style="z-index: 9999">排名</th>
@@ -24,7 +31,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(user, index) in users" :key="user._id">
+                            <tr v-for="(user, index) in pageedUsers" :key="user._id">
                                 <th>{{ user.banned || user.hidden ? '*' : user.rank }}</th>
                                 <th :style="{ left: left + 'px' }" class="p-0 px-1" style="z-index: 0">
                                     <div :class="{ tooltip: user.admin || user.banned, 'tooltip-right': user.admin || user.banned }" :data-tip="Object.entries({ '管理员': user.admin > 0, '已隐藏': user.hidden || user.banned, '已封禁': user.banned }).filter(x => x[1]).map(x => x[0]).join(', ')">
@@ -45,8 +52,12 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div v-else class="my-10">{{ search ? "无结果" : "暂无用户" }}</div>
                 </div>
-                <div v-else class="mt-10">Loading...</div>
+                <div v-else class="my-10">Loading...</div>
+            </div>
+            <div class="px-3 w-full z-10">
+                <Pagination v-if="searchedUsers.length && totalPages > 1"  class="my-5" :totalPages="totalPages" :currentPage="currentPage" @pageChange="onPageChange"/>
             </div>
         </div>
         <button :disabled="loading2" v-if="!loading"
@@ -119,6 +130,7 @@ import { api, apiPut } from '@/tools/api'
 import { user, rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router';
 import notificationManager from '@/tools/notification.js'
+import Pagination from '@/components/Pagination.vue'
 const router = useRouter()
 const users = ref([]);
 const loading = ref(true)
@@ -130,6 +142,7 @@ const drawer = ref(false)
 const refDrawerUser = ref({})
 const remark = ref('')
 const adminToggle = ref(null)
+const search = ref('')
 function openDrawer(user) {
     drawer.value = true
     user.admin = user.admin || 0
@@ -220,11 +233,6 @@ async function refresh(first = false, noNotification = false) {
         ])
         problems.value = problemList.problems
         users.value = calculateRank(res.users)
-        users.value = users.value.concat(users.value)
-        users.value = users.value.concat(users.value)
-        users.value = users.value.concat(users.value)
-        users.value = users.value.concat(users.value)
-        users.value = users.value.concat(users.value)
         if (!first && !noNotification) {
             notificationManager.add({
                 message: '刷新成功',
@@ -250,6 +258,21 @@ function notification(data) {
 rankEventListener.addEventListener('update', notification)
 onUnmounted(() => {
   rankEventListener.removeEventListener('update', notification)
+})
+const size = 30
+const currentPage = ref(1)
+function onPageChange(p) {
+    currentPage.value = p
+}
+const searchedUsers = computed(() => {
+    if (!search.value) return users.value
+    return users.value.filter(x => x.username.includes(search.value) || x.studentID?.includes(search.value))
+})
+const totalPages = computed(() => {
+    return Math.ceil(searchedUsers.value.length / size)
+})
+const pageedUsers = computed(() => {
+    return searchedUsers.value.slice((currentPage.value - 1) * size, currentPage.value * size)
 })
 </script>
   
