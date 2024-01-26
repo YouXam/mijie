@@ -25,28 +25,34 @@ function haveCommonKeyValuePair(obj1, obj2) {
 }
 class TaskManager {
     constructor() {
-        this.taskIntervals = {};
-        this.userLastRun = {};
-        this.minInterval = 0;
+        this.userCount = {}
+        this.tokens = {}
+        setInterval(() => {
+            this.userCount = {}
+            this.tokens = {}
+        }, 1000 * 60)
     }
-    setInterval(name, interval) {
-        this.taskIntervals[name] = interval;
-        this.minInterval = Math.min(...Object.values(this.taskIntervals));
-    }
-    run(user, name) {
-        const now = Date.now();
-        if (!this.userLastRun[user]) this.userLastRun[user] = {};
-        if (!this.userLastRun[user][name]) this.userLastRun[user][name] = 0;
-
-        const timeSinceLastRun = now - this.userLastRun[user][name];
-        const timeSinceLastRunAny = now - Math.max(...Object.values(this.userLastRun[user]));
-        if ((!this.taskIntervals[name] || timeSinceLastRun >= this.taskIntervals[name]) &&
-            timeSinceLastRunAny >= this.minInterval) {
-            this.userLastRun[user][name] = now;
-            return true;
-        } else {
-            return false;
+    async run(user, token) {
+        if (this.userCount[user] && this.userCount[user] > 5) {
+            if (!token)
+                return false
+            else {
+                if (this.tokens[token]) return true
+                let formData = new FormData();
+                formData.append('secret', '0x4AAAAAAAQoQSmFu6ODCX7wqVw6lsnI8lI');
+                formData.append('response', token);
+                const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+                const result = await fetch(url, {
+                    body: formData,
+                    method: 'POST',
+                });
+                const outcome = await result.json();
+                if (outcome.success) this.tokens[token] = true
+                return outcome.success
+            }
         }
+        this.userCount[user] = (this.userCount[user] || 0) + 1
+        return true
     }
 }
 
@@ -76,7 +82,7 @@ class Plugins {
     }
     async setPercent(pid, percent, db) {
         this.gamePercent.set(pid, percent)
-        db.collection('problems').updateOne({ pid }, { $set: { percent }}, { upsert: true });
+        db.collection('problems').updateOne({ pid }, { $set: { percent } }, { upsert: true });
     }
     loadPlugins() {
         const folders = fs.readdirSync(this.pluginsPath, { withFileTypes: true })
@@ -135,7 +141,6 @@ class Plugins {
                     }
                 }
                 plugin.folder = folder;
-                taskManager.setInterval(plugin.pid, plugin.interval || 10 * 1000);
                 if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
                 this.plugins[folder] = plugin;
@@ -230,7 +235,7 @@ class AI {
             if (error.data) {
                 console.error(error.data);
             }
-            return 
+            return
         }
     }
 }
@@ -259,7 +264,8 @@ module.exports = function (db) {
         ctx.body = {
             problems: Array.from(plugins.pluginMap.values()).map(cur => ({
                 pid: cur.pid,
-                name: cur.name
+                name: cur.name,
+                manualScores: cur.manualScores
             }))
         }
     })
@@ -282,6 +288,42 @@ module.exports = function (db) {
                 }
             })
         }
+    })
+
+
+    router.get('/submitted_problems', async (ctx) => {
+        const username = ctx.query.username || ctx.state.username;
+        if (!ctx.state.admin && username != ctx.state.username) {
+            ctx.throw(403, `Access denied`)
+        }
+        const problems = await db.collection('records').aggregate([
+            { $match: { username: username } },
+            { $group: { _id: "$pid", count: { $sum: 1 } } },
+        ]).toArray()
+        const problemsMap = {}
+        problems.forEach(e => {
+            problemsMap[e._id] = e.count
+        })
+        const res = {
+            submitted_problems: problems.filter(res => plugins.pluginMap.get(res._id)).map(res => {
+                const cur = plugins.pluginMap.get(res._id);
+                return {
+                    pid: cur.pid,
+                    name: cur.name,
+                    manualScores: cur.manualScores,
+                    count: res.count
+                }
+            })
+        }
+        if (ctx.state.admin) {
+            res.submitted_problems = Array.from(plugins.pluginMap.values()).map(cur => ({
+                pid: cur.pid,
+                name: cur.name,
+                manualScores: cur.manualScores,
+                count: problemsMap[cur.pid] || 0
+            }))
+        }
+        ctx.body = res;
     })
 
     async function checkPre(ctx, manualUsername = '') {
@@ -447,10 +489,10 @@ module.exports = function (db) {
         if (new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束，无法提交`);
         }
-        if (!taskManager.run(ctx.state.username, cur.name)) {
+        if (!await taskManager.run(ctx.state.username, ctx.request.body.token)) {
             ctx.body = {
                 passed: false,
-                msg: "You are sending too many requests. Please try again later."
+                turnstile: true
             };
             return;
         }
@@ -477,7 +519,7 @@ module.exports = function (db) {
                 ctx.throw(500, "checker error, please contact admin");
             })
         }
-        
+
 
         const record = {
             username: ctx.state.username,
@@ -488,7 +530,7 @@ module.exports = function (db) {
             msg
         };
         await gameStorage.save();
-        
+
         if (res) {
             let flag = false
             if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
@@ -507,11 +549,13 @@ module.exports = function (db) {
                 },
                 {
                     $addFields: {
-                        isUndefined: { $cond: {
-                            if: { $ifNull: ["$gameprocess." + cur.pid, null] },
-                            then: false,
-                            else: true
-                        } },
+                        isUndefined: {
+                            $cond: {
+                                if: { $ifNull: ["$gameprocess." + cur.pid, null] },
+                                then: false,
+                                else: true
+                            }
+                        },
                     }
                 },
                 {
@@ -615,7 +659,7 @@ module.exports = function (db) {
     });
 
     router.get('/record', async (ctx) => {
-        let { pid, user, all, page = 1, size = 50 } = ctx.query;
+        let { pid, user, all, page = 1, size = 50, passed } = ctx.query;
         if (!user) user = ctx.state.username;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
@@ -624,6 +668,7 @@ module.exports = function (db) {
         let query = {};
         if (!all) query.username = user;
         if (pid) query.pid = pid;
+        if (passed !== undefined) query.passed = passed === 'true';
         const [records, total] = await Promise.all([
             db.collection('records')
                 .find(query)
@@ -671,11 +716,11 @@ module.exports = function (db) {
             ctx.throw(404, 'Problem not found');
         }
         const pre = plugins.pluginPre.get(cur.pid);
-    
+
         if (!ctx.state.admin && pre && Object.keys(pre).length != 0 && !haveCommonKeyValuePair(ctx.state.gameprocess.passed, pre)) {
             ctx.throw(404, `Problem "${cur.name}" not found`);
         }
-        
+
         ctx.body = {
             pid: cur.pid,
             content: hint.content

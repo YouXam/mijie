@@ -59,3 +59,14 @@
     font-weight: bolder; 
     font-style: italic;
 }
+
+.link, .btn-link {
+    text-decoration: dotted underline;
+    text-underline-offset: 3px;
+    transition: text-underline-offset .1s;
+}
+
+.link:hover, .btn-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+}

@@ -8,15 +8,36 @@
                     <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
                 </div>
             </div>
-            <div class="px-3 w-full">
+
+            <div class="px-3 w-full mt-5">
                 <input type="text" placeholder="搜索..." class="input input-bordered w-full max-w-lg mb-4" v-model="search"/>
             </div>
-            <div class="px-3 w-full">
+            <div class="form-control w-[400px] mb-5">
+                <label class="label cursor-pointer">
+                    <span class="label-text mr-5">展开表格</span> 
+                    <input type="checkbox" class="toggle toggle-sm" v-model="expand" />
+                </label>
+                <div class="flex">
+                    <span class="label-text ml-1">每页数量</span> 
+                    <span class="flex-1"></span>
+                    <div>
+                        <input type="range" min="0" max="100" v-model="xsize" class="range range-xs" step="25"/>
+                        <div class="w-full flex justify-between text-xs px-2">
+                            <span>10</span>
+                            <span>30</span>
+                            <span>50</span>
+                            <span>100</span>
+                            <span>∞</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full" v-if="expand">
                 <Pagination v-if="searchedUsers.length && totalPages > 1"  class="my-5" :totalPages="totalPages" :currentPage="currentPage" @pageChange="onPageChange"/>
             </div>
             <div ref="card" class="card p-5 w-full rounded-none sm:rounded-2xl ">
-                <div class="overflow-x-auto" v-if="!loading">
-                    <table class="table text-center table-pin-rows table-pin-cols " v-if="searchedUsers.length">
+                <div class="overflow-x-auto" :class="{'max-h-[calc(100vh-200px)]': !expand}" v-if="!loading">
+                    <table class="table text-center table-pin-rows table-pin-cols" v-if="searchedUsers.length">
                         <thead>
                             <tr class="text-white">
                                 <th ref="rankTh" style="z-index: 9999">排名</th>
@@ -27,7 +48,9 @@
                                 <td>通关</td>
                                 <td>上次有效提交</td>
                                 <td>备注</td>
-                                <td v-for="problem in problems" :key="problem.pid">{{ problem.name }}</td>
+                                <td v-for="problem in problems" :key="problem.pid">
+                                    <router-link class="btn btn-sm btn-ghost normal-case select-text" :to="'/record/' + problem.pid + '?all'">{{ problem.name }}</router-link>
+                                </td>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,6 +166,7 @@ const refDrawerUser = ref({})
 const remark = ref('')
 const adminToggle = ref(null)
 const search = ref('')
+const expand = ref(false)
 function openDrawer(user) {
     drawer.value = true
     user.admin = user.admin || 0
@@ -259,20 +283,29 @@ rankEventListener.addEventListener('update', notification)
 onUnmounted(() => {
   rankEventListener.removeEventListener('update', notification)
 })
-const size = 30
+
+const xsize = ref(30)
 const currentPage = ref(1)
 function onPageChange(p) {
     currentPage.value = p
 }
+const size = computed(() => {
+    if (xsize.value === '100') return 10000000000
+    if (xsize.value === '75') return 100
+    if (xsize.value === '50') return 50
+    if (xsize.value === '25') return 30
+    if (xsize.value === '0') return 10
+    return xsize.value
+})
 const searchedUsers = computed(() => {
     if (!search.value) return users.value
     return users.value.filter(x => x.username.includes(search.value) || x.studentID?.includes(search.value))
 })
 const totalPages = computed(() => {
-    return Math.ceil(searchedUsers.value.length / size)
+    return Math.ceil(searchedUsers.value.length / size.value)
 })
 const pageedUsers = computed(() => {
-    return searchedUsers.value.slice((currentPage.value - 1) * size, currentPage.value * size)
+    return searchedUsers.value.slice((currentPage.value - 1) * size.value, currentPage.value * size.value)
 })
 </script>
   

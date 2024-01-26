@@ -42,6 +42,9 @@
                         <span class="loading loading-dots loading-xs" v-if="loading"></span>
                         {{ manual ? '刷新状态' : '提交' }}
                     </button>
+                    <div class="flex flex-col mx-auto" v-if="show_turnstile">
+                        <div id="cfTurnstile" class="cf-turnstile my-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-callback="console.log"></div>
+                    </div>
                 </template>
             </div>
             <transition-group name="list">
@@ -105,7 +108,7 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { api, downloadFile as download } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
@@ -130,6 +133,7 @@ const solved_description = ref('')
 let lastSubmit = null
 const hintr = localStorage.getItem('hints')
 const hints = ref([])
+const show_turnstile = ref(false)
 if (hintr) {
     try {
         const hintk = JSON.parse(hintr)
@@ -140,12 +144,30 @@ if (hintr) {
         console.error(err)
     }
 }
+let cf_token = null
+function toggle_turnstile(cb) {
+    if (show_turnstile.value) return;
+    show_turnstile.value = true;
+    loading.value = true;
+    nextTick(() => {
+        turnstile.render('#cfTurnstile', {
+            sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+            callback: (token) => {
+                cf_token = token;
+                loading.value = false;
+                turnstile.remove();
+                show_turnstile.value = false;
+                cb({ token });
+            }
+        });
+    })
+}
 const state = computed(() => {
     if (!records.value.length) return 0;
     if (records.value[0].passed) return 1;
     return 2;
 })
-localStorage.setItem('continue', router.currentRoute.value.fullPath)
+
 if (!user.login.value) {
     localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
     router.push('/login')
@@ -175,7 +197,7 @@ document.addEventListener('scroll', () => {
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-async function submit() {
+async function submit({ token }) {
     records.value = []
     lastSubmit = new Date()
     loading.value = true
@@ -184,9 +206,14 @@ async function submit() {
         const res = await (manual.value ? 
             api('/api/problemManual/' + router.currentRoute.value.params.pid) :
             api('/api/problem/' + router.currentRoute.value.params.pid, {
-                ans: ans.value
+                ans: ans.value,
+                token: token || cf_token
             })
         )
+        if (res.turnstile) {
+            toggle_turnstile(submit)
+            return;
+        }
         await sleep(500 - new Date().getTime() + lastSubmit.getTime())
         records.value.unshift(res)
         if (res.passed) gameState.value = 2
@@ -197,12 +224,12 @@ async function submit() {
         nextTick(() => {
             if (!checkIfResultInViewport()) showDown.value = true
         })
+        loading.value = false
     } catch (err) {
         if (err.status == 401) {
             localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
             router.push('/login')
         }
-    } finally {
         loading.value = false
     }
 }
@@ -216,6 +243,7 @@ async function submit() {
         percent.value = res.percent
         if (res.files && res.files.length) files.value = res.files
         document.title = res.name + ' | ' + document.title.split(' | ')[1]
+        localStorage.setItem('continue', router.currentRoute.value.fullPath)
     } catch (err) {
         if (err.status == 401) {
             localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
