@@ -20,7 +20,7 @@
     "tableexport": "^5.2.0",
     "vue": "^3",
     "vue-router": "4",
-    "xlsx": "^0.19.3"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2",
