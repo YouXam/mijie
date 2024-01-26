@@ -39,6 +39,8 @@ services:
       - JWT_SECRET=
       - API_PORT=3001
       - GLOT_IO_API_KEY=
+      - ABLY_API_KEY=
+      - CLOUDFLARE_API_KEYS=
     depends_on:
       - mongodb
     volumes:

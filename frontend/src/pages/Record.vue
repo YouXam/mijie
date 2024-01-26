@@ -66,13 +66,15 @@
             <div class="rounded-lg alert text-white mt-5 text-left sm:min-w-[50%] w-[500px] max-w-full" :class="{ 'alert-error': !record.passed, 'alert-success': record.passed }">
                 <div class="sm:min-w-[calc(50vw-80px)] sm:w-[468px] w-full">
                     <h2 class="font-extrabold text-xl">
-                        <router-link class="link" :to="'/game/' + record.pid">{{ record.name }}</router-link>
+                        <router-link class="link" :to="'/game/' + record.pid">
+                            <div class="tooltip" data-tip="已通关" v-if="record.gameover">
+                                <font-awesome-icon  class="mr-1 text-amber-200" :icon="['fas', 'trophy']" />
+                            </div>
+                            {{ record.name }}
+                        </router-link>
                         <div class="sm:float-right mt-2 sm:mt-0">
                             <template v-if="record.passed">
-                                <div class="tooltip" data-tip="已通关" v-if="record.gameover">
-                                    <font-awesome-icon  class="mr-1 text-amber-200" :icon="['fas', 'circle-check']" />
-                                </div>
-                                <font-awesome-icon v-else class="mr-1" :icon="['fas', 'circle-check']" />
+                                <font-awesome-icon class="mr-1" :icon="['fas', 'circle-check']" />
                                 正确 
                             </template>
                             <template v-else>

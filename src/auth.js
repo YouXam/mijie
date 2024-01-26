@@ -8,6 +8,7 @@ const { ObjectId } = require('mongodb');
 const { notice: noticePublish } = require('./publish');
 const uuidv4 = require('uuid').v4;
 const gameConfig = {}
+const { verify } = require('./turnstile');
 
 require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
@@ -42,7 +43,10 @@ function authRoutes(db) {
     })
 
     router.post('/register', async (ctx) => {
-        const { username, password, studentID } = ctx.request.body;
+        const { username, password, studentID, token } = ctx.request.body;
+        if (!await verify(token)) {
+            ctx.throw(401, '验证失败');
+        }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password or studentID');
         }
@@ -65,7 +69,10 @@ function authRoutes(db) {
     });
 
     router.post('/login', async (ctx) => {
-        const { username, password } = ctx.request.body;
+        const { username, password, token: cftoken } = ctx.request.body;
+        if (!await verify(cftoken)) {
+            ctx.throw(401, '验证失败');
+        }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password');
         }

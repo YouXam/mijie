@@ -8,6 +8,7 @@ const Ranking = require('./rank');
 const compose = require('koa-compose');
 const send = require('koa-send');
 const axios = require('axios');
+const { verify } = require('./turnstile');
 const { gameConfig } = require('./auth')
 
 function haveCommonKeyValuePair(obj1, obj2) {
@@ -30,25 +31,20 @@ class TaskManager {
         setInterval(() => {
             this.userCount = {}
             this.tokens = {}
-        }, 1000 * 60)
+        }, 1000 * 180)
     }
     async run(user, token) {
-        if (this.userCount[user] && this.userCount[user] > 5) {
+        if (this.userCount[user] && this.userCount[user] >= 5) {
             if (!token)
                 return false
             else {
-                if (this.tokens[token]) return true
-                let formData = new FormData();
-                formData.append('secret', '0x4AAAAAAAQoQSmFu6ODCX7wqVw6lsnI8lI');
-                formData.append('response', token);
-                const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-                const result = await fetch(url, {
-                    body: formData,
-                    method: 'POST',
-                });
-                const outcome = await result.json();
-                if (outcome.success) this.tokens[token] = true
-                return outcome.success
+                if (this.userCount[user] - this.tokens[token] < 3 && this.userCount[user] < 15) {
+                    this.userCount[user] = (this.userCount[user] || 0) + 1
+                    return true
+                }
+                const success = await verify(token)
+                if (success) this.tokens[token] = this.userCount[user]
+                return success
             }
         }
         this.userCount[user] = (this.userCount[user] || 0) + 1

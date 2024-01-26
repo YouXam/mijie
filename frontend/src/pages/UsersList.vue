@@ -5,7 +5,15 @@
                 <h1 class="text-5xl font-extrabold tracking-tight mb-5 leading-tight">用户列表</h1>
                 <div class="flex flex-row">
                     <button class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</button>
-                    <router-link class="btn btn-link flex text-base-content" to="/record?all">全部提交记录</router-link>
+                    <router-link class="btn btn-link flex text-base-content" to="/record?all">提交记录</router-link>
+                    <div class="dropdown">
+                        <div tabindex="0" role="button" class="btn btn-link text-base-content">导出</div>
+                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                            <li><a @click="download('xlsx')">Excel 格式</a></li>
+                            <li><a @click="download('csv')">csv 格式</a></li>
+                            <li><a @click="download('txt')">txt 格式</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -71,7 +79,11 @@
                                 <td class="p-0">{{ user.gameover ? "是" : "" }}</td>
                                 <td :class="{'min-w-[21ch]': user.lastPassed < 32503651200000 }">{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>
                                 <td>{{ user.remark }}</td>
-                                <td v-for="problem in problems" :key="problem.pid">{{ user.gameprocess[problem.pid] }}</td>
+                                <td v-for="problem in problems" :key="problem.pid">
+                                    <router-link v-if="user.gameprocess[problem.pid]" :to="'/record/' + problem.pid + '?user=' + user.username" tag="button" class="btn btn-xs btn-ghost text-white">
+                                        {{ user.gameprocess[problem.pid] }}
+                                    </router-link>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -137,17 +149,50 @@
                                 <router-link :to="'/record?user=' + encodeURIComponent(drawerUser.username)">全部提交记录</router-link>
                             </li>
                             <li v-for="problem in problems" :key="problem.pid">
-                                <router-link :to="'/record/' + problem.pid + '?user=' + encodeURIComponent(drawerUser.username)">{{ problem.name }}</router-link>
+                                <router-link :to="'/record/' + problem.pid + '?user=' + encodeURIComponent(drawerUser.username)">{{ problem.name }}  <span v-if="drawerUser.gameprocess?.[problem.pid]">({{drawerUser.gameprocess[problem.pid]}} pts)</span></router-link>
                             </li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
+        <table style="display: none;" ref="userlist">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>用户名</th>
+                    <th>账户信息</th>
+                    <th>学号</th>
+                    <td>题数</td>
+                    <td>分数</td>
+                    <td>通关</td>
+                    <td>上次有效提交</td>
+                    <td>备注</td>
+                    <td v-for="problem in problems" :key="problem.pid">
+                        {{ problem.name }}
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(user, index) in users" :key="user._id">
+                    <th>{{ user.banned || user.hidden ? '*' : user.rank }}</th>
+                    <th>{{ user.username}}</th>
+                    <th>{{ [user.admin ? '管理员' : '', user.banned ? '已封禁' : '', user.hidden ? '已隐藏' : ''].filter(x => x).join(', ') }}</th>
+                    <td>{{ user.studentID }}</td>
+                    <td>{{ user.passed || 0 }}</td>
+                    <td>{{ user.points || 0 }}</td>
+                    <td>{{ user.gameover ? "是" : "" }}</td>
+                    <td>{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>
+                    <td>{{ user.remark }}</td>
+                    <td v-for="problem in problems" :key="problem.pid">{{ user.gameprocess[problem.pid] }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
     
 <script setup>
+import TableExport from 'tableexport'
 import { computed, reactive, ref, watch, onUnmounted } from 'vue'
 import { api, apiPut } from '@/tools/api'
 import { user, rankEventListener } from '@/tools/bus'
@@ -157,6 +202,7 @@ import Pagination from '@/components/Pagination.vue'
 const router = useRouter()
 const users = ref([]);
 const loading = ref(true)
+const userlist = ref(null)
 const loading2 = ref(false)
 const problems = ref([])
 const rankTh = ref(null)
@@ -307,6 +353,29 @@ const totalPages = computed(() => {
 const pageedUsers = computed(() => {
     return searchedUsers.value.slice((currentPage.value - 1) * size.value, currentPage.value * size.value)
 })
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}_${month}_${day}_${hours}_${minutes}_${seconds}`;
+}
+function download(format) {
+    console.log(format)
+    const te = new TableExport(userlist.value, {
+        formats: [format],
+        filename: '用户列表_' + formatDate(new Date()),
+        bootstrap: false,
+        exportButtons: false,
+        sheetname: "用户列表"
+    });
+    console.log(te.getExportData())
+    const exportData = te.getExportData()['tableexport-1'][format];
+    te.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
+
+}
 </script>
   
 <style scoped>

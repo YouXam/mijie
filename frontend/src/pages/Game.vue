@@ -43,7 +43,7 @@
                         {{ manual ? '刷新状态' : '提交' }}
                     </button>
                     <div class="flex flex-col mx-auto" v-if="show_turnstile">
-                        <div id="cfTurnstile" class="cf-turnstile my-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-callback="console.log"></div>
+                        <div id="cfTurnstile" class="cf-turnstile my-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
                     </div>
                 </template>
             </div>

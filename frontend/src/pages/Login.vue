@@ -10,7 +10,11 @@
                 <span class="label-text">密码</span>
             </label>
             <input type="password" class="input input-bordered w-full max-w-xs" autocomplete="current-password" v-model="password"/>
-            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8">登录</button>
+            <div id="cfTurnstile" class="cf-turnstile mt-5 ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="login"></div>
+            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8 || token.length == 0 || loading">
+                <span class="loading loading-dots loading-xs" v-if="loading"></span>
+                登录
+            </button>
             <router-link tag="button" to="/register" class="btn btn-accent btn-outline mt-2">注册</router-link>
         </div>
     </TitleCard>
@@ -18,13 +22,14 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { user } from '@/tools/bus'
 import { useRouter } from 'vue-router'
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
+const loading = ref(false)
 if (user.login.value) {
     notificationManager.add({
         message: '您已登录，无需重复登录',
@@ -32,14 +37,26 @@ if (user.login.value) {
     })
     router.replace(history.state?.back?.path || '/')
 }
+const token = ref('')
+nextTick(() => {
+    turnstile.render('#cfTurnstile', {
+        sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+        callback: (tk) => {
+            token.value = tk;
+        }
+    });
+})
+
 const username = ref('')
 const password = ref('')
 async function login() {
+    loading.value = true
     const hash = await encryptPassword(password.value)
     try {
         const res = await api('/api/login', {
             username: username.value,
-            password: hash
+            password: hash,
+            token: token.value
         })
         const afterLogin = localStorage.getItem("afterLogin")
         localStorage.removeItem("afterLogin")
@@ -51,6 +68,8 @@ async function login() {
         }
     } catch (err) {
         console.log(err)
+    } finally {
+        loading.value = false
     }
 }
 </script>

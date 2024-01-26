@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="bg-base-200">
+            <tr class="bg-base-200" v-if="!currentUser.hidden">
               <th>{{ currentUser.rank }}</th>
               <td v-if="!currentUser.noPrize">{{ currentUser.username }}</td>
               <td v-else>
@@ -36,7 +36,11 @@
               <td>{{ currentUser.passed }}</td>
               <td>{{ currentUser.points }}</td>
               <td :class="{'min-w-[21ch]': currentUser.lastPassed < 32503651200000 }">{{ currentUser.lastPassed >= 32503651200000 ? "" : currentUser.lastPassed.toLocaleString() }}</td>
-              <td :class="{'min-w-[10ch]': currentUser.gameover }">{{ currentUser.gameover ? "已通关": "" }}</td>
+              <td :class="{'min-w-[10ch]': currentUser.gameover }">
+                <div v-if="currentUser.gameover">
+                  <font-awesome-icon class="mr-1 text-amber-200" :icon="['fas', 'trophy']" /> 已通关
+                </div>
+              </td>
             </tr>
             <tr v-for="(user, index) in rank" :key="user.username">
               <th>{{ user.rank }}</th>
@@ -49,7 +53,11 @@
               <td>{{ user.passed }}</td>
               <td>{{ user.points }}</td>
               <td :class="{'min-w-[21ch]': user.lastPassed < 32503651200000 }">{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>
-              <td :class="{'min-w-[10ch]': user.gameover }">{{ user.gameover ? "已通关": "" }}</td>
+              <td :class="{'min-w-[10ch]': user.gameover }">
+                <div v-if="user.gameover">
+                  <font-awesome-icon  class="mr-1 text-amber-200" :icon="['fas', 'trophy']" /> 已通关
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -87,7 +95,8 @@ const currentUser = ref({
   points: 0,
   lastPassed: new Date(0),
   noPrize: false,
-  gameover: false
+  gameover: false,
+  hidden: true
 })
 function calculateRank(ranks) {
   if (ranks.length == 0) return []

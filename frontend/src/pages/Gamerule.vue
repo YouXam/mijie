@@ -3,7 +3,7 @@
         <template #subtitle><div class="mt-10"></div></template>
         <div class="px-5 pt-5">
             <Problem :content="gamerule" v-if="gamerule.length"></Problem>
-            <div v-else>
+            <div class="mb-5" v-else>
                 空
             </div>
         </div>

@@ -32,7 +32,12 @@
                     'opacity-100': password2.length && password2 != password
                 }">密码不匹配</span>
             </label>
-            <button class="btn btn-accent" @click="register" :disabled="error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">注册</button>
+            <div id="cfTurnstile" class="cf-turnstile ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="register"></div>
+            <button class="btn btn-accent mt-5" @click="register"
+                :disabled="token.length === 0 || loading || error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">
+                <span class="loading loading-dots loading-xs" v-if="loading"></span>
+                注册 
+            </button>
             <router-link tag="button" to="/login" class="btn btn-accent btn-outline mt-2">登录</router-link>
         </div>
     </TitleCard>
@@ -40,7 +45,7 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router'
@@ -52,6 +57,17 @@ const studentID = ref('')
 const password = ref('')
 const password2 = ref('')
 const error = ref('')
+const token = ref('')
+const loading = ref(false)
+nextTick(() => {
+    turnstile.render('#cfTurnstile', {
+        sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+        callback: (tk) => {
+            token.value = tk;
+        }
+    });
+})
+
 if (user.login.value) {
     notificationManager.add({
         message: '您已登录',
@@ -81,16 +97,20 @@ watch(password, () => {
     }
 })
 async function register() {
+    loading.value = true
     const hash = await encryptPassword(password.value)
     try {
         await api('/api/register', {
             username: username.value,
             studentID: studentID.value,
-            password: hash
+            password: hash,
+            token: token.value
         })
         router.push('/login')
     } catch (err) {
         console.log(err)
+    } finally {
+        loading.value = false
     }
 }
 </script>

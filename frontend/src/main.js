@@ -9,7 +9,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faRankingStar, faCodeMerge, faChartBar, faUser, faGear, faBarsStaggered, faRightFromBracket,
     faFileArrowDown, faCircleInfo, faCircleCheck, faTriangleExclamation, faCircleXmark,
-    faAnglesDown, faArrowsRotate, faXmark, faAddressBook, faNoteSticky, faTrash, faChalkboard
+    faAnglesDown, faArrowsRotate, faXmark, faAddressBook, faNoteSticky, faTrash, faChalkboard, 
+    faTrophy
 } from '@fortawesome/free-solid-svg-icons';
 
 [
@@ -31,7 +32,8 @@ import {
     faAddressBook,
     faNoteSticky,
     faTrash,
-    faChalkboard
+    faChalkboard,
+    faTrophy
 ].forEach(icon => library.add(icon));
 
 createApp(App)
