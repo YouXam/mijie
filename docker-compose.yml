@@ -35,6 +35,7 @@ services:
     networks:
       - my_network
     environment:
+      - TZ=Asia/Shanghai
       - MONGODB_URI=mongodb://mongodb:27017/baituan
       - JWT_SECRET=
       - API_PORT=3001

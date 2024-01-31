@@ -36,8 +36,8 @@
               <td>{{ currentUser.passed }}</td>
               <td>{{ currentUser.points }}</td>
               <td :class="{'min-w-[21ch]': currentUser.lastPassed < 32503651200000 }">{{ currentUser.lastPassed >= 32503651200000 ? "" : currentUser.lastPassed.toLocaleString() }}</td>
-              <td :class="{'min-w-[10ch]': currentUser.gameover }">
-                <div v-if="currentUser.gameover">
+              <td :class="{'min-w-[14ch]': currentUser.gameover }">
+                <div v-if="currentUser.gameover" >
                   <font-awesome-icon class="mr-1 text-amber-200" :icon="['fas', 'trophy']" /> 已通关
                 </div>
               </td>

@@ -2,7 +2,7 @@
     <TitleCard title="游戏规则" class="mb-20" :minHeight="100">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="px-5 pt-5">
-            <Problem :content="gamerule" v-if="gamerule.length"></Problem>
+            <Markdown :content="gamerule" v-if="gamerule.length"></Markdown>
             <div class="mb-5" v-else>
                 空
             </div>
@@ -14,13 +14,13 @@
 </template>
   
 <script>
-import Problem from '@/components/Problem.vue'
+import Markdown from '@/components/Markdown.vue'
 import TitleCard from '@/components/TitleCard.vue';
 import { api } from '@/tools/api'
 export default {
     components: {
         TitleCard,
-        Problem
+        Markdown
     },
     data: () => ({
         gamerule: ''

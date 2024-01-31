@@ -1,8 +1,14 @@
 module.exports = {
     name: 'EasyProblem',
     pid: 'easyProblem',
-    description_file: 'problem.md',
-    solved_description_file: "solved.md",
+    description: {
+        before_solve: {
+            md: "problem.md",
+        },
+        after_solve: {
+            md: "solved.md",
+        }
+    },
     points: 10,
     checker: '正确的答案',
     first: true,

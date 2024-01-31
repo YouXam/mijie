@@ -1,8 +1,14 @@
 module.exports = {
     name: 'Cheat AI',
     pid: "cheatAI",
-    description_file: 'problem.md',
-    solved_description_file: "solved.md",
+    description: {
+        before_solve: {
+            md: "problem.md",
+        },
+        after_solve: {
+            md: "solved.md",
+        }
+    },
     interval: 10 * 1000,
     async checker(ans, ctx) {
         if (ans === '11.934') {

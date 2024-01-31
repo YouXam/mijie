@@ -1,10 +1,16 @@
 module.exports = {
     name: 'countBit',
     pid: "countBit",
-    description_file: "problem.md",
+    description: {
+        before_solve: {
+            md: "problem.md",
+        },
+        after_solve: {
+            content: "最后大家发现，哈士奇经常活动的区域有以下几个：风味食堂、教工食堂、南区食堂、小麦铺、西餐厅、咖啡厅、公共卫生间。",
+        }
+    },
     interval: 10 * 1000,
     points: 20,
-    solved_description: "最后大家发现，哈士奇经常活动的区域有以下几个：风味食堂、教工食堂、南区食堂、小麦铺、西餐厅、咖啡厅、公共卫生间。",
     checker: async (ans, ctx) => {
         const testNumbers = Array.from({ length: 100 }, () => Math.floor(Math.random() * 2000000000));
         const code = `

@@ -95,12 +95,25 @@
                     </div>
                     <div class="mt-2 msg">
                         
-                        <div v-if="!record.manualScores"><span class="font-extrabold">答案: </span><template
-                                v-if="record.ans?.length">
-                                <pre>{{ record.ans }}</pre>
-                            </template><span v-else class="italic">空</span></div>
+                        <div v-if="!record.manualScores">
+                            <span class="font-extrabold">答案: </span>
+                            <template v-if="record.ans">
+                                <div
+                                    v-if="(typeof record.ans === 'string')"
+                                    class="bg-opacity-30 bg-black m-2 p-2 rounded-md">
+                                    <pre >{{ record.ans }}</pre>
+                                </div>
+                                <div v-else>
+                                    <div v-for="(ans, i) in record.ans" :key="i" class="mx-2">
+                                        <span class="font-bold">{{ i }}: </span>
+                                        <pre v-if="ans" class="ml-5 bg-opacity-30 bg-black m-2 p-2 rounded-md">{{ ans }}</pre>
+                                        <span v-else class="italic">空</span>
+                                    </div>
+                                </div>
+                            </template>
+                            <span v-else class="italic">空</span></div>
                         <div v-if="record.msg?.length"><span class="font-extrabold">信息: </span>
-                            <div class="max-w-full">
+                            <div class="max-w-full bg-opacity-30 bg-black m-2 p-2 rounded-md">
                                 <pre>{{ record.msg }}</pre>
                             </div>
                         </div>
@@ -149,6 +162,7 @@ const problem = reactive({ name: '', manual: false })
 const page = ref(1);
 const size = 10;
 const score = ref('');
+const inputs = ref([]);
 const totalPages = ref(1);
 const total = ref(0);
 function onPageChange(p) {
@@ -191,6 +205,7 @@ async function update(noNotification = false) {
                 problem.name = res.name
                 problem.manual = res.manualScores
                 document.title = res.name + ' 提交记录 | ' + document.title.split(' | ')[1]
+                inputs.value = res.inputs
             })
         } else {
             document.title = '提交记录 | ' + document.title.split(' | ')[1]

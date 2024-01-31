@@ -15,6 +15,8 @@ const router = useRouter()
         if (err.status == 401) {
             localStorage.setItem("afterLogin", "/start")
             router.replace("/login")
+        } else {
+            router.replace("/")
         }
     }
 })();

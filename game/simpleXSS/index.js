@@ -1,8 +1,14 @@
 module.exports = {
     name: 'SimpleXSS',
     pid: 'simpleXSS',
-    description_file: 'problem.md',
-    solved_description_file: "solved.md",
+    description: {
+        before_solve: {
+            md: "problem.md",
+        },
+        after_solve: {
+            md: "solved.md",
+        }
+    },
     points: 100,
     interval: 2000,
     checker: "RealButterCookiesFromHusky",

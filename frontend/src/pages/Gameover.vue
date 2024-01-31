@@ -1,9 +1,9 @@
 <template>
     <TitleCard title="游戏结束" class="mb-20" :minHeight="100">
         <template #subtitle><div class="mt-10"></div></template>
-        <div class="px-5 pt-5">
-            <Problem :content="gameover" v-if="gameover.length"></Problem>
-            <div v-else>
+        <div>
+            <Markdown :content="gameover" v-if="gameover.length"></Markdown>
+            <div class="px-5 pt-5" v-else>
                 空
             </div>
             <router-link tag="button" to="/" class="btn btn-accent btn-outline mt-10 ">首页</router-link>
@@ -16,7 +16,7 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue'
-import Problem from '@/components/Problem.vue'
+import Markdown from '@/components/Markdown.vue'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
 import { api } from '@/tools/api'

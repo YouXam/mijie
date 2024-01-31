@@ -3,6 +3,11 @@
         <template #subtitle><div class="mt-10"></div></template>
         <div class="w-full flex flex-col mx-auto">
             <label class="label">
+                <span class="label-text">开始时间</span>
+            </label>
+            <input type="text" class="input input-bordered w-full max-w-md" v-model="startTime" @blur="put(5)"/>
+            
+            <label class="label">
                 <span class="label-text">结束时间</span>
             </label>
             <input type="text" class="input input-bordered w-full max-w-md" v-model="endTime" @blur="put(1)"/>
@@ -42,6 +47,7 @@ import TitleCard from '@/components/TitleCard.vue';
 import { ref, nextTick } from 'vue' 
 import { api, apiPut } from '@/tools/api'
 import notificationManager from '@/tools/notification.js'
+const startTime = ref('')
 const endTime = ref('')
 const gamerule = ref('')
 const gameover = ref('')
@@ -66,6 +72,7 @@ function resize() {
 }
 void async function() {
     const res = await api('/api/game-config')
+    startTime.value = new Date(res.startTime).toLocaleString()
     endTime.value = new Date(res.endTime).toLocaleString()
     gamerule.value = res.gamerule
     gameover.value = res.gameover
@@ -75,7 +82,27 @@ void async function() {
 }()
 
 function put(id) {
-    if (id == 1) {
+    if (id === 5) {
+        if (last.startTime == startTime.value) return
+        last.startTime = startTime.value
+        let time;
+        try {
+            time = new Date(startTime.value)
+            if (isNaN(time.getTime())) throw new Error()
+        } catch (e) {
+            notificationManager.add({
+                message: '时间格式错误',
+                type: 'error'
+            })
+            startTime.value = last.startTime
+            return
+        }
+        startTime.value = time.toLocaleString()
+        apiPut('/api/game-config', {
+            startTime: time
+        })
+    
+    } else if (id == 1) {
         if (last.endTime == endTime.value) return
         last.endTime = endTime.value
         let time;

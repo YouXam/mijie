@@ -20,6 +20,7 @@ function authRoutes(db) {
     router.get('/game-config', async ctx => {
         ctx.body =  {
             endTime: gameConfig.endTime || '3000-01-01 00:00:00',
+            startTime: gameConfig.startTime || '2000-01-01 00:00:00',
             gamerule: gameConfig.gamerule || '',
             gameover: gameConfig.gameover || '',
             about: gameConfig.about || ''
@@ -34,6 +35,8 @@ function authRoutes(db) {
         if (!gameConfig[option]) {
             if (option === 'endTime') {
                 ctx.body = { [option]: '3000-01-01 00:00:00' };
+            } else if (option === 'startTime') {
+                ctx.body = { [option]: '2000-01-01 00:00:00' };
             } else {
                 ctx.body = { [option]: null };
             }

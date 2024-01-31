@@ -28,7 +28,7 @@
                             <font-awesome-icon :icon="['fas', 'trash']" />
                         </button>
                         <h1 class="text-gray-400 font-extralight">{{ new Date(notice.time).toLocaleString() }} by {{ notice.author }}</h1>
-                        <Problem :content="notice.content"></Problem>
+                        <Markdown :content="notice.content"></Markdown>
                     </div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
 </template>
 
 <script setup> 
-import Problem from '@/components/Problem.vue';
+import Markdown from '@/components/Markdown.vue';
 import { ref, onUnmounted } from 'vue'
 import { user, noticeEventListener } from '@/tools/bus'
 import { api, apiDelete } from '@/tools/api'

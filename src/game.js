@@ -111,16 +111,23 @@ class Plugins {
                     console.log(`Failed to load plugin ${folder}: missing points, checker or description`);
                     return
                 }
-                if (plugin.description_file) {
-                    const descriptionPath = path.join(this.pluginsPath, folder, plugin.description_file);
-                    if (fs.existsSync(descriptionPath)) {
-                        plugin.description = fs.readFileSync(descriptionPath, 'utf8');
-                    }
+                if (!plugin.description || !plugin.description?.before_solve) {
+                    console.log(`Failed to load plugin ${folder}: missing description or description.before_solve`);
+                    return
                 }
-                if (plugin.solved_description_file) {
-                    const descriptionPath = path.join(this.pluginsPath, folder, plugin.solved_description_file);
-                    if (fs.existsSync(descriptionPath)) {
-                        plugin.solved_description = fs.readFileSync(descriptionPath, 'utf8');
+                if (!plugin.description.before_solve.mdv && !plugin.description.before_solve.md && !plugin.description.before_solve.content) {
+                    console.log(`Failed to load plugin ${folder}: missing description.before_solve.mdv or description.before_solve.md`);
+                    return
+                }
+                for (const solve of ['before_solve', 'after_solve']) {
+                    if (plugin.description?.[solve]?.md) {
+                        const descriptionPath = path.join(this.pluginsPath, folder, plugin.description[solve].md);
+                        if (fs.existsSync(descriptionPath)) {
+                            plugin.description[solve].content = fs.readFileSync(descriptionPath, 'utf8');
+                        } else {
+                            console.log(`Failed to load plugin ${folder}: ${descriptionPath} not found`)
+                            return
+                        }
                     }
                 }
                 if (plugin.hints && plugin.hints.length) {
@@ -188,7 +195,8 @@ class Plugins {
     }
 
     loaded(folder) {
-        console.log(`Plugin "${this.plugins[folder].name}" has been loaded/reloaded`);
+        if (this.pluginMap.get(this.plugins[folder].pid)) 
+            console.log(`Plugin "${this.plugins[folder].name}" has been reloaded`);
         this.pluginMap.set(this.plugins[folder].pid, this.plugins[folder]);
     }
 
@@ -236,6 +244,26 @@ class AI {
     }
 }
 
+const { minimatch } = require("minimatch");
+function checkAllowedFiles(root, { include, exclude }, targetPath) {
+    const absolutePath = path.join(root, targetPath);
+    if (exclude) {
+        for (const pattern of exclude) {
+            if (minimatch(absolutePath, path.join(root, pattern))) {
+                return false;
+            }
+        }
+    }
+    if (!include) return false;
+    for (const pattern of include) {
+        if (minimatch(absolutePath, path.join(root, pattern))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const ai = new AI();
 
 module.exports = function (db) {
@@ -248,6 +276,9 @@ module.exports = function (db) {
     })
 
     router.get('/start', async (ctx) => {
+        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+            ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
+        }
         ctx.body = {
             first: plugins.first
         }
@@ -346,16 +377,21 @@ module.exports = function (db) {
     router.get('/problem/:name', async (ctx) => {
         const cur = await checkPre(ctx);
         if (ctx.query.simple) {
-            ctx.body = { name: cur.name, manualScores: cur.manualScores };
+            ctx.body = {
+                name: cur.name,
+                manualScores: cur.manualScores,
+                inputs: cur.inputs,
+            };
             return;
         }
         ctx.body = {
             name: cur.name,
             points: cur.points,
-            description: cur.description,
+            description: cur.description.before_solve,
             points: cur.points,
             manualScores: cur.manualScores,
             files: cur.files,
+            inputs: cur.inputs,
             percent: await plugins.getPercent(cur.pid, db)
         };
     });
@@ -472,8 +508,27 @@ module.exports = function (db) {
                 name: plugins.pluginMap.get(n.pid).name,
                 ...n
             })) : undefined,
-            solved_description: cur.solved_description,
+            solved_description: cur.description.after_solve,
             points: record.points
+        };
+    })
+
+    router.get('/skipProblem/:name', async (ctx) => {
+        const cur = await checkPre(ctx);
+        if (!ctx.state.gameprocess.passed[ctx.params.name]) {
+            ctx.throw(400, `You have not passed this problem`);
+        }
+        const record = await db.collection('records').find({ pid: cur.pid, passed: true, username: ctx.state.username }).sort({ time: -1 }).limit(1).toArray()
+        ctx.body = {
+            passed: true,
+            msg: record[0].msg || '',
+            gameover: record[0].gameover || false,
+            next: cur.next ? cur.next.map(n => ({
+                name: plugins.pluginMap.get(n.pid).name,
+                ...n
+            })) : undefined,
+            solved_description: cur.description.after_solve,
+            points: record[0].points
         };
     })
 
@@ -481,6 +536,9 @@ module.exports = function (db) {
         const cur = await checkPre(ctx);
         if (cur.manualScores) {
             ctx.throw(400, `This roblem need to be automatically scored.`);
+        }
+        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+            ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
         if (new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束，无法提交`);
@@ -607,7 +665,7 @@ module.exports = function (db) {
                 })) : undefined,
                 gameover: cur.gameover,
                 msg,
-                solved_description: cur.solved_description
+                solved_description: cur.description.after_solve
             };
         } else {
             record.passed = false;
@@ -617,18 +675,17 @@ module.exports = function (db) {
             };
         }
         await db.collection('records').insertOne(record);
-        const stat = await db.collection('records').aggregate([
+        const stat = await db.collection("records").aggregate([
+            { $match: { pid: cur.pid } },
+            { $group: { _id: "$username", passed: { $max: "$passed" } } },
             {
-                $match: { pid: cur.pid }
-            },
-            {
-                $group: {
-                    _id: null,
-                    passed: { $sum: { $cond: [{ $eq: ["$passed", true] }, 1, 0] } },
-                    total: { $sum: 1 }
-                }
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                passed: { $sum: { $cond: ["$passed", 1, 0] } }
+              }
             }
-        ]).toArray()
+          ]).toArray();
         const { passed, total } = stat[0];
         const percent = Math.round(passed / total * 10000) / 100;
         ctx.body = {
@@ -642,16 +699,31 @@ module.exports = function (db) {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
         const cur = await checkPre(ctx);
-        if (!cur.files?.length) {
+        const root = path.join(__dirname, '../game', cur.folder)
+        const patterns = {
+            before_solve: {
+                include: cur?.description?.before_solve?.mdv?.include || [],
+                exclude: cur?.description?.before_solve?.mdv?.exclude || []
+            },
+            after_solve: {
+                include: cur?.description?.after_solve?.mdv?.include || [],
+                exclude: cur?.description?.after_solve?.mdv?.exclude || []
+            }
+        }
+        if (checkAllowedFiles(root, patterns.before_solve, filePath)
+            || checkAllowedFiles(root, patterns.after_solve, filePath)) {
+            await send(ctx, filePath, { root });
+            return
+        }
+        if (!cur.files?.length 
+            || !cur.files.some(x => {
+                    if (typeof x == "string") return x == filePath;
+                    else return x.filename == filePath;
+                })
+        ) {
             ctx.throw(403, `Access denied`)
         }
-        if (!cur.files.some(x => {
-            if (typeof x == "string") return x == filePath;
-            else return x.filename == filePath;
-        })) {
-            ctx.throw(403, `Access denied`)
-        }
-        await send(ctx, filePath, { root: path.join(__dirname, '../game', cur.folder) });
+        await send(ctx, filePath, { root });
     });
 
     router.get('/record', async (ctx) => {

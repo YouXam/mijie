@@ -2,22 +2,29 @@
     <div>
         <TitleCard :title="title" :minHeight="100">
             <template #subtitle>
-                <div class="flex title flex-row items-center justify-center" v-if="score !== undefined && score != null || percent != undefined && percent != null">
+                <div class="flex title flex-row items-center justify-center" v-if="score !== undefined && score != null || percent != undefined && percent != null && !manual || user.gameprocess[$route.params.pid]">
                     <div class="flex flex-col items-center justify-center">
                         <div class="text-2xl font-bold">
-                            {{ score }} {{ score !== undefined ? 'pts' : '' }} {{ (percent !== null && percent !== undefined) ? (score !== undefined ? ", ": "") + percent + "% passed" : ""}}
+                            {{ score }} {{ score !== undefined ? 'pts' : '' }}
+                            <span v-if="percent !== null && percent !== undefined && !manual" class="tooltip" data-tip="通过人数 / 提交人数">
+                                <span v-if="score">, </span>{{  percent  }}% passed
+                            </span>
+                            <span v-if="user.gameprocess[$route.params.pid]">
+                                <span v-if="score || percent !== null && percent !== undefined && !manual">, </span>
+                                <router-link :to="'/record/' + $route.params.pid + '?passed=true'" class="link">已通过</router-link>
+                            </span>
                         </div>
                     </div>
                 </div>
             </template>
-            <template v-if="gameState == 1 || solved_description.length == 0">
+            <template v-if="gameState == 1 || !solved_description">
                 <div class="min-h-[100px] items-center justify-center flex flex-col">
-                    <Problem :content="problem"></Problem>
+                    <Problem :description="problem"></Problem>
                 </div>
                 <FileList v-if="files.length" :files="files" @download="downloadFile"/>
             </template>
             <div class="min-h-[100px] items-center justify-center flex flex-col" v-else>
-                <Problem :content="solved_description"></Problem>
+                <Problem :description="solved_description"></Problem>
             </div>
         </TitleCard>
         <div v-if="hints.length" class="mx-auto text-center flex flex-col items-center justify-center card container">
@@ -29,11 +36,27 @@
         <div class="mx-auto text-center flex flex-col items-center justify-center mb-20">
             <div class="card container">
                 <template v-if="gameState == 1">
-                    <textarea ref="ansInput" class="mt-5 textarea textarea-white" style="border-color: hsl(var(--bc) / 0.2)" placeholder="输入答案" v-model="ans"
-                        v-auto-expand
-                        v-if="!manual"
-                        @keydown.ctrl.enter="submit"
-                    ></textarea>
+                    <template v-if="!manual">
+                        <textarea 
+                            v-if="!inputs || !inputs.length"
+                            class="mt-5 textarea textarea-white"
+                            style="border-color: hsl(var(--bc) / 0.2)"
+                            placeholder="输入答案"
+                            v-model="ans"
+                            v-auto-expand
+                            @keydown.ctrl.enter="submit"
+                        ></textarea>
+                        <template v-else>
+                            <textarea 
+                                v-for="(input, index) in inputs" :key="index"
+                                class="mt-5 textarea textarea-white"
+                                style="border-color: hsl(var(--bc) / 0.2)"
+                                :placeholder="input.placeholder || '输入答案'"
+                                v-model="answers[index]"
+                                v-auto-expand
+                            ></textarea>
+                        </template>
+                    </template>
                     <div v-else class="mt-5 ">
                         <font-awesome-icon :icon="['fas', 'circle-info']" />
                         此题为现场题，您必须在现场完成任务后由管理员手动评分，然后刷新状态以更新分数和排行榜。 
@@ -41,6 +64,10 @@
                     <button class="submit btn btn-outline mt-5 mb-5" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
                         <span class="loading loading-dots loading-xs" v-if="loading"></span>
                         {{ manual ? '刷新状态' : '提交' }}
+                    </button>
+                    <button v-if="user.gameprocess[$route.params.pid]" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
+                        <span class="loading loading-dots loading-xs" v-if="loading2"></span>
+                        跳过
                     </button>
                     <div class="flex flex-col mx-auto" v-if="show_turnstile">
                         <div id="cfTurnstile" class="cf-turnstile my-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
@@ -115,25 +142,28 @@ import { user } from '@/tools/bus'
 import Problem from '@/components/Problem.vue'
 import FileList from '@/components/FileList.vue'
 import NextList from '@/components/NextList.vue'
+
+const answers = ref([])
 const router = useRouter()
 const title = ref('')
-const problem = ref(`**Loading...**`)
+const problem = ref(null)
 const score = ref(null)
 const ans = ref('')
 const loading = ref(false)
 const records = ref([])
-const ansInput = ref(null)
 const showDown = ref(false)
 const files = ref([])
 const next = ref([])
 const manual = ref(false)
 const gameState = ref(1)
 const percent = ref(null)
-const solved_description = ref('')
+const inputs = ref(null)
+const solved_description = ref(null)
 let lastSubmit = null
 const hintr = localStorage.getItem('hints')
 const hints = ref([])
 const show_turnstile = ref(false)
+const loading2 = ref(false)
 if (hintr) {
     try {
         const hintk = JSON.parse(hintr)
@@ -206,7 +236,9 @@ async function submit({ token }) {
         const res = await (manual.value ? 
             api('/api/problemManual/' + router.currentRoute.value.params.pid) :
             api('/api/problem/' + router.currentRoute.value.params.pid, {
-                ans: ans.value,
+                ans: inputs.value
+                    ? Object.fromEntries(inputs.value.map((input, index) => [input.name, answers.value[index]]))
+                    : ans.value,
                 token: token || cf_token
             })
         )
@@ -220,7 +252,10 @@ async function submit({ token }) {
         if (res.next) next.value = res.next
         if (res.gameover) gameState.value = 3
         if (res.percent != undefined && res.percent != null) percent.value = res.percent
-        if (res.solved_description) solved_description.value = res.solved_description
+        if (res.solved_description) solved_description.value = {
+            pid: router.currentRoute.value.params.pid,
+            ...res.solved_description
+        }
         nextTick(() => {
             if (!checkIfResultInViewport()) showDown.value = true
         })
@@ -231,15 +266,51 @@ async function submit({ token }) {
             router.push('/login')
         }
         loading.value = false
+        console.error(err)
+    }
+}
+async function skip() {
+    records.value = []
+    loading2.value = true
+    showDown.value = false
+    lastSubmit = new Date()
+    try {
+        const res = await api('/api/skipProblem/' + router.currentRoute.value.params.pid)
+        await sleep(500 - new Date().getTime() + lastSubmit.getTime())
+        records.value.unshift(res)
+        if (res.passed) gameState.value = 2
+        if (res.next) next.value = res.next
+        if (res.gameover) gameState.value = 3
+        if (res.percent != undefined && res.percent != null) percent.value = res.percent
+        if (res.solved_description) solved_description.value = {
+            pid: router.currentRoute.value.params.pid,
+            ...res.solved_description
+        }
+        nextTick(() => {
+            if (!checkIfResultInViewport()) showDown.value = true
+        })
+        loading2.value = false
+    } catch (err) {
+        console.log(err)
+        if (err.status == 401) {
+            localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
+            router.push('/login')
+        }
+        loading2.value = false
     }
 }
 ; (async function () {
     try {
         const res = await api('/api/problem/' + router.currentRoute.value.params.pid)
         title.value = res.name
-        problem.value = res.description
+        problem.value = {
+            pid: router.currentRoute.value.params.pid,
+            ...res.description
+        }
         score.value = res.points
         manual.value = res.manualScores
+        inputs.value = res.inputs
+        answers.value = res.inputs.map(() => '')
         percent.value = res.percent
         if (res.files && res.files.length) files.value = res.files
         document.title = res.name + ' | ' + document.title.split(' | ')[1]
