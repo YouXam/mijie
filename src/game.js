@@ -10,6 +10,7 @@ const send = require('koa-send');
 const axios = require('axios');
 const { verify } = require('./turnstile');
 const { gameConfig } = require('./auth')
+const PluginServer = require('./pluginServer');
 
 function haveCommonKeyValuePair(obj1, obj2) {
     let smallerObj = obj1, largerObj = obj2;
@@ -95,7 +96,7 @@ class Plugins {
             clearModule(pluginPath);
             try {
                 const plugin = require(pluginPath);
-                if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function' && !plugin.manualScores) {
+                if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function' && !plugin.manualScores && !plugin.server && plugin.inputs !== false) {
                     console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
                     return
                 }
@@ -107,7 +108,7 @@ class Plugins {
                     console.log(`Failed to load plugin ${folder}: invalid points`);
                     return
                 }
-                if ((plugin.points === undefined || !plugin.checker || (!plugin.description && !plugin.description_file)) && !plugin.manualScores) {
+                if ((plugin.points === undefined || (!plugin.checker && !plugin.server)) && !plugin.manualScores && plugin.inputs !== false) {
                     console.log(`Failed to load plugin ${folder}: missing points, checker or description`);
                     return
                 }
@@ -118,6 +119,26 @@ class Plugins {
                 if (!plugin.description.before_solve.mdv && !plugin.description.before_solve.md && !plugin.description.before_solve.content) {
                     console.log(`Failed to load plugin ${folder}: missing description.before_solve.mdv or description.before_solve.md`);
                     return
+                }
+                plugin.pid = plugin.pid.toLowerCase()
+                if (plugin.server) {
+                    if (typeof plugin.server !== "function") {
+                        console.log(`Failed to load plugin ${folder}: server is not a function`);
+                        return
+                    }
+                    plugin.serverInstance = new PluginServer(plugin);
+                    try {
+                        const instance = plugin.server(plugin.serverInstance);
+                        if (instance instanceof Promise) {
+                            instance.catch(err => {
+                                console.log(`Plugin ${folder} server init error: ` + err);
+                            })
+                        }
+                    } catch (error) {
+                        console.log(`Plugin ${folder} server init error: ` + error);
+                        return
+                    }
+                    console.log(`Plugin ${folder} server init success`)
                 }
                 for (const solve of ['before_solve', 'after_solve']) {
                     if (plugin.description?.[solve]?.md) {
@@ -195,7 +216,7 @@ class Plugins {
     }
 
     loaded(folder) {
-        if (this.pluginMap.get(this.plugins[folder].pid)) 
+        if (this.pluginMap.get(this.plugins[folder].pid))
             console.log(`Plugin "${this.plugins[folder].name}" has been reloaded`);
         this.pluginMap.set(this.plugins[folder].pid, this.plugins[folder]);
     }
@@ -262,6 +283,25 @@ function checkAllowedFiles(root, { include, exclude }, targetPath) {
     }
 
     return false;
+}
+
+async function insertRecord(db, record) {
+    await db.collection('records').insertOne(record);
+    const stat = await db.collection("records").aggregate([
+        { $match: { pid: record.pid } },
+        { $group: { _id: "$username", passed: { $max: "$passed" } } },
+        {
+            $group: {
+                _id: null,
+                total: { $sum: 1 },
+                passed: { $sum: { $cond: ["$passed", 1, 0] } }
+            }
+        }
+    ]).toArray();
+    const { passed, total } = stat[0];
+    const percent = Math.round(passed / total * 10000) / 100;
+    plugins.setPercent(record.pid, percent, db)
+    return percent
 }
 
 const ai = new AI();
@@ -354,7 +394,10 @@ module.exports = function (db) {
     })
 
     async function checkPre(ctx, manualUsername = '') {
-        const name = ctx.params.name, cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
+        let name = ctx.params.name;
+        if (!name) ctx.throw(400, `Missing problem name`)
+        name = name.toLowerCase()
+        const cur = plugins.pluginMap.get(name), pre = plugins.pluginPre.get(name);
         if (!cur) {
             ctx.throw(404, `Problem "${name}" not found`);
         }
@@ -532,16 +575,157 @@ module.exports = function (db) {
         };
     })
 
+    router.post('/problem/:name/server', async (ctx) => {
+        const cur = await checkPre(ctx);
+        if (!cur.server) {
+            ctx.throw(400, `This problem does not have a server`);
+        }
+        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+            ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
+        }
+        if (new Date(gameConfig.endTime).getTime() < Date.now()) {
+            ctx.throw(400, `游戏已结束`);
+        }
+        if (!ctx.request.body.event) {
+            ctx.throw(400, `Missing event`);
+        }
+        const event = ctx.request.body.event;
+        const data = ctx.request.body.data;
+        const gameStorage = await ctx.state.gamestorage.game(cur.pid);
+        let passed = false, message = '';
+        const context = {
+            runCode,
+            username: ctx.state.username,
+            gameProcess: ctx.state.gameprocess,
+            gameStorage,
+            ai: inputs => ai.run(inputs),
+            pass: (msg) => {
+                passed = true;
+                message += msg;
+            },
+            nopass: (msg) => {
+                message += msg;
+            }
+        }
+        const eventResponse = await cur.serverInstance.handle(event, data, context);
+        await gameStorage.save();
+        const res = {
+            res: eventResponse
+        }
+        const record  = {
+            username: ctx.state.username,
+            pid: cur.pid,
+            server: true,
+            time: Date.now(),
+            name: cur.name,
+            msg: message,
+            passed: false,
+        }
+        if (passed) {
+            const passedinfo = {};
+            passedinfo.msg = message
+            passedinfo.passed = record.passed = true;
+            passedinfo.points = record.points = cur.points;
+            let flag = false
+            if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
+            ctx.state.gameprocess.pass(cur.pid, cur.points);
+            const setValue = {};
+            if (cur.gameover) {
+                record.gameover = true
+                passedinfo.gameover = true;
+                setValue.gameover = true;
+                ctx.state.gameprocess.setGameover();
+            }
+            const pipeline = [
+                {
+                    $match: { username: ctx.state.username }
+                },
+                {
+                    $addFields: {
+                        isUndefined: {
+                            $cond: {
+                                if: { $ifNull: ["$gameprocess." + cur.pid, null] },
+                                then: false,
+                                else: true
+                            }
+                        },
+                    }
+                },
+                {
+                    $set: { [`gameprocess.${cur.pid}`]: cur.points }
+                },
+                {
+                    $set: {
+                        lastPassed: {
+                            $cond: {
+                                if: '$isUndefined',
+                                then: new Date(),
+                                else: { $ifNull: ['$lastPassed', new Date()] },
+                            }
+                        },
+                        points: {
+                            $reduce: {
+                                input: { $objectToArray: "$gameprocess" },
+                                initialValue: 0,
+                                in: { $add: ["$$this.v", "$$value"] }
+                            }
+                        },
+                        passed: {
+                            $reduce: {
+                                input: { $objectToArray: "$gameprocess" },
+                                initialValue: 0,
+                                in: { $add: [1, "$$value"] }
+                            }
+                        },
+                        ...setValue
+                    }
+                },
+                {
+                    $project: {
+                        isUndefined: 0,
+                    }
+                },
+                {
+                    $merge: {
+                        into: "users",
+                        whenMatched: "merge"
+                    }
+                }
+            ];
+
+            await db.collection("users").aggregate(pipeline).toArray();
+            if (flag) rank.update()
+
+            passedinfo.next = cur.next ? cur.next.map(n => ({
+                name: plugins.pluginMap.get(n.pid).name,
+                ...n
+            })) : undefined;
+            passedinfo.solved_description = cur.description.after_solve;
+            passedinfo.percent = await insertRecord(db, record);
+            res.problem = passedinfo;
+        } else if (message.length) {
+            res.problem = {
+                passed: false,
+                msg: message
+            }
+            res.percent = await insertRecord(db, record);
+        }
+        ctx.body = res;
+    })
+
     router.post('/problem/:name', async (ctx) => {
         const cur = await checkPre(ctx);
         if (cur.manualScores) {
-            ctx.throw(400, `This roblem need to be automatically scored.`);
+            ctx.throw(400, `This problem need to be automatically scored.`);
         }
         if (new Date(gameConfig.startTime).getTime() > Date.now()) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
         if (new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束，无法提交`);
+        }
+        if (cur.inputs === false) {
+            ctx.throw(400, `该关卡不能提交答案`);
         }
         if (!await taskManager.run(ctx.state.username, ctx.request.body.token)) {
             ctx.body = {
@@ -679,13 +863,13 @@ module.exports = function (db) {
             { $match: { pid: cur.pid } },
             { $group: { _id: "$username", passed: { $max: "$passed" } } },
             {
-              $group: {
-                _id: null,
-                total: { $sum: 1 },
-                passed: { $sum: { $cond: ["$passed", 1, 0] } }
-              }
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    passed: { $sum: { $cond: ["$passed", 1, 0] } }
+                }
             }
-          ]).toArray();
+        ]).toArray();
         const { passed, total } = stat[0];
         const percent = Math.round(passed / total * 10000) / 100;
         ctx.body = {
@@ -715,11 +899,11 @@ module.exports = function (db) {
             await send(ctx, filePath, { root });
             return
         }
-        if (!cur.files?.length 
+        if (!cur.files?.length
             || !cur.files.some(x => {
-                    if (typeof x == "string") return x == filePath;
-                    else return x.filename == filePath;
-                })
+                if (typeof x == "string") return x == filePath;
+                else return x.filename == filePath;
+            })
         ) {
             ctx.throw(403, `Access denied`)
         }

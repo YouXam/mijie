@@ -70,3 +70,11 @@
     text-decoration: underline;
     text-underline-offset: 5px;
 }
+
+.markdown-body ul {
+    list-style: disc;
+}
+
+.markdown-body ol {
+    list-style: decimal;
+}

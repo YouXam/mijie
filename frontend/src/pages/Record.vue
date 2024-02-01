@@ -94,8 +94,7 @@
                         {{ formatDate(new Date(record.time)) }} {{ record.manualScores ? " / 由管理员手动评分" : "" }}
                     </div>
                     <div class="mt-2 msg">
-                        
-                        <div v-if="!record.manualScores">
+                        <div v-if="!record.manualScores && !record.server">
                             <span class="font-extrabold">答案: </span>
                             <template v-if="record.ans">
                                 <div
@@ -111,7 +110,8 @@
                                     </div>
                                 </div>
                             </template>
-                            <span v-else class="italic">空</span></div>
+                            <span v-else class="italic">空</span>
+                        </div>
                         <div v-if="record.msg?.length"><span class="font-extrabold">信息: </span>
                             <div class="max-w-full bg-opacity-30 bg-black m-2 p-2 rounded-md">
                                 <pre>{{ record.msg }}</pre>

@@ -37,40 +37,45 @@
             <div class="card container">
                 <template v-if="gameState == 1">
                     <template v-if="!manual">
-                        <textarea 
-                            v-if="!inputs || !inputs.length"
-                            class="mt-5 textarea textarea-white"
-                            style="border-color: hsl(var(--bc) / 0.2)"
-                            placeholder="输入答案"
-                            v-model="ans"
-                            v-auto-expand
-                            @keydown.ctrl.enter="submit"
-                        ></textarea>
-                        <template v-else>
+                        <template v-if="inputs !== false">
                             <textarea 
-                                v-for="(input, index) in inputs" :key="index"
+                                v-if="!inputs || !inputs.length"
                                 class="mt-5 textarea textarea-white"
                                 style="border-color: hsl(var(--bc) / 0.2)"
-                                :placeholder="input.placeholder || '输入答案'"
-                                v-model="answers[index]"
+                                placeholder="输入答案"
+                                v-model="ans"
                                 v-auto-expand
+                                @keydown.ctrl.enter="submit"
                             ></textarea>
+                            <template v-else>
+                                <textarea 
+                                    v-for="(input, index) in inputs" :key="index"
+                                    class="mt-5 textarea textarea-white"
+                                    style="border-color: hsl(var(--bc) / 0.2)"
+                                    :placeholder="input.placeholder || '输入答案'"
+                                    v-model="answers[index]"
+                                    v-auto-expand
+                                ></textarea>
+                            </template>
                         </template>
                     </template>
                     <div v-else class="mt-5 ">
                         <font-awesome-icon :icon="['fas', 'circle-info']" />
                         此题为现场题，您必须在现场完成任务后由管理员手动评分，然后刷新状态以更新分数和排行榜。 
                     </div>
-                    <button class="submit btn btn-outline mt-5 mb-5" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
-                        <span class="loading loading-dots loading-xs" v-if="loading"></span>
-                        {{ manual ? '刷新状态' : '提交' }}
-                    </button>
-                    <button v-if="user.gameprocess[$route.params.pid]" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
-                        <span class="loading loading-dots loading-xs" v-if="loading2"></span>
-                        跳过
-                    </button>
+
                     <div class="flex flex-col mx-auto" v-if="show_turnstile">
-                        <div id="cfTurnstile" class="cf-turnstile my-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
+                        <div id="cfTurnstile" class="cf-turnstile mt-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
+                    </div>
+                    <div class="grid gap-4 my-5" :class="{'grid-cols-2': user.gameprocess[$route.params.pid] && inputs !== false, 'grid-cols-1': !user.gameprocess[$route.params.pid] || inputs === false }">
+                        <button class="submit btn btn-outline" v-if="inputs !== false" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
+                            <span class="loading loading-dots loading-xs" v-if="loading"></span>
+                            {{ manual ? '刷新状态' : '提交' }}
+                        </button>
+                        <button v-if="user.gameprocess[$route.params.pid]" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
+                            <span class="loading loading-dots loading-xs" v-if="loading2"></span>
+                            跳过
+                        </button>
                     </div>
                 </template>
             </div>
@@ -135,7 +140,7 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, provide } from 'vue'
 import { api, downloadFile as download } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
@@ -175,23 +180,7 @@ if (hintr) {
     }
 }
 let cf_token = null
-function toggle_turnstile(cb) {
-    if (show_turnstile.value) return;
-    show_turnstile.value = true;
-    loading.value = true;
-    nextTick(() => {
-        turnstile.render('#cfTurnstile', {
-            sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
-            callback: (token) => {
-                cf_token = token;
-                loading.value = false;
-                turnstile.remove();
-                show_turnstile.value = false;
-                cb({ token });
-            }
-        });
-    })
-}
+
 const state = computed(() => {
     if (!records.value.length) return 0;
     if (records.value[0].passed) return 1;
@@ -202,6 +191,27 @@ if (!user.login.value) {
     localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
     router.push('/login')
 }
+
+function toggle_turnstile(cb) {
+    if (show_turnstile.value) return;
+    show_turnstile.value = true;
+    loading.value = true;
+    nextTick(() => {
+        turnstile.render('#cfTurnstile', {
+            sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+            callback: (token) => {
+                cf_token = token;
+                loading.value = false;
+                setTimeout(() => {
+                    turnstile.remove();
+                    show_turnstile.value = false;
+                }, 2000);
+                cb({ token });
+            }
+        });
+    })
+}
+
 function down() {
     const res = document.getElementsByClassName('result');
     if (!res.length) return;
@@ -211,22 +221,45 @@ function down() {
         behavior: 'smooth'
     })
 }
+
 function downloadFile(file) {
     download(`/api/file/${router.currentRoute.value.params.pid}/${file}`, file)
 }
+
 function checkIfResultInViewport() {
     const res = document.getElementsByClassName('result');
     if (!res.length) return true
     const rect = res[0].getBoundingClientRect()
     return window.innerHeight > rect.bottom || rect.top < 100
 }
-document.addEventListener('scroll', () => {
-    if (checkIfResultInViewport()) showDown.value = false
-    else if (records.value.length) showDown.value = true
-})
+
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+async function setResult(res) {
+    if (res.turnstile) {
+        toggle_turnstile(submit)
+        return false;
+    }
+    records.value = []
+    if (lastSubmit) await sleep(500 - new Date().getTime() + lastSubmit.getTime())
+    else await sleep(100)
+    records.value.unshift(res)
+    if (res.passed) gameState.value = 2
+    if (res.next) next.value = res.next
+    if (res.gameover) gameState.value = 3
+    if (res.percent != undefined && res.percent != null) percent.value = res.percent
+    if (res.solved_description) solved_description.value = {
+        pid: router.currentRoute.value.params.pid,
+        ...res.solved_description
+    }
+    nextTick(() => {
+        if (!checkIfResultInViewport()) showDown.value = true
+    })
+    return true;
+}
+
 async function submit({ token }) {
     records.value = []
     lastSubmit = new Date()
@@ -242,23 +275,9 @@ async function submit({ token }) {
                 token: token || cf_token
             })
         )
-        if (res.turnstile) {
-            toggle_turnstile(submit)
+        if (!await setResult(res)) {
             return;
         }
-        await sleep(500 - new Date().getTime() + lastSubmit.getTime())
-        records.value.unshift(res)
-        if (res.passed) gameState.value = 2
-        if (res.next) next.value = res.next
-        if (res.gameover) gameState.value = 3
-        if (res.percent != undefined && res.percent != null) percent.value = res.percent
-        if (res.solved_description) solved_description.value = {
-            pid: router.currentRoute.value.params.pid,
-            ...res.solved_description
-        }
-        nextTick(() => {
-            if (!checkIfResultInViewport()) showDown.value = true
-        })
         loading.value = false
     } catch (err) {
         if (err.status == 401) {
@@ -269,6 +288,7 @@ async function submit({ token }) {
         console.error(err)
     }
 }
+
 async function skip() {
     records.value = []
     loading2.value = true
@@ -299,6 +319,23 @@ async function skip() {
         loading2.value = false
     }
 }
+
+async function pluginApi(event, data) {
+    const result = await api('/api/problem/' + router.currentRoute.value.params.pid + '/server', {
+        event,
+        data
+    })
+    if (result.problem) {
+        await setResult(result.problem)
+    }
+    return result.res
+}
+provide("api", pluginApi)
+
+document.addEventListener('scroll', () => {
+    if (checkIfResultInViewport()) showDown.value = false
+    else if (records.value.length) showDown.value = true
+})
 ; (async function () {
     try {
         const res = await api('/api/problem/' + router.currentRoute.value.params.pid)
@@ -324,6 +361,7 @@ async function skip() {
         }
     }
 })()
+
 </script>
 
 <style scoped>

@@ -12,7 +12,7 @@ module.exports = {
     points: 20,
     interval: 1000,
     checker(ans, ctx) {
-        if (isNaN(ans)) {
+        if (isNaN(ans) ||  !ans.length) {
             ctx.msg('答案必须是数字')
             return false
         }

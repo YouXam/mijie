@@ -14,6 +14,7 @@ import latex from 'markdown-it-katex'
 import '@/assets/css/hljs-github-dark.min.css'
 import 'github-markdown-css/github-markdown-dark.css'
 
+
 function join(...paths) {
     let parts = [];
     for (let i = 0, l = paths.length; i < l; i++) {
@@ -47,7 +48,6 @@ const Content = defineAsyncComponent(() => mdvc(props.description.mdv.main, {
         return data
     },
     extend: (md) => {
-        console.log(123)
         md.use(hljs).use(latex)
     },
     imports: {

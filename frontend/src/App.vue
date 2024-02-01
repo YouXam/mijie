@@ -54,7 +54,7 @@
         </div>
       </div>
     </div>
-    <span style="font-family: 'Neutraface Text', sans-serif;" class="text-sm flex justify-end flex-1" v-if="user.login.value">
+    <span tabindex="-1" style="font-family: 'Neutraface Text', sans-serif;" class="text-sm flex justify-end flex-1" v-if="user.login.value">
       <font-awesome-icon class="mr-2" :icon="['fas', 'chart-bar']" />
       {{ user.points.value + " pts" }}
     </span>
@@ -65,33 +65,33 @@
             <font-awesome-icon :icon="['fas', 'user']" />
             {{ user.username.value }}
           </label>
-          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-[8rem]">
+          <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-[8rem]">
             <li>
-              <router-link to="/settings">
+              <router-link to="/settings"  tabindex="0">
                 <font-awesome-icon :icon="['fas', 'gear']" />
                 账户设置
               </router-link>
             </li>
             <li v-if="user.admin.value > 0">
-              <router-link to="/users">
+              <router-link to="/users" tabindex="0">
                 <font-awesome-icon :icon="['fas', 'address-book']" />
                 用户列表
               </router-link>
             </li>
             <li v-if="user.admin.value > 0">
-              <router-link to="/admin">
+              <router-link to="/admin" tabindex="0">
                 <font-awesome-icon :icon="['fas', 'chalkboard']" />
                 管理面板
               </router-link>
             </li>
             <li>
-              <router-link to="/record">
+              <router-link to="/record" tabindex="0">
                 <font-awesome-icon :icon="['fas', 'bars-staggered']" />
                 提交记录
               </router-link>
             </li>
             <li>
-              <a @click="logout">
+              <a @click="logout" tabindex="0">
                 <font-awesome-icon :icon="['fas', 'right-from-bracket']" />
                 退出登录
               </a>

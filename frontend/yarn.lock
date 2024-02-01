@@ -1673,13 +1673,13 @@ mdurl@^2.0.0:
   resolved "https://registry.npmjs.org/mdurl/-/mdurl-2.0.0.tgz#80676ec0433025dd3e17ee983d0fe8de5a2237e0"
   integrity sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==
 
-mdvc@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.npmjs.org/mdvc/-/mdvc-0.0.4.tgz#a0c1520ab81ded28132fb19ea1f7ebf6d63438d5"
-  integrity sha512-NFWZJpyORxugwcBSQ8UqoqENF/KT3BmLzSbJXDTwQMiIgJKIwDXQlfN8qJY/JdNXw2SZAA5HcPSZtqcRjeAQdw==
+mdvc@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.npmjs.org/mdvc/-/mdvc-0.0.6.tgz#23c9b54eb8f5bf3e873be9117dd61d08dfe1f880"
+  integrity sha512-4mvs/4ptuPIvuYPf8ZwP8ok2jTJR2+RBqFdbzfjXyoxCtKR5zRt1Tly8jHKAK+phmgmir10rgR3sdeoHza8cPQ==
   dependencies:
     markdown-it-for-mdvc "^14.0.0"
-    vue-sfc-component "^0.0.10"
+    vue-sfc-component "^0.0.11"
 
 merge2@^1.3.0:
   version "1.4.1"
@@ -2479,10 +2479,10 @@ vue-router@4:
   dependencies:
     "@vue/devtools-api" "^6.5.0"
 
-vue-sfc-component@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.npmjs.org/vue-sfc-component/-/vue-sfc-component-0.0.10.tgz#910aa7e1927817f0c401a08278026386acdcdb93"
-  integrity sha512-K+J0OQvtguJtsdkGGayy3J5sknp+M6tVWhupxIQ6/wzx8cgb/7d49xUXtIRszFYic7UKM6qhjL6fhArZ6XzArg==
+vue-sfc-component@^0.0.11:
+  version "0.0.11"
+  resolved "https://registry.npmjs.org/vue-sfc-component/-/vue-sfc-component-0.0.11.tgz#789dc0b7989d9abfe0d6fa9b5a711cc4d074342f"
+  integrity sha512-zktoKN+OVPOkB5HTntoY/rcQRNT/w/gVkv7zSaY7738q9i9eyayG8Zg4ZrgiqHDTWM24iTG8S82XHRHkwCLHyg==
   dependencies:
     "@vue/compiler-sfc" "^3.4.15"
     hash-sum "^2.0.0"
