@@ -275,7 +275,7 @@ export function updateChart() {
                 if (m['MA30'])
                     t += m['MA30'].value == '-' ? '' : `MA30：${m['MA30'].value}<br/>`
                 
-                t += `交易量：${round.totalTradeCount}<br/>`
+                t += `净购量：${round.totalTradeCount}<br/>`
                 if (m['用户数量'])
                     t += `<br/><b>${marker} ${key}</b><br>` + 
                         `用户数量：${m['用户数量'].value[1]}`

@@ -152,7 +152,8 @@
             </div>
             <div v-show="activeTab == 2" class="pt-5">
                 <div id="echarts_main" class="my-5" style="height: 500px;"></div>
-                <p class="max-w-md mx-auto mt-5 text-center text-xs text-gray-500">交易量：总购买量减总出售量。</p>
+                <p class="max-w-md mx-auto mt-5 text-center text-xs text-gray-500">净购量：总购买量减总出售量。</p>
+                <p class="max-w-md mx-auto mt-5 text-center text-xs text-gray-500">本图表中的移动平均(MA)均为简单移动平均。</p>
             </div>
             <div v-show="activeTab == 3">
                 <div class="mt-5" v-if="records.length">
