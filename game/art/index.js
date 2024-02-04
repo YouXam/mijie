@@ -3,7 +3,10 @@ module.exports = {
     pid: 'art',
     description: {
         before_solve: {
-            md: "problem.md",
+            mdv: {
+                main: "problem.md",
+                include: [ "problem.md", "main.js" ]
+            }
         }
     },
     inputs: false

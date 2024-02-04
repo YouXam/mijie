@@ -7,6 +7,7 @@ const runCode = require('./games/glot');
 const Ranking = require('./rank');
 const compose = require('koa-compose');
 const send = require('koa-send');
+const jwt = require("jsonwebtoken")
 const axios = require('axios');
 const { verify } = require('./turnstile');
 const { gameConfig } = require('./auth')
@@ -598,6 +599,7 @@ module.exports = function (db) {
             username: ctx.state.username,
             gameProcess: ctx.state.gameprocess,
             gameStorage,
+            jwt,
             ai: inputs => ai.run(inputs),
             pass: (msg) => {
                 passed = true;
@@ -741,6 +743,7 @@ module.exports = function (db) {
                 username: ctx.state.username,
                 gameProcess: ctx.state.gameprocess,
                 gameStorage,
+                jwt,
                 ai: inputs => ai.run(inputs),
                 msg: (str) => {
                     msg += str;

@@ -11,7 +11,11 @@ const gameConfig = {}
 const { verify } = require('./turnstile');
 
 require('dotenv').config();
-const jwtSecret = process.env.JWT_SECRET || require('uuid').v4();
+
+if (!process.env.JWT_SECRET) {
+    throw Error("环境变量中缺少 JWT_SECRET")
+}
+const jwtSecret = process.env.JWT_SECRET;
 
 function authRoutes(db) {
     const router = new Router();

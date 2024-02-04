@@ -1,19 +1,19 @@
 <template>
-    <div  class="markdown-body text-left w-full">
+    <div class="text-left w-full" :class="{'markdown-body': markdown}">
         <Content/>
     </div>
 </template>
 
 <script setup>
 import mdvc from 'mdvc'
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import * as vue from 'vue'
 
 import hljs from 'markdown-it-highlightjs'
 import latex from 'markdown-it-katex'
 import '@/assets/css/hljs-github-dark.min.css'
 import 'github-markdown-css/github-markdown-dark.css'
-
+const markdown = ref(false)
 
 function join(...paths) {
     let parts = [];
@@ -33,7 +33,7 @@ function join(...paths) {
 
 const props = defineProps(['description'])
 if (!props?.description?.mdv?.main) throw new Error("No main mdv provided")
-
+if (props.description.mdv.main.endsWith(".md")) markdown.value = true
 const Content = defineAsyncComponent(() => mdvc(props.description.mdv.main, {
     getFile: async (path) => {
         const headers = {

@@ -32,9 +32,7 @@ export default {
     transform: scale(var(--btn-focus-scale, 0.97));
 }
 .card:hover {
-    border-color: hsl(var(--bc) / 1);
-    background-color: transparent;
-    color: hsl(var(--bc) / 1);
+    border-color: oklch(var(--bc));
 }
 .card {
     cursor: pointer;
@@ -53,14 +51,7 @@ export default {
     text-decoration-line: none;
     border-width: var(--border-btn, 1px);
     animation: button-pop var(--animation-btn, 0.25s) ease-out;
-    background-color: hsl(var(--b2) / 1);
-    color: hsl(var(--bc) / 1);
-    outline-color: hsl(var(--bc) / 1);
-
-
     border-color: transparent;
-    color: hsl(var(--b1) / 1);
-    background-color: hsl(var(--bc) / 1);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 0 #0000;
 }
 </style>
