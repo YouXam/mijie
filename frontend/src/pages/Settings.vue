@@ -2,12 +2,12 @@
     <TitleCard title="账户设置" class="mb-20">
         <template #subtitle><div class="mt-10"></div></template>
         <div class="form-control w-full max-w-xs flex flex-col m-auto">
-            <label class="label">
+            <!-- <label class="label">
                 <span class="label-text">学号</span>
             </label>
             <input type="text" class="input input-bordered w-full max-w-xs mb-5" v-model="studentID" autocomplete="off"/>
             <button class="btn btn-accent mb-5"  @click="changestudentID" :disabled="studentID.length != 10">修改学号</button>
-            <hr class="my-5">
+            <hr class="my-5"> -->
             <label class="label">
                 <span class="label-text">旧密码</span>
             </label>

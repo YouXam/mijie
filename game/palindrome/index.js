@@ -10,7 +10,6 @@ module.exports = {
         let text = answers['七绝'];
         if (!text) return false;
         text = text.replaceAll(/[\s，。、！？,]/g, '');
-        console.log(text)
         return text === '阔空清夜有繁星夜有繁星伴月明伴月明灯光入海灯光入海阔空清'
     },
     points: 50,

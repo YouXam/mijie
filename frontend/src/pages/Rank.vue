@@ -44,12 +44,13 @@
             </tr>
             <tr v-for="(user, index) in rank" :key="user.username">
               <th>{{ user.rank }}</th>
-              <td v-if="!user.noPrize">{{ user.username }}</td>
+              <td>{{ user.username }}</td>
+              <!-- <td v-if="!user.noPrize">{{ user.username }}</td>
               <td v-else>
                 <div class="tooltip tooltip-right text-gray-400" data-tip="无评奖资格">
                   {{ user.username }}
                 </div>
-              </td>
+              </td> -->
               <td>{{ user.passed }}</td>
               <td>{{ user.points }}</td>
               <td :class="{'min-w-[21ch]': user.lastPassed < 32503651200000 }">{{ user.lastPassed >= 32503651200000 ? "" : user.lastPassed.toLocaleString() }}</td>

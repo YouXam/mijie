@@ -151,7 +151,7 @@
 
             </div>
             <div v-show="activeTab == 2" class="pt-5">
-                <div id="echarts_main" class="my-5" style="height: 300px;"></div>
+                <div id="echarts_main" class="my-5" style="height: 500px;"></div>
                 <p class="max-w-md mx-auto mt-5 text-center text-xs text-gray-500">交易量：总购买量减总出售量。</p>
             </div>
             <div v-show="activeTab == 3">
@@ -206,7 +206,7 @@
 <script setup lang="ts">
 import "https://files.yxm.pl/tailwindcss.3.4.1.js"
 import { ref, computed, Ref, watch, nextTick, onUnmounted, inject } from 'vue'
-import { createChart, updateChart, appendData, resizeChart } from './chart.ts'
+import { updateChart, appendData, setRounds } from './chart.ts'
 const props = defineProps({
     username: {
         type: String,
@@ -257,8 +257,7 @@ function go(id: number) {
         showBadge.value = false
     } else if (activeTab.value === 2) {
         nextTick(() => {
-            createChart()
-            resizeChart()
+            updateChart()
         })
     }
 }
@@ -348,7 +347,7 @@ async function submit() {
 let ws: WebSocket | null = null;
 let ended = false
 onUnmounted(() => {
-    console.log("closing ws")
+    // console.log("closing ws")
     ended = true
     if (ws) ws.close()
 })
@@ -356,7 +355,7 @@ async function connect() {
     const token = await getToken()
     ws = new WebSocket('wss://capatalist.youxam.one/')
     const send = (data: any) => {
-        console.log("sending", data)
+        // console.log("sending", data)
         if (ws) ws.send(JSON.stringify(data))
     }
     ws.onopen = () => {
@@ -367,7 +366,7 @@ async function connect() {
 
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data)
-        console.log("received", data)
+        // console.log("received", data)
         if (data.reset === true) {
             ended = true
             ws?.close()
@@ -428,7 +427,6 @@ async function connect() {
         }
         if (data.pass) {
             passed.value = true
-            console.log(data.passToken)
             api("pass", {
                 token: data.passToken
             })
@@ -461,9 +459,7 @@ async function updPrices() {
         }
     })
     const data = await res.json()
-    nextTick(() => {
-        updateChart(data)
-    })
+    setRounds(data.rounds)
 }
 connect().then(updPrices)
 </script>

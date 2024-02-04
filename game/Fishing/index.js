@@ -6,6 +6,7 @@ module.exports = {
             md: "problem.md",
         }
     },
+    first: true,
     points: 50,
     async checker(ans, ctx) {
         let ban = ctx.gameStorage.get("ban")
