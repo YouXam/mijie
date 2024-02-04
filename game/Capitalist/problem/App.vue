@@ -80,7 +80,7 @@
                         <div class="label">
                             <span class="label-text">输入{{ action == 'buy' ? '购买' : '出售' }}的商品数量</span>
                         </div>
-                        <input type="number" min="1" max="32" class="input input-bordered w-full max-w-md" v-model="count" @keyup="format" />
+                        <input type="number" min="1" max="40" class="input input-bordered w-full max-w-md" v-model="count" @keyup="format" />
                     </label>
                     <div class="alert alert-warning max-w-md mx-auto mt-5" v-if="dealerrors.length">
                         <div class="flex-1">
@@ -275,8 +275,8 @@ function checkDeal() {
     if (ccount.value < 0) {
         dealerrors.value.push('交易数量不能为负数！')
     }
-    if (ccount.value > 32) {
-        dealerrors.value.push(`你不能一次交易超过 32 个商品！`)
+    if (ccount.value > 40) {
+        dealerrors.value.push(`你不能一次交易超过 40 个商品！`)
     }
     if (action.value === 'buy') {
         if (money.value < price.value * ccount.value * slide()) {
