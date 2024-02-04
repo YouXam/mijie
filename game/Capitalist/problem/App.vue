@@ -236,7 +236,7 @@ const stRecords = localStorage.getItem('capatalist_records') ? JSON.parse(localS
 records.value = stRecords[recordsKey] || []
 let roundCountdownId: number | null = null
 const newround = ref(false)
-const ccount = computed(() => isNaN(parseInt(count.value)) ? 1 : parseInt(count.value))
+const ccount = computed(() => !count.value || isNaN(count.value) ? 1 : count.value)
 const passed = ref(false)
 const activeTab = ref(1)
 let _token: string = ''
