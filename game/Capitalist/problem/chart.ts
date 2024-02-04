@@ -29,32 +29,6 @@ export function createChart() {
     window.onresize = () => {
         chart.resize()
     }
-}
-export function updateChart() {
-    if (!chart) createChart()
-    const data = []
-    const roundsText = []
-    const volumes = []
-    const roundsMap = new Map()
-    if (!rounds) return
-    if (rounds.length) {
-        roundsText.push('Round 1')
-        data.push([rounds[0].price, rounds[0].price, rounds[0].price, rounds[0].price])
-        volumes.push([0, rounds[0].userCount, -1])
-        roundsMap.set('Round 1', rounds[0])
-        for (let i = 1; i < rounds.length; i++) {
-            const round = rounds[i]
-            roundsText.push('Round ' + round.round);
-            data.push([
-                rounds[i - 1].price,
-                round.price,
-                Math.min(rounds[i - 1].price, round.price),
-                Math.max(rounds[i - 1].price, round.price)
-            ])
-            volumes.push([i, rounds[i].userCount, rounds[i - 1].price > rounds[i].price ? 1 : -1])
-            roundsMap.set('Round ' + round.round, round)
-        }
-    }
     const option = {
         animation: false,
         legend: {
@@ -73,33 +47,6 @@ export function updateChart() {
             padding: 10,
             textStyle: {
                 color: '#000'
-            },
-            formatter: (params) => {
-                const m = {}
-                for (const param of params) {
-                    m[param.seriesName] = param
-                }
-                const marker = params[0].marker
-                const key = params[0].axisValue
-                const round = roundsMap.get(key)
-                let t =  `<b>${marker} ${key}</b><br>`
-                if (m["市场价"]) 
-                    t += `结算市场价：${m["市场价"].value[2].toFixed(5)}<br/>` + 
-                        `变化值：${(m["市场价"].value[2] - m["市场价"].value[1]).toFixed(5)}<br/>`
-                if (m['MA5'])
-                    t += m['MA5'].value == '-' ? '' : `MA5：${m['MA5'].value}<br/>`
-                if (m['MA10'])
-                    t += m['MA10'].value == '-' ? '' : `MA10：${m['MA10'].value}<br/>`
-                if (m['MA20'])
-                    t += m['MA20'].value == '-' ? '' : `MA20：${m['MA20'].value}<br/>`
-                if (m['MA30'])
-                    t += m['MA30'].value == '-' ? '' : `MA30：${m['MA30'].value}<br/>`
-                
-                t += `交易量：${round.totalTradeCount}<br/>`
-                if (m['用户数量'])
-                    t += `<br/><b>${marker} ${key}</b><br>` + 
-                        `用户数量：${m['用户数量'].value[1]}`
-                return t
             }
         },
         axisPointer: {
@@ -144,7 +91,7 @@ export function updateChart() {
         xAxis: [
             {
                 type: 'category',
-                data: roundsText,
+                data: [],
                 boundaryGap: false,
                 axisLine: { onZero: false },
                 splitLine: { show: false },
@@ -158,7 +105,7 @@ export function updateChart() {
             {
                 type: 'category',
                 gridIndex: 1,
-                data: roundsText,
+                data: [],
                 boundaryGap: false,
                 axisLine: { onZero: false },
                 axisTick: { show: false },
@@ -207,7 +154,7 @@ export function updateChart() {
             {
                 name: '市场价',
                 type: 'candlestick',
-                data,
+                data: [],
                 itemStyle: {
                     color: upColor,
                     color0: downColor,
@@ -220,7 +167,7 @@ export function updateChart() {
             {
                 name: 'MA5',
                 type: 'line',
-                data: calculateMA(5, data),
+                data: [],
                 smooth: true,
                 lineStyle: {
                     opacity: 0.5
@@ -232,7 +179,7 @@ export function updateChart() {
             {
                 name: 'MA10',
                 type: 'line',
-                data: calculateMA(10, data),
+                data: [],
                 smooth: true,
                 lineStyle: {
                     opacity: 0.5
@@ -244,7 +191,7 @@ export function updateChart() {
             {
                 name: 'MA20',
                 type: 'line',
-                data: calculateMA(20, data),
+                data: [],
                 smooth: true,
                 lineStyle: {
                     opacity: 0.5
@@ -256,7 +203,7 @@ export function updateChart() {
             {
                 name: 'MA30',
                 type: 'line',
-                data: calculateMA(30, data),
+                data: [],
                 smooth: true,
                 lineStyle: {
                     opacity: 0.5
@@ -270,7 +217,7 @@ export function updateChart() {
                 type: 'bar',
                 xAxisIndex: 1,
                 yAxisIndex: 1,
-                data: volumes,
+                data: [],
                 animation: true,
                 animationDuration: 1000,
                 showSymbol: false
@@ -279,8 +226,75 @@ export function updateChart() {
     }
 
     chart.setOption(option);
-
-    
+}
+export function updateChart() {
+    if (!chart) createChart()
+    const data = []
+    const roundsText = []
+    const volumes = []
+    const roundsMap = new Map()
+    if (!rounds) return
+    if (rounds.length) {
+        roundsText.push('Round 1')
+        data.push([rounds[0].price, rounds[0].price, rounds[0].price, rounds[0].price])
+        volumes.push([0, rounds[0].userCount, -1])
+        roundsMap.set('Round 1', rounds[0])
+        for (let i = 1; i < rounds.length; i++) {
+            const round = rounds[i]
+            roundsText.push('Round ' + round.round);
+            data.push([
+                rounds[i - 1].price,
+                round.price,
+                Math.min(rounds[i - 1].price, round.price),
+                Math.max(rounds[i - 1].price, round.price)
+            ])
+            volumes.push([i, rounds[i].userCount, rounds[i - 1].price > rounds[i].price ? 1 : -1])
+            roundsMap.set('Round ' + round.round, round)
+        }
+    }
+    chart.setOption({
+        tooltip: {
+            formatter: (params) => {
+                const m = {}
+                for (const param of params) {
+                    m[param.seriesName] = param
+                }
+                const marker = params[0].marker
+                const key = params[0].axisValue
+                const round = roundsMap.get(key)
+                let t =  `<b>${marker} ${key}</b><br>`
+                if (m["市场价"]) 
+                    t += `结算市场价：${m["市场价"].value[2].toFixed(5)}<br/>` + 
+                        `变化值：${(m["市场价"].value[2] - m["市场价"].value[1]).toFixed(5)}<br/>`
+                if (m['MA5'])
+                    t += m['MA5'].value == '-' ? '' : `MA5：${m['MA5'].value}<br/>`
+                if (m['MA10'])
+                    t += m['MA10'].value == '-' ? '' : `MA10：${m['MA10'].value}<br/>`
+                if (m['MA20'])
+                    t += m['MA20'].value == '-' ? '' : `MA20：${m['MA20'].value}<br/>`
+                if (m['MA30'])
+                    t += m['MA30'].value == '-' ? '' : `MA30：${m['MA30'].value}<br/>`
+                
+                t += `交易量：${round.totalTradeCount}<br/>`
+                if (m['用户数量'])
+                    t += `<br/><b>${marker} ${key}</b><br>` + 
+                        `用户数量：${m['用户数量'].value[1]}`
+                return t
+            }
+        },
+        xAxis: [
+            { data: roundsText },
+            { data: roundsText }
+        ],
+        series: [
+            { data },
+            { data: calculateMA(5, data) },
+            { data: calculateMA(10, data) },
+            { data: calculateMA(20, data) },
+            { data: calculateMA(30, data) },
+            { data: volumes }
+        ]
+    });
 }
 
 export function setRounds(r) {
