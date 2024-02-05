@@ -443,7 +443,7 @@ async function connect() {
                 connectingMsg.value = '如果长时间未连接，请刷新页面重试！'
             }
         }, 2000)
-        connect();
+        connect().then(updPrices)
     }
 
     ws.onerror = (e) => {
@@ -461,6 +461,7 @@ async function updPrices() {
     })
     const data = await res.json()
     setRounds(data.rounds)
+    go(activeTab.value)
 }
 connect().then(updPrices)
 </script>

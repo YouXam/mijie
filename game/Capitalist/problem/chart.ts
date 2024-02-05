@@ -4,6 +4,7 @@ import * as echarts from 'https://files.yxm.pl/echarts.bundle.mjs?v=1'
 
 let rounds = []
 let chart = null
+let init = true
 
 const downColor = '#00da3c';
 const upColor = '#ec0000';
@@ -23,8 +24,26 @@ function calculateMA(dayCount, data) {
     return result;
 }
 
-export function createChart() {
-    const chartDom = document.getElementById('echarts_main')!;
+function waitForElement(id) {
+    const now = document.getElementById(id);
+    if (now) return Promise.resolve(now);
+    return new Promise((resolve, reject) => {
+        const observer = new MutationObserver((mutations, obs) => {
+            if (document.getElementById(id)) {
+                resolve(document.getElementById(id));
+                obs.disconnect();
+            }
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+}
+
+export async function createChart() {
+    const chartDom = await waitForElement('echarts_main');
+    if (!chartDom) throw new Error('chartDom not found')
     chart = echarts.init(chartDom);
     window.onresize = () => {
         chart.resize()
@@ -131,6 +150,8 @@ export function createChart() {
                 axisLine: { show: false },
                 axisTick: { show: false },
                 splitLine: { show: false },
+                min: 0,
+                max: 'dataMax',
                 animation: true
             }
         ],
@@ -224,11 +245,10 @@ export function createChart() {
             }
         ]
     }
-
-    chart.setOption(option);
+    chart.setOption(option, true);
 }
-export function updateChart() {
-    if (!chart) createChart()
+export async function updateChart() {
+    if (!chart || init) await createChart()
     const data = []
     const roundsText = []
     const volumes = []
@@ -252,7 +272,7 @@ export function updateChart() {
             roundsMap.set('Round ' + round.round, round)
         }
     }
-    chart.setOption({
+    const options = {
         tooltip: {
             formatter: (params) => {
                 const m = {}
@@ -262,9 +282,9 @@ export function updateChart() {
                 const marker = params[0].marker
                 const key = params[0].axisValue
                 const round = roundsMap.get(key)
-                let t =  `<b>${marker} ${key}</b><br>`
-                if (m["市场价"]) 
-                    t += `结算市场价：${m["市场价"].value[2].toFixed(5)}<br/>` + 
+                let t = `<b>${marker} ${key}</b><br>`
+                if (m["市场价"])
+                    t += `结算市场价：${m["市场价"].value[2].toFixed(5)}<br/>` +
                         `变化值：${(m["市场价"].value[2] - m["市场价"].value[1]).toFixed(5)}<br/>`
                 if (m['MA5'])
                     t += m['MA5'].value == '-' ? '' : `MA5：${m['MA5'].value}<br/>`
@@ -274,10 +294,10 @@ export function updateChart() {
                     t += m['MA20'].value == '-' ? '' : `MA20：${m['MA20'].value}<br/>`
                 if (m['MA30'])
                     t += m['MA30'].value == '-' ? '' : `MA30：${m['MA30'].value}<br/>`
-                
+
                 t += `净购量：${round.totalTradeCount}<br/>`
                 if (m['用户数量'])
-                    t += `<br/><b>${marker} ${key}</b><br>` + 
+                    t += `<br/><b>${marker} ${key}</b><br>` +
                         `用户数量：${m['用户数量'].value[1]}`
                 return t
             }
@@ -294,11 +314,33 @@ export function updateChart() {
             { data: calculateMA(30, data) },
             { data: volumes }
         ]
-    });
+    }
+    if (init) {
+        const start = Math.max(0, 100 - 40 / data.length * 100)
+        options.dataZoom = [
+            {
+                type: 'inside',
+                xAxisIndex: [0, 1],
+                start,
+                end: 100
+            },
+            {
+                show: true,
+                xAxisIndex: [0, 1],
+                type: 'slider',
+                top: '85%',
+                start,
+                end: 100
+            }
+        ]
+    }
+    chart.setOption(options)
+    init = false
 }
 
 export function setRounds(r) {
     rounds = r
+    init = true
 }
 
 export function appendData(d) {
