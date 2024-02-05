@@ -41,32 +41,55 @@
             </div>
             <div v-show="activeTab == 1" class="pt-5">
                 <p v-if="passed" class="max-w-md mx-auto mt-5 font-extrabold text-green-500">你已通过此关卡。</p>
-                <p v-if="price" class="max-w-md mx-auto mt-5"><span class="font-extrabold">当前市场价</span>：{{
-                    price.toFixed(5)
-                }}。
+                <p v-if="price" class="max-w-md mx-auto mt-5">
+                    <span class="font-extrabold">当前市场价</span>
+                    ：
+                    <Number :number="price" :tofixed="5" :close_diff="close_diff"/>
                 </p>
                 <div>
-                    <p class="max-w-md mx-auto mt-5" v-if="!roundend">
-                        <span class="font-extrabold">
-                            当前没有玩家加入回合，休市中。
-                        </span>
-                    </p>
-                    <p class="max-w-md mx-auto mt-5" v-if="showCountdown">
-                        <span class="font-extrabold">
-                            距离回合结束还有：
-                        </span>
-                        <span class="text-yellow-500 tooltip text-lg" style="font-family: monospace;"
-                            :data-tip="new Date(roundend).toLocaleString() + ' (以服务器时间为准)'">
-                            <span class="countdown">
-                                <span :style="'--value:' + (roundRest / 1000).toFixed(0) +';'"></span>
+                    <p class="max-w-md mx-auto mt-5 leading-7">
+                        <Transition mode="out-in">
+                            <span class="font-extrabold" v-if="!roundend">
+                                当前没有玩家加入回合，休市中。
                             </span>
-                        </span>
-                        秒。
+                            <div v-else-if="showCountdown">
+                                <span class="font-extrabold">
+                                    距离回合结束还有
+                                </span>
+                                <span class="text-yellow-500 tooltip text-lg" style="font-family: monospace;"
+                                    :data-tip="new Date(roundend).toLocaleString() + ' (以服务器时间为准)'">
+                                    <span class="countdown">
+                                        <span :style="'--value:' + (roundRest / 1000).toFixed(0) + ';'"></span>
+                                    </span>
+                                </span>
+                                秒。
+                            </div>
+                            <span class="font-extrabold" v-else-if="settlementing">
+                                结算中...
+                            </span>
+                            <span class="font-extrabold" v-else-if="syncing"> 
+                                同步中...
+                            </span>
+                            <span v-else></span>
+                        </Transition>
                     </p>
+
+
                     <p class="max-w-md mx-auto mt-5">
-                        <span class="font-extrabold">你拥有</span>：{{ goods }} 单位商品，{{ money.toFixed(5) }} 单位金钱。
+                        <div class="font-extrabold mb-3">你拥有：</div>
+                        <div class="px-5 py-2">
+                            <div class="mb-3">
+                                <Number :number="goods" :close_diff="close_diff"/>
+                                <span class="float-right">单位商品</span>
+                            </div>
+                            <div>
+                                <Number :number="money" :tofixed="5" :close_diff="close_diff"/>
+                                <span class="float-right">单位金钱</span>
+                            </div>
+                        </div>
                     </p>
-                    <label class="form-control w-full max-w-md mx-auto mt-5">
+                    
+                    <label class="form-control w-full max-w-md mx-auto mt-2">
                         <div class="label">
                             <span class="label-text">选择你这一回合的行动！</span>
                         </div>
@@ -96,47 +119,48 @@
                         </div>
                     </div>
                     <p class="w-full max-w-md mx-auto mt-5">
-                    <div class="my-5">你下一回合将会拥有</div>
-                    <div class="my-2 mx-2">
-                        {{ goods }}
-                        <span class="text-xs text-gray-500">(当前)</span>
-                        <template v-if="action === 'none'">
-                            + 1
-                            <span class="text-xs text-blue-700">(生产)</span>
-                            = <span class="font-extra-bold">{{ goods + 1 }}</span>
-                        </template>
-                        <template v-else-if="action === 'buy'">
-                            + {{ ccount }}
-                            <span class="text-xs text-red-700">(购买)</span>
-                            + 1
-                            <span class="text-xs text-blue-700">(生产)</span>
-                            = <span class="font-extra-bold">{{ goods + ccount + 1 }}</span>
-                        </template>
-                        <template v-else>
-                            - {{ ccount }}
-                            <span class="text-xs text-green-700">(出售)</span>
-                            + 1
-                            <span class="text-xs text-blue-700">(生产)</span>
-                            = <span class="font-extra-bold">{{ goods - ccount + 1 }}</span>
-                        </template> <span class="float-right">单位商品</span>
-                    </div>
-                    <div class="my-5">和</div>
-                    <div class="my-2 mx-2">
-                        {{ money.toFixed(2) }}
-                        <span class="text-xs text-gray-500">(当前)</span>
-                        <template v-if="action === 'none'">
-                            = <span class="font-extra-bold">{{ money.toFixed(2) }}</span>
-                        </template>
-                        <template v-else-if="action === 'buy'">
-                            - {{ (ccount * price * slide()).toFixed(2) }}
-                            <span class="text-xs text-red-700">(购买)</span>
-                            = <span class="font-extra-bold">{{ (money - ccount * price * slide()).toFixed(2) }}</span>
-                        </template>
-                        <template v-else>
-                            + {{ (ccount * price * slide()).toFixed(2) }}
-                            <span class="text-xs text-green-700">(出售)</span>
-                            = <span class="font-extra-bold">{{ (money + ccount * price * slide()).toFixed(2) }}</span>
-                        </template> <span class="float-right">单位金钱</span>
+                        <div class="mb-5 font-extrabold">你下一回合将会拥有：</div>
+                    <div class="px-5">
+                        <div>
+                            {{ goods }}
+                            <span class="text-xs text-[gray]">(当前)</span>
+                            <template v-if="action === 'none'">
+                                + 1
+                                <span class="text-xs text-blue-500">(生产)</span>
+                                = <span class="font-extra-bold">{{ goods + 1 }}</span>
+                            </template>
+                            <template v-else-if="action === 'buy'">
+                                + {{ ccount }}
+                                <span class="text-xs text-[red]">(购买)</span>
+                                + 1
+                                <span class="text-xs text-blue-500">(生产)</span>
+                                = <span class="font-extra-bold">{{ goods + ccount + 1 }}</span>
+                            </template>
+                            <template v-else>
+                                - {{ ccount }}
+                                <span class="text-xs text-[green]">(出售)</span>
+                                + 1
+                                <span class="text-xs text-blue-500">(生产)</span>
+                                = <span class="font-extra-bold">{{ goods - ccount + 1 }}</span>
+                            </template> <span class="float-right">单位商品</span>
+                        </div>
+                        <div class="mt-3">
+                            {{ money.toFixed(2) }}
+                            <span class="text-xs text-[gray]">(当前)</span>
+                            <template v-if="action === 'none'">
+                                = <span class="font-extra-bold">{{ money.toFixed(2) }}</span>
+                            </template>
+                            <template v-else-if="action === 'buy'">
+                                - {{ (ccount * price * slide()).toFixed(2) }}
+                                <span class="text-xs text-[red]">(购买)</span>
+                                = <span class="font-extra-bold">{{ (money - ccount * price * slide()).toFixed(2) }}</span>
+                            </template>
+                            <template v-else>
+                                + {{ (ccount * price * slide()).toFixed(2) }}
+                                <span class="text-xs text-[green]">(出售)</span>
+                                = <span class="font-extra-bold">{{ (money + ccount * price * slide()).toFixed(2) }}</span>
+                            </template> <span class="float-right">单位金钱</span>
+                        </div>
                     </div>
 
                     </p>
@@ -207,6 +231,7 @@
 <script setup lang="ts">
 import "https://files.yxm.pl/tailwindcss.3.4.1.js"
 import { ref, computed, Ref, watch, nextTick, onUnmounted, inject } from 'vue'
+import Number from './Number.vue'
 import { updateChart, appendData, setRounds } from './chart.ts'
 const props = defineProps({
     username: {
@@ -228,6 +253,9 @@ const dealerrors: Ref<string[]> = ref([])
 const roundend = ref(0)
 const submitMsg = ref('提交')
 const roundRest = ref(0)
+const settlementing = ref(false)
+const syncing = ref(false)
+const close_diff = ref(false)
 const connectingMsg = ref('连接中...')
 const showCountdown = ref(false)
 const records: Ref<any> = ref([])
@@ -372,12 +400,16 @@ async function connect() {
             ended = true
             ws?.close()
             connection_status.value = '未连接'
+            close_diff.value = !close_diff.value
             goods.value = 0
             money.value = 0
             round.value = undefined
             roundend.value = 0
             roundRest.value = 0
             showCountdown.value = false
+            settlementing.value = false
+            syncing.value = false
+            passed.value = false
             connect().then(updPrices)
         }
         if (data.verified) connection_status.value = '已连接'
@@ -393,10 +425,14 @@ async function connect() {
                 }, 1000)
                 nextTick(checkDeal)
             }
+            round.value = data.round
             if (roundCountdownId) clearInterval(roundCountdownId)
             roundRest.value = 0
             showCountdown.value = false
             round.value = data.round
+            settlementing.value = false
+            syncing.value = false
+            close_diff.value = !close_diff.value
         }
         if (data.price) price.value = data.price
         if (data.roundend !== undefined) roundend.value = data.roundend
@@ -405,17 +441,25 @@ async function connect() {
             money.value = data.user.money
         }
         if (data.roundRest) {
-            roundRest.value = data.roundRest
-            showCountdown.value = true
+            syncing.value = true
             if (roundCountdownId) clearInterval(roundCountdownId)
-            roundCountdownId = setInterval(() => {
-                roundRest.value -= 1000
-                if (roundRest.value <= 0 && roundCountdownId) {
-                    clearInterval(roundCountdownId)
-                    showCountdown.value = false
-                    roundRest.value = 0
-                }
-            }, 1000)
+            data.roundRest -= 300
+            const theSecondRest =  data.roundRest - Math.floor( data.roundRest / 1000) * 1000
+            const endTime = Date.now() + data.roundRest;
+            setTimeout(() => {
+                roundRest.value = endTime - Date.now()
+                syncing.value = false
+                showCountdown.value = true
+                roundCountdownId = setInterval(() => {
+                    roundRest.value = endTime - Date.now()
+                    if (roundRest.value <= 0 && roundCountdownId) {
+                        clearInterval(roundCountdownId)
+                        showCountdown.value = false
+                        settlementing.value = true
+                        roundRest.value = 0
+                    }
+                }, 1000)
+            }, theSecondRest)
         }
         if (data.pass !== undefined) {
             appendData({
@@ -468,4 +512,25 @@ connect().then(updPrices)
 
 <style>
 @import "https://cdn.jsdelivr.net/npm/daisyui@4.6.1/dist/full.min.css";
+</style>
+
+
+<style scoped>
+.countdown > *:before {
+    transition: all 0.3s cubic-bezier(1, 0, 0, 1);
+}
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.1s ease-out;
+}
+.v-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.v-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+
 </style>
