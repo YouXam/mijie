@@ -375,9 +375,12 @@ async function submit() {
 }
 let ws: WebSocket | null = null;
 let ended = false
+let pingTimer: number | null = null
 onUnmounted(() => {
     // console.log("closing ws")
     ended = true
+    clearInterval(pingTimer as any)
+    pingTimer = null
     if (ws) ws.close()
 })
 async function connect() {
@@ -391,9 +394,15 @@ async function connect() {
         connectingMsg.value = ''
         connection_status.value = '未认证'
         send({ type: 'login', token })
+        if (!pingTimer) {
+            pingTimer = setInterval(() => {
+                ws?.send('\x89ping\x00')
+            }, 1000 * 20) as any
+        }
     }
 
     ws.onmessage = (e) => {
+        if (e.data === '\x8Apong\x00') return
         const data = JSON.parse(e.data)
         // console.log("received", data)
         if (data.reset === true) {
@@ -480,6 +489,8 @@ async function connect() {
 
     ws.onclose = () => {
         if (ended) return
+        clearInterval(pingTimer as any)
+        pingTimer = null
         connection_status.value = '未连接'
         connectingMsg.value = '连接中...'
         setTimeout(() => {
@@ -492,6 +503,8 @@ async function connect() {
 
     ws.onerror = (e) => {
         errorMsg.value = e.toString()
+        clearInterval(pingTimer as any)
+        pingTimer = null
     }
 
 
