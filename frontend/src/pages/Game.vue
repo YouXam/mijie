@@ -347,7 +347,7 @@ document.addEventListener('scroll', () => {
         score.value = res.points
         manual.value = res.manualScores
         inputs.value = res.inputs
-        answers.value = res.inputs?.map(() => '')
+        if (res.inputs) answers.value = res.inputs?.map(() => '')
         percent.value = res.percent
         if (res.files && res.files.length) files.value = res.files
         document.title = res.name + ' | ' + document.title.split(' | ')[1]
@@ -359,7 +359,7 @@ document.addEventListener('scroll', () => {
         } else if (err.status == 404) {
             router.replace('/404')
         }
-        console.log(err)
+        console.log(err.stack)
     }
 })()
 
