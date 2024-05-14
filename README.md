@@ -1,3 +1,3 @@
 # baituan-puzzle
 
-baituan-puzzle
+baituan-puzzle.
