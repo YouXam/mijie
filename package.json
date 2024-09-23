@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "ably": "^1.2.45",
-    "axios": "^1.6.0",
+    "axios": "^1.7.4",
     "chokidar": "^3.5.3",
     "clear-module": "^4.1.2",
     "dotenv": "^16.3.1",
