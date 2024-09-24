@@ -1,6 +1,6 @@
 <template>
     <div class="toast toast-top toast-end z-[100]" :style="{ top: index * 75 + 50 + 'px'}" :class="{'select-none': notification.onclick, 'cursor-pointer': notification.onclick}">
-        <div class="alert flex" :class="'alert-' + notification.type" @click="notification.onclick ? notification.onclick() : 0">
+        <div class="alert flex" :class="'alert-' + notification.type" @click="onClick()">
             <font-awesome-icon v-if="notification.type=='info'" :icon="['fas', 'circle-info']" />
             <font-awesome-icon v-if="notification.type=='success'" :icon="['fas', 'circle-check']" />
             <font-awesome-icon v-if="notification.type=='warning'" :icon="['fas', 'triangle-exclamation']" />
@@ -29,7 +29,17 @@ export default {
     },
     data: () => ({
         notificationManager
-    })
+    }),
+    methods: {
+        onClick() {
+            if (this.notification.onclick) {
+                this.notification.onclick()
+            }
+            if (this.notification.onClickClose) {
+                this.notificationManager.remove(this.notification.id)
+            }
+        }
+    }
 }
 </script>
 
