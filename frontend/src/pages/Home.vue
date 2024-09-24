@@ -35,13 +35,13 @@ function start() {
 <style scoped>
 .background {
     position: absolute;
-    background-image: linear-gradient(-45deg, #f06d06 50%, #f200ff 50%);
+    background-image: linear-gradient(-45deg, #f06b069f 50%, #f200ff9f 50%);
     filter: blur(90px);
     top: 0;
     z-index: -1;
 }
 .gradient-text {
-    background: linear-gradient(-45deg, #f06d06, #f200ff);
+    background: linear-gradient(-45deg, #f06b069f, #f200ff9f);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
