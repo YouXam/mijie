@@ -122,6 +122,15 @@ class Plugins {
                     return
                 }
                 plugin.pid = plugin.pid.toLowerCase()
+                if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
+                    for (const value of plugin.next) {
+                        if (!value.pid) {
+                            console.log(`Failed to load plugin ${folder}: missing pid in next`);
+                            return
+                        }
+                        value.pid = value.pid.toLowerCase()
+                    }
+                }
                 if (plugin.server) {
                     if (typeof plugin.server !== "function") {
                         console.log(`Failed to load plugin ${folder}: server is not a function`);
