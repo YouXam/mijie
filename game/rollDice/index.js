@@ -9,11 +9,6 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 35,
-    checker: '35',
-    next: [
-        {
-            pid: "wirelessMystery"
-        }
-    ]
+    points: 0,
+    checker: '35'
 }

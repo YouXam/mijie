@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 60,
+    points: 0,
     interval: 10 * 1000,
     async checker(ans, ctx) {
         const code = `import random

@@ -32,7 +32,7 @@ module.exports = {
         ctx.msg("AI 响应出现异常，请稍后重试。如果多次出现此问题，请联系管理员。")
         return false
     },
-    points: 50,
+    points: 0,
     next: [
         {
             pid: "countBit",
@@ -41,10 +41,6 @@ module.exports = {
         {
             pid: "findMinMax",
             description: "统计哈士奇造成的损失（周行算法爱好者协会）"
-        },
-        {
-            pid: 'repair_school_car',
-            description: "修好被哈士奇破坏的校车（智能创新社）"
         },
         {
             pid: 'encrypted_video',

@@ -36,5 +36,5 @@ module.exports = {
         ctx.msg("AI 响应出现异常，请稍后重试。如果多次出现此问题，请联系管理员。")
         return false
     },
-    points: 100
+    points: 0
 }

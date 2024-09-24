@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 50,
+    points: 0,
     checker: '盲文',
     next: [
         {

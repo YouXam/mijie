@@ -9,7 +9,7 @@
                             <span v-if="percent !== null && percent !== undefined && !manual" class="tooltip" data-tip="通过人数 / 提交人数">
                                 <span v-if="score">, </span>{{  percent  }}% passed
                             </span>
-                            <span v-if="user.gameprocess[$route.params.pid]">
+                            <span v-if="user.gameprocess[$route.params.pid] !== undefined">
                                 <span v-if="score || percent !== null && percent !== undefined && !manual">, </span>
                                 <router-link :to="'/record/' + $route.params.pid + '?passed=true'" class="link">已通过</router-link>
                             </span>

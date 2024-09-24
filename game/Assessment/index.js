@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 80,
+    points: 0,
     interval: 10 * 1000,
     checker: async (ans, ctx) => {
         const testData = Array.from({ length: 10 }, () => Math.random());
@@ -55,9 +55,6 @@ module.exports = {
         return true;
     },
     next: [
-        {
-            pid: "wirelessMystery"
-        },
         {
             pid: "reassessment",
             description: "附加题"

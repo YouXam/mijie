@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 20,
+    points: 0,
     checker: 'puppy',
     next: [
         {
