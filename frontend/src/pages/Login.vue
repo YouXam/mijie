@@ -38,15 +38,16 @@ if (user.login.value) {
     router.replace(history.state?.back?.path || '/')
 }
 const token = ref('')
-nextTick(() => {
+;(async () => {
+    await loader.wait();
+    console.log(window.turnstile);
     turnstile.render('#cfTurnstile', {
         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
         callback: (tk) => {
             token.value = tk;
         }
     });
-})
-
+})();
 const username = ref('')
 const password = ref('')
 async function login() {

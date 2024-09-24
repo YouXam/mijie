@@ -13,9 +13,10 @@ class NotificationManager {
     type = 'info',
     time = 3000,
     onclick = null,
+    onClickClose = true
   }) {
     const id = this.id++
-    const notification = { id, message, type, time, onclick }
+    const notification = { id, message, type, time, onclick, onClickClose }
     this.notifications.unshift(notification)
 
     if (time && typeof time === 'number') {

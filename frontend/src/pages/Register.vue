@@ -59,15 +59,16 @@ const password2 = ref('')
 const error = ref('')
 const token = ref('')
 const loading = ref(false)
-nextTick(() => {
+;(async () => {
+    await loader.wait();
+    console.log(window.turnstile);
     turnstile.render('#cfTurnstile', {
         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
         callback: (tk) => {
             token.value = tk;
         }
     });
-})
-
+})();
 if (user.login.value) {
     notificationManager.add({
         message: '您已登录',

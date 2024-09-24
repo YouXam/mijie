@@ -149,7 +149,6 @@ notice.subscribe('update', function (message) {
     message: message.data.content ? ('点击查看新公告: ' + message.data.content) : '有新公告，点击查看',
     type: 'success',
     onclick: () => {
-      console.log(router)
       router.push('/notice')
     },
     time: -1

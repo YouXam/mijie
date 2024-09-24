@@ -363,7 +363,6 @@ function formatDate(date) {
     return `${year}_${month}_${day}_${hours}_${minutes}_${seconds}`;
 }
 function download(format) {
-    console.log(format)
     const te = new TableExport(userlist.value, {
         formats: [format],
         filename: '用户列表_' + formatDate(new Date()),
@@ -371,7 +370,6 @@ function download(format) {
         exportButtons: false,
         sheetname: "用户列表"
     });
-    console.log(te.getExportData())
     const exportData = te.getExportData()['tableexport-1'][format];
     te.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
 
