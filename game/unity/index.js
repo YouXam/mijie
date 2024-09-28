@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '殊途同归',
     pid: 'unity',
     description: {

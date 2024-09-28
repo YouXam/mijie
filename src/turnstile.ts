@@ -1,4 +1,4 @@
-module.exports.verify = async function(token) {
+export async function verify(token: string) {
     let formData = new FormData();
     formData.append('secret', '0x4AAAAAAAQoQSmFu6ODCX7wqVw6lsnI8lI');
     formData.append('response', token);

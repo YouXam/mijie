@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'clone py',
     pid: 'clone_py',
     description: {

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '神秘的串',
     pid: 'MysteriousString',
     description: {

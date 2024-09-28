@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Assessment',
     pid: 'assessment',
     description: {

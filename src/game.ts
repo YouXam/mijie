@@ -1,19 +1,21 @@
-const fs = require('fs');
-const path = require('path');
-const clearModule = require('clear-module');
-const chokidar = require('chokidar');
-const Router = require('koa-router');
-const { runCode, glot } = require('./games/glot');
-const Ranking = require('./rank');
-const compose = require('koa-compose');
-const send = require('koa-send');
-const jwt = require("jsonwebtoken")
-const axios = require('axios');
-const { verify } = require('./turnstile');
-const { gameConfig } = require('./auth')
-const PluginServer = require('./pluginServer');
+import { Db } from 'mongodb';
+import Ranking from './rank';
+import Router from 'koa-router';
+import fs from 'fs';
+import path from 'path';
+import compose from 'koa-compose';
+import send from 'koa-send';
+import jwt from 'jsonwebtoken';
+import axios from 'axios';
+import { minimatch } from 'minimatch';
+import { runCode, glot } from './games/glot';
+import { verify }from './turnstile';
+import { gameConfig } from './auth';
+import { Plugin } from './types';
+import { Context } from 'koa';
+import { PluginServer } from './pluginServer';
 
-function haveCommonKeyValuePair(obj1, obj2) {
+function haveCommonKeyValuePair(obj1: Record<string, any>, obj2: Record<string, any>) {
     let smallerObj = obj1, largerObj = obj2;
     if (Object.keys(obj1).length > Object.keys(obj2).length) {
         smallerObj = obj2;
@@ -27,6 +29,9 @@ function haveCommonKeyValuePair(obj1, obj2) {
     return false;
 }
 class TaskManager {
+    userCount: Record<string, number>;
+    tokens: Record<string, number>;
+
     constructor() {
         this.userCount = {}
         this.tokens = {}
@@ -35,7 +40,7 @@ class TaskManager {
             this.tokens = {}
         }, 1000 * 180)
     }
-    async run(user, token) {
+    async run(user: string, token?: string) {
         if (this.userCount[user] && this.userCount[user] >= 5) {
             if (!token)
                 return false
@@ -57,6 +62,17 @@ class TaskManager {
 const taskManager = new TaskManager();
 
 class Plugins {
+    first: string | null;
+    plugins: Record<string, Plugin>;
+    pluginMap: Map<string, Plugin>;
+    pluginPre: Map<string, Record<string, boolean>>;
+    pluginsPath: string;
+    gamePercent: Map<string, number>;
+    hints: Map<string, {
+        content: string,
+        pid: string,
+        uid: string
+    }>;
     constructor() {
         this.first = null;
         this.plugins = {};
@@ -66,9 +82,8 @@ class Plugins {
         this.gamePercent = new Map();
         this.hints = new Map();
         this.loadPlugins();
-        this.watchPlugins();
     }
-    async getPercent(pid, db) {
+    async getPercent(pid: string, db: Db) {
         const percent = this.gamePercent.get(pid)
         if (percent) return percent
         const res = await db.collection("problems").findOne({ pid })
@@ -78,7 +93,7 @@ class Plugins {
         }
         return null
     }
-    async setPercent(pid, percent, db) {
+    async setPercent(pid: string, percent: number, db: Db) {
         this.gamePercent.set(pid, percent)
         db.collection('problems').updateOne({ pid }, { $set: { percent } }, { upsert: true });
     }
@@ -91,12 +106,11 @@ class Plugins {
             this.loadPlugin(folder);
         });
     }
-    loadPlugin(folder) {
+    async loadPlugin(folder: string) {
         const pluginPath = path.join(this.pluginsPath, folder, 'index.js');
         if (fs.existsSync(pluginPath)) {
-            clearModule(pluginPath);
             try {
-                const plugin = require(pluginPath);
+                const plugin = (await import(pluginPath)).default as Plugin;
                 if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function' && !plugin.manualScores && !plugin.server && plugin.inputs !== false) {
                     console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
                     return
@@ -150,7 +164,7 @@ class Plugins {
                     }
                     console.log(`Plugin ${folder} server init success`)
                 }
-                for (const solve of ['before_solve', 'after_solve']) {
+                for (const solve of (['before_solve', 'after_solve'] as const)) {
                     if (plugin.description?.[solve]?.md) {
                         const descriptionPath = path.join(this.pluginsPath, folder, plugin.description[solve].md);
                         if (fs.existsSync(descriptionPath)) {
@@ -176,7 +190,7 @@ class Plugins {
                 }
                 plugin.folder = folder;
                 if (plugin.first) this.first = plugin.pid
-                if (typeof plugin.checker == "string") plugin.checker = (ans => res => res == ans)(plugin.checker);
+                if (typeof plugin.checker == "string") plugin.checker = ((ans: string) => (res: any) => res === ans)(plugin.checker);
                 this.plugins[folder] = plugin;
                 this.computePre();
                 this.loaded(folder);
@@ -185,10 +199,9 @@ class Plugins {
             }
         }
     }
-    unloadPlugin(folder) {
+    unloadPlugin(folder: string) {
         const pluginPath = path.join(this.pluginsPath, folder, 'index.js');
         if (fs.existsSync(pluginPath) && this.plugins[folder]) {
-            clearModule(pluginPath);
             try {
                 delete this.plugins[folder];
                 this.computePre();
@@ -213,25 +226,14 @@ class Plugins {
             }
         });
     }
-    watchPlugins() {
-        const watcher = chokidar.watch(this.pluginsPath, { persistent: true, ignoreInitial: true });
-        const watcherHandler = (filePath, action) => {
-            if (action == "load") this.loadPlugin(filePath.replace(this.pluginsPath + "/", '').split("/")[0]);
-            else this.unloadPlugin(filePath.replace(this.pluginsPath + "/", '').split("/")[0]);
-        }
-        watcher
-            .on('add', path => watcherHandler(path, "load"))
-            .on('change', path => watcherHandler(path, "load"))
-            .on("delete", path => watcherHandler(path, "unload"))
-    }
 
-    loaded(folder) {
+    loaded(folder: string) {
         if (this.pluginMap.get(this.plugins[folder].pid))
             console.log(`Plugin "${this.plugins[folder].name}" has been reloaded`);
         this.pluginMap.set(this.plugins[folder].pid, this.plugins[folder]);
     }
 
-    unloaded(folder) {
+    unloaded(folder: string) {
         console.log(`Plugin "${folder}" has been unloaded`);
         this.pluginMap.delete(folder);
     }
@@ -242,6 +244,8 @@ const plugins = new Plugins();
 let rank = Ranking;
 
 class AI {
+    cloudflare_api_keys: { id: string, key: string }[];
+    cloudflare_api_index: number;
     constructor() {
         const keys = (process.env.CLOUDFLARE_API_KEYS || '').split(',');
         this.cloudflare_api_keys = keys.filter(key => key.length > 0).map(x => {
@@ -254,7 +258,7 @@ class AI {
         this.cloudflare_api_index = (this.cloudflare_api_index + 1) % this.cloudflare_api_keys.length;
         return this.cloudflare_api_keys[this.cloudflare_api_index];
     }
-    async run(inputs) {
+    async run(inputs: string[]) {
         const key = this.next_api_key()
         const API_BASE_URL = `https://api.cloudflare.com/client/v4/accounts/${key.id}/ai/run/`;
         const model = "@cf/meta/llama-2-7b-chat-int8";
@@ -265,7 +269,7 @@ class AI {
         try {
             const response = await axios.post(`${API_BASE_URL}${model}`, { messages: inputs }, { headers: headers });
             return response.data;
-        } catch (error) {
+        } catch (error : any) {
             console.error("Error during AI dialogue:", error);
             if (error.data) {
                 console.error(error.data);
@@ -275,8 +279,7 @@ class AI {
     }
 }
 
-const { minimatch } = require("minimatch");
-function checkAllowedFiles(root, { include, exclude }, targetPath) {
+function checkAllowedFiles(root: string, { include, exclude }: { include: string[], exclude: string[] }, targetPath: string) {
     const absolutePath = path.join(root, targetPath);
     if (exclude) {
         for (const pattern of exclude) {
@@ -295,7 +298,7 @@ function checkAllowedFiles(root, { include, exclude }, targetPath) {
     return false;
 }
 
-async function insertRecord(db, record) {
+async function insertRecord(db: Db, record: Record<string, any>) {
     await db.collection('records').insertOne(record);
     const stat = await db.collection("records").aggregate([
         { $match: { pid: record.pid } },
@@ -316,7 +319,7 @@ async function insertRecord(db, record) {
 
 const ai = new AI();
 
-module.exports = function (db) {
+export default function game(db: Db) {
     const router = new Router();
     rank.setDB(db);
     router.get('/rank', async (ctx) => {
@@ -326,7 +329,7 @@ module.exports = function (db) {
     })
 
     router.get('/start', async (ctx) => {
-        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
         ctx.body = {
@@ -350,16 +353,16 @@ module.exports = function (db) {
     router.get('/problem', async (ctx) => {
         const problems = Object.keys(ctx.state.gameprocess.passed)
         ctx.body = {
-            problems: problems.filter(pid => plugins.pluginMap.get(pid)).map(pid => {
-                const cur = plugins.pluginMap.get(pid);
+            problems: problems.filter(pid => plugins.pluginMap.has(pid)).map(pid => {
+                const cur = plugins.pluginMap.get(pid)!;
                 return {
                     pid: cur.pid,
                     name: cur.name,
                     gameover: cur.gameover,
                     first: cur.first,
-                    next: cur.next?.filter(value => plugins.pluginMap.get(value.pid)).map(value => ({
+                    next: cur.next?.filter(value => plugins.pluginMap.has(value.pid)).map(value => ({
                         pid: value.pid,
-                        name: plugins.pluginMap.get(value.pid).name
+                        name: plugins.pluginMap.get(value.pid)!.name
                     })),
                     manualScores: cur.manualScores
                 }
@@ -377,13 +380,13 @@ module.exports = function (db) {
             { $match: { username: username } },
             { $group: { _id: "$pid", count: { $sum: 1 } } },
         ]).toArray()
-        const problemsMap = {}
+        const problemsMap: Record<string, number> = {};
         problems.forEach(e => {
             problemsMap[e._id] = e.count
         })
         const res = {
-            submitted_problems: problems.filter(res => plugins.pluginMap.get(res._id)).map(res => {
-                const cur = plugins.pluginMap.get(res._id);
+            submitted_problems: problems.filter(res => plugins.pluginMap.has(res._id)).map(res => {
+                const cur = plugins.pluginMap.get(res._id)!;
                 return {
                     pid: cur.pid,
                     name: cur.name,
@@ -403,7 +406,7 @@ module.exports = function (db) {
         ctx.body = res;
     })
 
-    async function checkPre(ctx, manualUsername = '') {
+    async function checkPre(ctx: Context, manualUsername = '') {
         let name = ctx.params.name;
         if (!name) ctx.throw(400, `Missing problem name`)
         name = name.toLowerCase()
@@ -441,7 +444,6 @@ module.exports = function (db) {
             name: cur.name,
             points: cur.points,
             description: cur.description.before_solve,
-            points: cur.points,
             manualScores: cur.manualScores,
             files: cur.files,
             inputs: cur.inputs,
@@ -453,28 +455,37 @@ module.exports = function (db) {
         if (!ctx.state.admin) {
             ctx.throw(403, `Access denied`)
         }
-        if (ctx.request.body.points === undefined || !ctx.request.body.username) {
+        const { username, pid, points: pointsSring, passed, gameover, msg } = ctx.request.body as {
+            username?: string,
+            pid?: string,
+            points?: string,
+            passed?: boolean,
+            gameover?: boolean,
+            msg?: string
+        };
+        if (!pointsSring || !username) {
             ctx.throw(400, `Missing username or points`);
+            return
         }
-        const cur = await checkPre(ctx, ctx.request.body.username);
-        const username = ctx.request.body.username;
-        if (isNaN(ctx.request.body.points) || parseInt(ctx.request.body.points) < 0) {
+        const cur = await checkPre(ctx, username);
+        if (isNaN(parseInt(pointsSring)) || parseInt(pointsSring) < 0) {
             ctx.throw(400, `Invalid points`);
+            return
         }
-        const points = parseFloat(ctx.request.body.points);
+        const points = parseFloat(pointsSring);
         const record = {
             username,
             pid: cur.pid,
             time: Date.now(),
             name: cur.name,
-            msg: ctx.request.body.msg,
+            msg,
             points,
             manualScores: true,
             passed: true,
             gameover: cur.gameover
         };
         await db.collection('records').insertOne(record);
-        const setValue = {};
+        const setValue: Record<string, any> = {};
         if (record.gameover) setValue.gameover = true;
         const pipeline = [
             {
@@ -558,8 +569,8 @@ module.exports = function (db) {
             msg: record.msg || '',
             gameover: record.gameover || false,
             next: cur.next ? cur.next.map(n => ({
-                name: plugins.pluginMap.get(n.pid).name,
-                ...n
+                ...n,
+                name: plugins.pluginMap.get(n.pid)?.name
             })) : undefined,
             solved_description: cur.description.after_solve,
             points: record.points
@@ -577,8 +588,8 @@ module.exports = function (db) {
             msg: record[0].msg || '',
             gameover: record[0].gameover || false,
             next: cur.next ? cur.next.map(n => ({
-                name: plugins.pluginMap.get(n.pid).name,
-                ...n
+                ...n,
+                name: plugins.pluginMap.get(n.pid)?.name
             })) : undefined,
             solved_description: cur.description.after_solve,
             points: record[0].points
@@ -590,17 +601,19 @@ module.exports = function (db) {
         if (!cur.server) {
             ctx.throw(400, `This problem does not have a server`);
         }
-        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
-        if (new Date(gameConfig.endTime).getTime() < Date.now()) {
+        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束`);
         }
-        if (!ctx.request.body.event) {
+        const { event, data } = ctx.request.body as {
+            event?: string,
+            data?: any
+        };
+        if (!event) {
             ctx.throw(400, `Missing event`);
         }
-        const event = ctx.request.body.event;
-        const data = ctx.request.body.data;
         const gameStorage = await ctx.state.gamestorage.game(cur.pid);
         let passed = false, message = '';
         const context = {
@@ -610,12 +623,12 @@ module.exports = function (db) {
             gameProcess: ctx.state.gameprocess,
             gameStorage,
             jwt,
-            ai: inputs => ai.run(inputs),
-            pass: (msg) => {
+            ai: (inputs: any) => ai.run(inputs),
+            pass: (msg: string) => {
                 passed = true;
                 message += msg;
             },
-            nopass: (msg) => {
+            nopass: (msg: string) => {
                 message += msg;
             }
         }
@@ -623,6 +636,10 @@ module.exports = function (db) {
         await gameStorage.save();
         const res = {
             res: eventResponse
+        } as {
+            res: any,
+            problem?: any,
+            percent?: number
         }
         const record  = {
             username: ctx.state.username,
@@ -632,16 +649,18 @@ module.exports = function (db) {
             name: cur.name,
             msg: message,
             passed: false,
+            points: 0,
+            gameover: false
         }
         if (passed) {
-            const passedinfo = {};
+            const passedinfo: Record<string, any> = {};
             passedinfo.msg = message
             passedinfo.passed = record.passed = true;
             passedinfo.points = record.points = cur.points;
             let flag = false
             if (!ctx.state.gameprocess.passed.hasOwnProperty(cur.pid)) flag = true;
             ctx.state.gameprocess.pass(cur.pid, cur.points);
-            const setValue = {};
+            const setValue: Record<string, any> = {};
             if (cur.gameover) {
                 record.gameover = true
                 passedinfo.gameover = true;
@@ -709,8 +728,8 @@ module.exports = function (db) {
             if (flag) rank.update()
 
             passedinfo.next = cur.next ? cur.next.map(n => ({
-                name: plugins.pluginMap.get(n.pid).name,
-                ...n
+                ...n,
+                name: plugins.pluginMap.get(n.pid)?.name,
             })) : undefined;
             passedinfo.solved_description = cur.description.after_solve;
             passedinfo.percent = await insertRecord(db, record);
@@ -730,16 +749,20 @@ module.exports = function (db) {
         if (cur.manualScores) {
             ctx.throw(400, `This problem need to be automatically scored.`);
         }
-        if (new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
-        if (new Date(gameConfig.endTime).getTime() < Date.now()) {
+        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now()) {
             ctx.throw(400, `游戏已结束，无法提交`);
         }
         if (cur.inputs === false) {
             ctx.throw(400, `该关卡不能提交答案`);
         }
-        if (!await taskManager.run(ctx.state.username, ctx.request.body.token)) {
+        const { ans, token } = ctx.request.body as {
+            ans?: any,
+            token?: string
+        };
+        if (!await taskManager.run(ctx.state.username, token)) {
             ctx.body = {
                 passed: false,
                 turnstile: true
@@ -748,15 +771,18 @@ module.exports = function (db) {
         }
         let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid), res = null
         try {
-            res = cur.checker(ctx.request.body.ans, {
+            if (typeof cur.checker == "string") {
+                throw new Error("checker is string")
+            }
+            res = await cur.checker(ans, {
                 glot,
                 runCode,
                 username: ctx.state.username,
                 gameProcess: ctx.state.gameprocess,
                 gameStorage,
                 jwt,
-                ai: inputs => ai.run(inputs),
-                msg: (str) => {
+                ai: (inputs: any) => ai.run(inputs),
+                msg: (str: string) => {
                     msg += str;
                 }
             })
@@ -765,21 +791,16 @@ module.exports = function (db) {
             ctx.throw(500, "checker error, please contact admin");
         }
 
-        if (res instanceof Promise) {
-            res = await res.catch(err => {
-                console.log(cur.pid, err)
-                ctx.throw(500, "checker error, please contact admin");
-            })
-        }
-
-
         const record = {
             username: ctx.state.username,
             pid: cur.pid,
-            ans: ctx.request.body.ans,
+            ans,
             time: Date.now(),
             name: cur.name,
-            msg
+            msg,
+            passed: false,
+            points: 0,
+            gameover: false
         };
         await gameStorage.save();
 
@@ -789,7 +810,7 @@ module.exports = function (db) {
             ctx.state.gameprocess.pass(cur.pid, cur.points);
             record.passed = true;
             record.points = cur.points;
-            const setValue = {};
+            const setValue: Record<string, any> = {};
             if (cur.gameover) {
                 record.gameover = true;
                 setValue.gameover = true;
@@ -858,8 +879,8 @@ module.exports = function (db) {
                 passed: true,
                 points: cur.points,
                 next: cur.next ? cur.next.map(n => ({
-                    name: plugins.pluginMap.get(n.pid).name,
-                    ...n
+                    ...n,
+                    name: plugins.pluginMap.get(n.pid)?.name
                 })) : undefined,
                 gameover: cur.gameover,
                 msg,
@@ -925,13 +946,24 @@ module.exports = function (db) {
     });
 
     router.get('/record', async (ctx) => {
-        let { pid, user, all, page = 1, size = 50, passed } = ctx.query;
-        if (!user) user = ctx.state.username;
+        let { pid, user, all, page: pageStr = '1', size: sizeStr = '50', passed } = ctx.query as {
+            pid?: string,
+            user?: string,
+            all?: string,
+            page?: string,
+            size?: string,
+            passed?: string
+        }
+        if (!user) user = ctx.state.username as string;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
-        page = Math.max(1, parseInt(page, 10) || 1);
-        size = Math.min(200, Math.max(1, parseInt(size, 10) || 50));
-        let query = {};
+        const page = Math.max(1, parseInt(pageStr, 10) || 1);
+        const size = Math.min(200, Math.max(1, parseInt(sizeStr, 10) || 50));
+        let query: {
+            username: string,
+            pid?: string,
+            passed?: boolean
+        } = { username: user };
         if (!all) query.username = user;
         if (pid) query.pid = pid;
         if (passed !== undefined) query.passed = passed === 'true';
@@ -957,9 +989,12 @@ module.exports = function (db) {
     });
 
     router.post('/change-school-id', async ctx => {
-        const { studentID } = ctx.request.body;
+        const { studentID } = ctx.request.body as {
+            studentID?: string
+        }
         if (!studentID) {
             ctx.throw(400, 'Missing studentID');
+            return
         }
         const res = await db.collection('users').findOneAndUpdate(
             { username: ctx.state.username, studentID: { $exists: false } },
@@ -976,10 +1011,12 @@ module.exports = function (db) {
         const hint = plugins.hints.get(ctx.params.uid);
         if (!hint) {
             ctx.throw(404, 'Hint not found');
+            return
         }
         const cur = plugins.pluginMap.get(hint.pid);
         if (!cur) {
             ctx.throw(404, 'Problem not found');
+            return
         }
         const pre = plugins.pluginPre.get(cur.pid);
 

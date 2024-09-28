@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '猜数字',
     pid: 'guessNumber',
     description: {

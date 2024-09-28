@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'findMinMax',
     pid: 'findMinMax',
     description: {

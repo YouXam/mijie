@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '被加密的监控视频',
     pid: 'encrypted_video',
     description: {

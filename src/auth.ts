@@ -1,28 +1,32 @@
-const Router = require('koa-router');
-const { GameProcess, GameStorage } = require('./gameprocess');
-const jwt = require('jsonwebtoken');
-const rank = require('./rank')
-const compose = require('koa-compose');
-const banned = {}
-const { ObjectId } = require('mongodb');
-const { notice: noticePublish } = require('./publish');
-const uuidv4 = require('uuid').v4;
-const gameConfig = {}
-const { verify } = require('./turnstile');
+import jwt from 'jsonwebtoken';
+import Router from 'koa-router';
+import compose from 'koa-compose';
+import { ObjectId, type Db } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
+import { type GameConfig } from './types';
+import { verify } from './turnstile';
+import rank from './rank';
+import { notice as noticePublish } from './publish';
+import { GameProcess, GameStorage } from './gameprocess';
+import dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
+
+const banned: Record<string, boolean> = {}
+
+export const gameConfig: GameConfig = {}
 
 if (!process.env.JWT_SECRET) {
     throw Error("环境变量中缺少 JWT_SECRET")
 }
 const jwtSecret = process.env.JWT_SECRET;
 
-function authRoutes(db) {
+export function authRoutes(db: Db) {
     const router = new Router();
     db.collection('banned').find({ banned: true }).toArray().then(x => x.forEach(y => banned[y.username] = true))
     db.collection('config').findOne({ name: 'game-config' }).then(x => Object.assign(gameConfig, x))
     router.get('/game-config', async ctx => {
-        ctx.body =  {
+        ctx.body = {
             endTime: gameConfig.endTime || '3000-01-01 00:00:00',
             startTime: gameConfig.startTime || '2000-01-01 00:00:00',
             gamerule: gameConfig.gamerule || '',
@@ -32,9 +36,10 @@ function authRoutes(db) {
     })
 
     router.get('/game-config/:option', async ctx => {
-        const { option } = ctx.params;
+        const { option } = ctx.params as { option?: keyof GameConfig };
         if (!option) {
             ctx.throw(400, 'Missing option');
+            return
         }
         if (!gameConfig[option]) {
             if (option === 'endTime') {
@@ -50,14 +55,20 @@ function authRoutes(db) {
     })
 
     router.post('/register', async (ctx) => {
-        const { username, password, studentID, token } = ctx.request.body;
-        if (!await verify(token)) {
+        const { username, password, studentID, token } = ctx.request.body as {
+            username?: string,
+            password?: string,
+            studentID?: string,
+            token?: string
+        }
+        if (!token || !await verify(token)) {
             ctx.throw(401, '验证失败');
         }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password or studentID');
+            return
         }
-        const condition = [{ username: username }]
+        const condition: Array<{ username: string } | { studentID: string }> = [{ username: username }]
         if (studentID) condition.push({ studentID: studentID })
         const existingUser = await db.collection('users').findOne({
             $or: condition
@@ -76,16 +87,22 @@ function authRoutes(db) {
     });
 
     router.post('/login', async (ctx) => {
-        const { username, password, token: cftoken } = ctx.request.body;
-        if (!await verify(cftoken)) {
+        const { username, password, token: cftoken } = ctx.request.body as {
+            username?: string,
+            password?: string,
+            token?: string
+        }
+        if (!cftoken || !await verify(cftoken)) {
             ctx.throw(401, '验证失败');
         }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password');
+            return
         }
         const user = await db.collection('users').findOne({ username });
         if (!user || user.password != password) {
             ctx.throw(401, '用户名或密码错误');
+            return
         }
         if (banned[username]) {
             ctx.throw(403, '您已被封禁');
@@ -97,13 +114,18 @@ function authRoutes(db) {
             admin: user.admin,
             studentID: user.studentID
         }, jwtSecret, { expiresIn: '1d' });
-        ctx.body = { message: '登录成功', token, username  };
+        ctx.body = { message: '登录成功', token, username };
     });
 
     router.post('/change-password', async (ctx) => {
-        const { username, password, newPassword } = ctx.request.body;
+        const { username, password, newPassword } = ctx.request.body as {
+            username?: string,
+            password?: string,
+            newPassword?: string
+        }
         if (!username || !password || !newPassword) {
             ctx.throw(400, 'Missing username or password');
+            return
         }
         const user = await db.collection('users').findOne({ username });
         if (!user || user.password != password) {
@@ -113,17 +135,24 @@ function authRoutes(db) {
         ctx.body = { message: '密码修改成功' };
     })
 
-    const check_auth = async (ctx, next) => {
+    const check_auth: Router.IMiddleware = async (ctx, next) => {
         const authHeader = ctx.request.headers.authorization;
         if (!authHeader) {
             ctx.throw(401, '未登录');
+            return
         }
         const [scheme, token] = authHeader.split(' ');
         if (scheme !== 'Bearer') {
             ctx.throw(401, 'Invalid authorization header');
         }
         try {
-            const payload = jwt.verify(token, jwtSecret);
+            const payload = jwt.verify(token, jwtSecret) as {
+                username: string,
+                gameprocess: string,
+                gameover: boolean,
+                admin: number,
+                banned: boolean
+            }
             if (payload.banned || banned[payload.username]) {
                 ctx.body = { error: '您已被封禁', action: 'logout' };
                 return
@@ -162,17 +191,17 @@ function authRoutes(db) {
     ]);
 }
 
-function afterAuthRoutes(db) {
+export function afterAuthRoutes(db: Db) {
     const router = new Router();
     router.post('/change-school-id', async ctx => {
-        const { studentID } = ctx.request.body;
+        const { studentID } = ctx.request.body as { studentID?: string };
         if (!studentID) {
             ctx.throw(400, 'Missing studentID');
         }
         await db.collection('users').findOneAndUpdate(
             { username: ctx.state.username },
             { $set: { studentID } },
-            { returnOriginal: false }
+            // { returnOriginal: false }
         )
         const token = jwt.sign({
             username: ctx.state.username,
@@ -190,7 +219,7 @@ function afterAuthRoutes(db) {
     ]);
 }
 
-function amdinRoutes(db) {
+export function amdinRoutes(db: Db) {
     const router = new Router();
 
     router.use(async (ctx, next) => {
@@ -203,22 +232,26 @@ function amdinRoutes(db) {
 
 
     router.put('/game-config', async ctx => {
-        await db.collection('config').updateOne({ name: 'game-config' }, { $set: ctx.request.body }, { upsert: true });
+        await db.collection('config')
+            .updateOne(
+                { name: 'game-config' },
+                { $set: ctx.request.body as Record<string, string> },
+                { upsert: true }
+            );
         Object.assign(gameConfig, ctx.request.body);
         ctx.body = { message: '修改成功' };
     })
 
     router.post('/notice', async ctx => {
-        const { content } = ctx.request.body;
+        const { content } = ctx.request.body as { content?: string };
         if (!content) {
             ctx.throw(400, 'Missing content');
+            return
         }
         await db.collection('notices').insertOne({ content, time: new Date(), author: ctx.state.username });
         const minimalContent = content.length > 20 ? content.slice(0, 20) + '...' : content;
-        noticePublish.publish('update', {
+        await noticePublish.publish('update', {
             content: minimalContent
-        }, err => {
-            if (err) console.error(err);
         });
         ctx.body = { message: '发布成功' };
     })
@@ -238,18 +271,31 @@ function amdinRoutes(db) {
     })
 
     router.put('/user', async (ctx) => {
-        const { username } = ctx.request.query;
-        const { admin, banned: _banned, hidden, remark } = ctx.request.body;
+        const { username } = ctx.request.query as { username?: string };
+        const { admin, banned: _banned, hidden, remark } = ctx.request.body as {
+            admin?: number,
+            banned?: boolean,
+            hidden?: boolean,
+            remark?: string
+        }
         if (!username) {
             ctx.throw(400, 'Missing username');
+            return
         }
         if (admin && ctx.state.admin < 2) {
             ctx.throw(403, 'Access denied');
+            return
         }
         if (admin && (isNaN(admin) || admin > 2 || admin < 0)) {
             ctx.throw(400, 'Invalid admin value');
+            return
         }
-        const setValue = {};
+        const setValue = {} as {
+            admin?: number,
+            banned?: boolean,
+            hidden?: boolean,
+            remark?: string
+        }
         if (admin != undefined) setValue.admin = admin;
         if (_banned != undefined) {
             setValue.banned = _banned;
@@ -278,11 +324,4 @@ function amdinRoutes(db) {
         router.routes(),
         router.allowedMethods()
     ]);
-}
-
-module.exports = {
-    authRoutes,
-    afterAuthRoutes,
-    amdinRoutes,
-    gameConfig
 }

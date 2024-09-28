@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'coprimeCount',
     pid: 'coprimeCount',
     description: {

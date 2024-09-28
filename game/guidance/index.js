@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '仙人指路',
     pid: 'guidance',
     description: {

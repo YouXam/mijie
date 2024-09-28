@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "build": "cd frontend && yarn && yarn build",
-    "dev": "bun run --hot src/index.js"
+    "dev": "bun run --hot src/index.ts"
   },
+  "type": "module",
   "dependencies": {
     "ably": "^2.4.0",
     "axios": "^1.7.4",
@@ -25,6 +26,14 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.1.10",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/koa": "^2.15.0",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-compose": "^3.2.8",
+    "@types/koa-router": "^7.4.8",
+    "@types/koa-send": "^4.1.6",
+    "@types/uuid": "^10.0.0",
     "nodemon": "^3.0.1"
   }
 }

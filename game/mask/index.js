@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '兼收并蓄',
     pid: 'mask',
     description: {

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Revenge of AI',
     pid: "revengeOfAI",
     description: {

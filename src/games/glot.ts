@@ -1,13 +1,13 @@
-const axios = require('axios');
+import axios from "axios";
 
-async function runCode(code, language, stdin='') {
+export async function runCode(code: string, language: string, stdin='') {
     const apiKey = process.env.GLOT_IO_API_KEY;
 
     if (!apiKey) {
         throw new Error('Please set the GLOT_IO_API_KEY environment variable');
     }
 
-    const ext = {
+    const ext: Record<string, string> = {
         'c': 'c',
         'cpp': 'cpp',
         'java': 'java',
@@ -34,6 +34,12 @@ async function runCode(code, language, stdin='') {
         'plain': 'txt'
     }
 
+    if (!ext?.[language]) {
+        return {
+            code: 1,
+            error: 'Invalid language'
+        }
+    }
 
     try {
         const response = await axios.post(
@@ -61,7 +67,7 @@ async function runCode(code, language, stdin='') {
             error,
             code: response.data.error ? 1 : 0,
         };
-    } catch (err) {
+    } catch (err: any) {
         console.log(err)
         return {
             code: 1,
@@ -71,7 +77,7 @@ async function runCode(code, language, stdin='') {
 
 }
 
-async function glot(language, data) {
+export async function glot(language: string, data: any) {
     const apiKey = process.env.GLOT_IO_API_KEY;
 
     try {
@@ -94,16 +100,11 @@ async function glot(language, data) {
             error,
             code: response.data.error ? 1 : 0,
         };
-    } catch (err) {
+    } catch (err: any) {
         console.log(err)
         return {
             code: 1,
             error: err?.response?.data?.message || 'error'
         }
     }
-}
-
-module.exports = {
-    runCode,
-    glot
 }

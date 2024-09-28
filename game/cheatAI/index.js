@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Cheat AI',
     pid: "cheatAI",
     description: {

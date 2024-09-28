@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '让我访问',
     pid: 'random_password',
     description: {

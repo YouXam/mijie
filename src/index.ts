@@ -1,13 +1,14 @@
-const Koa = require('koa');
-const bodyParser = require('koa-bodyparser');
-const Router = require('koa-router');
-const MongoClient = require('mongodb').MongoClient;
-const { authRoutes, afterAuthRoutes, amdinRoutes } = require('./auth');
-const game = require('./game');
+import Koa from 'koa';
+import Router from 'koa-router';
+import bodyParser from 'koa-bodyparser';
+import { MongoClient, type Db } from 'mongodb';
+import { authRoutes, afterAuthRoutes, amdinRoutes } from './auth';
+import game from './game';
+import dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
 
-function httpServer(db) {
+function httpServer(db: Db) {
     const app = new Koa();
     const beforeAuth = new Router();
     const afterAuth = new Router();
@@ -34,6 +35,10 @@ if (!process.env.MONGODB_URI) {
 
 console.log('Connecting to MongoDB');
 ;(async function main() {
+    if (!process.env.MONGODB_URI) {
+        console.error('Missing MONGODB_URI environment variable');
+        process.exit(1);
+    }
     const client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
     console.log('Connected to MongoDB');

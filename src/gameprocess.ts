@@ -1,15 +1,17 @@
-class GameProcess {
+import { type Db } from "mongodb";
+
+export class GameProcess {
     passed;
     changed = false;
     gameover = false;
-    constructor(data, gameover) {
+    constructor(data: any, gameover: boolean) {
         this.passed = {}
         this.gameover = gameover || false;
         if (data && typeof data === 'object') {
             this.passed = data;
         }
     }
-    pass(level, points) {
+    pass(level: string, points: number) {
         this.passed[level] = points;
         this.changed = true;
     }
@@ -19,25 +21,27 @@ class GameProcess {
     }
 }
 
-class GameStorage {
-    constructor(db, username) {
+export class GameStorage {
+    db: Db;
+    username: string;
+    constructor(db: Db, username: string) {
         this.db = db;
         this.username = username;
     }
-    async game(name) {
+    async game(name: string) {
         const db = this.db, username = this.username;
         const user = await db.collection("users").findOne({ username }, { projection: { ["gamestorage." + name]: 1 } });
         const storage = user?.gamestorage?.[name] || {};
         let changed = false;
         return {
-            get(key) {
+            get(key: string) {
                 return storage?.[key] || null;
             },
-            set(key, value) {
+            set(key: string, value: any) {
                 storage[key] = value;
                 changed = true;
             },
-            delete(key) {
+            delete(key: string) {
                 delete storage?.[key];
                 changed = true;
             },
@@ -48,9 +52,4 @@ class GameStorage {
             }
         }
     }
-}
-
-module.exports = {
-    GameProcess,
-    GameStorage
 }
