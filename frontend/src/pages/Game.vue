@@ -55,6 +55,8 @@
                                     :placeholder="input.placeholder || '输入答案'"
                                     v-model="answers[index]"
                                     v-auto-expand
+                                    @keydown.ctrl.enter="submit"
+                                    @keydown.command.enter="submit"
                                 ></textarea>
                             </template>
                         </template>
@@ -68,9 +70,10 @@
                         <div id="cfTurnstile" class="cf-turnstile mt-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
                     </div>
                     <div class="grid gap-4 my-5" :class="{'grid-cols-2': user.gameprocess[$route.params.pid] && inputs !== false, 'grid-cols-1': !user.gameprocess[$route.params.pid] || inputs === false }">
-                        <button class="submit btn btn-outline" v-if="inputs !== false" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
+                        <button class="submit btn btn-outline group" v-if="inputs !== false" @click="submit" :disabled="loading" style="border-color: hsl(var(--bc) / 0.2)">
                             <span class="loading loading-dots loading-xs" v-if="loading"></span>
                             {{ manual ? '刷新状态' : '提交' }}
+                            <Shortcut :disabled="loading"/>
                         </button>
                         <button v-if="user.gameprocess[$route.params.pid]" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
                             <span class="loading loading-dots loading-xs" v-if="loading2"></span>
@@ -125,7 +128,7 @@
                 </div>
             </Transition>
             <Transition name="down">
-                <button class="btn btn-circle down shadow-lg fixed bottom-3 right-5" @click="down" :class="{'btn-success': state == 1, 'btn-error': state == 2}" v-if="showDown">
+                <button class="btn btn-circle down shadow-lg fixed bottom-3 right-5 text-white" @click="down" :class="{'btn-success': state == 1, 'btn-error': state == 2}" v-if="showDown">
                     <font-awesome-icon :icon="['fas', 'angles-down']" />
                 </button>
             </Transition>
@@ -140,7 +143,8 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, computed, nextTick, provide } from 'vue'
+import Shortcut from '@/components/Shortcut.vue';
+import { ref, computed, nextTick, provide, onMounted, onUnmounted } from 'vue'
 import { api, downloadFile as download } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
@@ -169,6 +173,20 @@ const hintr = localStorage.getItem('hints')
 const hints = ref([])
 const show_turnstile = ref(false)
 const loading2 = ref(false)
+const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
+let onKeydownId = null
+onMounted(() => {
+    onKeydownId = window.addEventListener('keydown', (e) => {
+        if (gameState.value != 1) return;
+        if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault()
+            submit({})
+        }
+    })
+})
+onUnmounted(() => {
+    window.removeEventListener('keydown', onKeydownId)
+})
 if (hintr) {
     try {
         const hintk = JSON.parse(hintr)
