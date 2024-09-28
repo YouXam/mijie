@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "build": "cd frontend && yarn && yarn build",
-    "dev": "nodemon src/index.js"
+    "dev": "bun run --hot src/index.js"
   },
   "dependencies": {
     "ably": "^2.4.0",
