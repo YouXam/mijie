@@ -29,9 +29,9 @@ export default {
         },
     },
     created() {
-        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) return;
-        this.mouseMoveListener = document.addEventListener('mousemove', this.handleMouseMove);
-        this.mouseOutListener = document.addEventListener('mouseout', this.handleMouseOut);
+        // if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) return;
+        // this.mouseMoveListener = document.addEventListener('mousemove', this.handleMouseMove);
+        // this.mouseOutListener = document.addEventListener('mouseout', this.handleMouseOut);
     },
     unmounted() {
         document.removeEventListener('mousemove', this.handleMouseMove);

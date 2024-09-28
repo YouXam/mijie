@@ -71,4 +71,39 @@ async function runCode(code, language, stdin='') {
 
 }
 
-module.exports = runCode
+async function glot(language, data) {
+    const apiKey = process.env.GLOT_IO_API_KEY;
+
+    try {
+        const response = await axios.post(
+            'https://glot.io/api/run/' + language + '/latest',
+            data,
+            {
+                headers: {
+                    'Authorization': 'Token ' + apiKey,
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
+        let error = ''
+        if (response.data.stderr) error = response.data.stderr
+        if (response.data.error) error += (error && '\n') + response.data.error
+        return {
+            stdout: response.data.stdout,
+            stderr: response.data.stderr,
+            error,
+            code: response.data.error ? 1 : 0,
+        };
+    } catch (err) {
+        console.log(err)
+        return {
+            code: 1,
+            error: err?.response?.data?.message || 'error'
+        }
+    }
+}
+
+module.exports = {
+    runCode,
+    glot
+}

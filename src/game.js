@@ -3,7 +3,7 @@ const path = require('path');
 const clearModule = require('clear-module');
 const chokidar = require('chokidar');
 const Router = require('koa-router');
-const runCode = require('./games/glot');
+const { runCode, glot } = require('./games/glot');
 const Ranking = require('./rank');
 const compose = require('koa-compose');
 const send = require('koa-send');
@@ -604,6 +604,7 @@ module.exports = function (db) {
         const gameStorage = await ctx.state.gamestorage.game(cur.pid);
         let passed = false, message = '';
         const context = {
+            glot,
             runCode,
             username: ctx.state.username,
             gameProcess: ctx.state.gameprocess,
@@ -748,6 +749,7 @@ module.exports = function (db) {
         let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid), res = null
         try {
             res = cur.checker(ctx.request.body.ans, {
+                glot,
                 runCode,
                 username: ctx.state.username,
                 gameProcess: ctx.state.gameprocess,
