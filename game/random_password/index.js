@@ -29,8 +29,5 @@ else:
         return res.stdout.trim() === 'Welcome to my blog';
     },
     next: [
-        {
-            pid: "simpleXSS"
-        }
     ]
 }
