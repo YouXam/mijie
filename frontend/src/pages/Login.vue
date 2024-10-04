@@ -40,7 +40,7 @@ if (user.login.value) {
 const token = ref('')
 ;(async () => {
     await loader.wait();
-    console.log(window.turnstile);
+    turnstile.remove();
     turnstile.render('#cfTurnstile', {
         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
         callback: (tk) => {
@@ -69,8 +69,9 @@ async function login() {
         }
     } catch (err) {
         console.log(err)
+        turnstile.reset()
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 </script>

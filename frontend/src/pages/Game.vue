@@ -98,7 +98,7 @@
                             <h2 class="font-bold">
                                 <font-awesome-icon :icon="['fas', 'circle-check']" />
                                 {{ manual ? '完成任务' : '答案正确' }}
-                                {{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameState == 3 ? "您已通关。": "" }}
+                                {{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameover ? "您已通关。": "" }}
                             </h2>
                             <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
                         </div>
@@ -112,18 +112,11 @@
                         <NextList :next="next"/>
                     </template>
                     <h3 class="mt-5 text-left" v-else>似乎没有下一关了，要不要试试<router-link to="/graph" class="link">其他路线</router-link>？</h3>
-                    <button class="btn btn-outline mt-5 mb-5" @click="gameState = 1, records = []" v-if="!manual">
-                        再试一次
-                    </button>
-                </div>
-            </Transition>
-            <Transition name="list">
-                <div v-if="gameState == 3" class="card container">
-                    <button class="btn btn-outline mt-5" @click="gameState = 1, records = []">
-                        再试一次
-                    </button>
-                    <button class="btn btn-outline mt-5 mb-5" @click="$router.push('/gameover')">
+                    <button v-if="gameover" class="btn btn-outline mt-5 mb-5" @click="$router.push('/gameover')">
                         结束游戏
+                    </button>
+                    <button class="btn btn-outline mb-5" @click="gameState = 1, records = []" v-if="!manual">
+                        再试一次
                     </button>
                 </div>
             </Transition>
@@ -136,6 +129,7 @@
                 tag="button" 
                 class="btn btn-link text-base-content"
                 :to="`/record/${$route.params.pid}`"
+                v-if="inputs !== false"
             >提交记录</router-link>
         </div>
     </div>
@@ -173,7 +167,7 @@ const hintr = localStorage.getItem('hints')
 const hints = ref([])
 const show_turnstile = ref(false)
 const loading2 = ref(false)
-const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
+const gameover = ref(false)
 let onKeydownId = null
 onMounted(() => {
     onKeydownId = window.addEventListener('keydown', (e) => {
@@ -266,7 +260,7 @@ async function setResult(res) {
     records.value.unshift(res)
     if (res.passed) gameState.value = 2
     if (res.next) next.value = res.next
-    if (res.gameover) gameState.value = 3
+    if (res.gameover) gameover.value = true
     if (res.percent != undefined && res.percent != null) percent.value = res.percent
     if (res.solved_description) solved_description.value = {
         pid: router.currentRoute.value.params.pid,
@@ -318,7 +312,7 @@ async function skip() {
         records.value.unshift(res)
         if (res.passed) gameState.value = 2
         if (res.next) next.value = res.next
-        if (res.gameover) gameState.value = 3
+        if (res.gameover) gameover.value = true
         if (res.percent != undefined && res.percent != null) percent.value = res.percent
         if (res.solved_description) solved_description.value = {
             pid: router.currentRoute.value.params.pid,
