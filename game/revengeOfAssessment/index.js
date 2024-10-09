@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Revenge of Assessment',
     pid: 'reassessment',
     description: {

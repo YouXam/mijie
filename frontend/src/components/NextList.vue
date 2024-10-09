@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="card mt-5 p-0 w-full bg-base-content text-black hover:text-base-content hover:bg-base-200 hover:border-base-content hover:border-2 cursor-pointer"
+        <div class="card mt-5 p-0 w-full hover:bg-base-content hover:text-black cursor-pointer border-base-content border-2 "
             v-for="e in next" :key="e.pid" @click="go(e.pid)">
             <div class="card-body p-5">
                 <h2 class="card-title">{{ e.name }}</h2>
@@ -51,7 +51,6 @@ export default {
     text-decoration-line: none;
     border-width: var(--border-btn, 1px);
     animation: button-pop var(--animation-btn, 0.25s) ease-out;
-    border-color: transparent;
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 0 #0000;
 }
 </style>

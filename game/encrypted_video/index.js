@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '被加密的监控视频',
     pid: 'encrypted_video',
     description: {
@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 50,
+    points: 0,
     checker: "Husky's_encrypti0N_key_29Jos4v",
     files: [{
         filename: 'encrypt',

@@ -81,7 +81,7 @@
                                 <font-awesome-icon class="mr-1" :icon="['fas', 'circle-xmark']" />
                                 错误
                             </template>
-                            <span class="ml-2">{{ record.points ? record.points + ' pts' : '' }}</span>
+                            <span class="ml-2">{{ record.points !== undefined ? record.points + ' pts' : '' }}</span>
                         </div>
                     </h2>
                     <div class="mt-2 text-gray-100">

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'EasyProblem',
     pid: 'easyProblem',
     description: {
@@ -9,9 +9,8 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 10,
+    points: 0,
     checker: '正确的答案',
-    first: true,
     next: [
         {
             pid: "MysteriousString"

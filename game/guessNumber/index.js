@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '猜数字',
     pid: 'guessNumber',
     description: {
@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 20,
+    points: 0,
     interval: 1000,
     checker(ans, ctx) {
         if (isNaN(ans) ||  !ans.length) {

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'countBit',
     pid: "countBit",
     description: {
@@ -10,7 +10,7 @@ module.exports = {
         }
     },
     interval: 10 * 1000,
-    points: 20,
+    points: 0,
     checker: async (ans, ctx) => {
         const testNumbers = Array.from({ length: 100 }, () => Math.floor(Math.random() * 2000000000));
         const code = `

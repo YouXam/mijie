@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'getBones',
     pid: 'getBones',
     description: {
@@ -9,7 +9,7 @@ module.exports = {
           md: "solved.md",
       }
     },
-    points: 35,
+    points: 0,
     interval: 10 * 1000,
     checker: async (ans, ctx) => {
         const datas = [

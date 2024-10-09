@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: '神秘的串',
     pid: 'MysteriousString',
     description: {
@@ -9,7 +9,7 @@ module.exports = {
             md: "solved.md",
         }
     },
-    points: 20,
+    points: 0,
     checker: 'puppy',
     next: [
         {

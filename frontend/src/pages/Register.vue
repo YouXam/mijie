@@ -91,8 +91,6 @@ watch(password, () => {
         error.value = '密码长度不足 8 位'
     } else if (password.value.length > 128) {
         error.value = '密码长度超过 128 位'
-    } else if (!isValid) {
-        error.value = '密码必须包含大小写字母、数字和特殊符号中的三项及以上'
     } else {
         error.value = ''
     }
