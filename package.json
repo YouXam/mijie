@@ -10,11 +10,13 @@
   },
   "type": "module",
   "dependencies": {
+    "@types/ejs": "^3.1.5",
     "ably": "^2.4.0",
     "axios": "^1.7.4",
     "chokidar": "^4.0.1",
     "clear-module": "^4.1.2",
     "dotenv": "^16.3.1",
+    "ejs": "^3.1.10",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",

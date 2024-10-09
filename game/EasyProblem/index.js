@@ -11,7 +11,6 @@ export default {
     },
     points: 0,
     checker: '正确的答案',
-    first: true,
     next: [
         {
             pid: "MysteriousString"

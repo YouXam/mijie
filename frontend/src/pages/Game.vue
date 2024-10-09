@@ -45,6 +45,7 @@
                                 placeholder="输入答案"
                                 v-model="ans"
                                 v-auto-expand
+                                ref="input_textareas"
                                 @keydown.ctrl.enter="submit"
                             ></textarea>
                             <template v-else>
@@ -55,6 +56,7 @@
                                     :placeholder="input.placeholder || '输入答案'"
                                     v-model="answers[index]"
                                     v-auto-expand
+                                    ref="input_textareas"
                                     @keydown.ctrl.enter="submit"
                                     @keydown.command.enter="submit"
                                 ></textarea>
@@ -100,22 +102,22 @@
                                 {{ manual ? '完成任务' : '答案正确' }}
                                 {{ record.points != undefined ? `，您得到了 ${record.points} pts！` : "！" }} {{ gameover ? "您已通关。": "" }}
                             </h2>
-                            <div class="mt-3" v-if="record.msg.length"><pre>{{ record.msg }}</pre></div>
+                            <div class="mt-3" v-if="record.msg.length"><pre class="break-all">{{ record.msg }}</pre></div>
                         </div>
                     </div>
                 </template>
             </transition-group>
             <Transition name="list">
                 <div v-if="gameState == 2" class="card container">
-                    <template v-if="next.length">
+                    <div v-if="next.length" class="mb-5">
                         <h3 class="text-xl mt-5 text-left">下一关：</h3>
                         <NextList :next="next"/>
-                    </template>
-                    <h3 class="mt-5 text-left" v-else>似乎没有下一关了，要不要试试<router-link to="/graph" class="link">其他路线</router-link>？</h3>
-                    <button v-if="gameover" class="btn btn-outline mt-5 mb-5" @click="$router.push('/gameover')">
+                    </div>
+                    <h3 class="my-5 text-left" v-else>似乎没有下一关了，要不要试试<router-link to="/graph" class="link">其他路线</router-link>？</h3>
+                    <button v-if="gameover" class="btn btn-outline mb-5" @click="$router.push('/gameover')">
                         结束游戏
                     </button>
-                    <button class="btn btn-outline mb-5" @click="gameState = 1, records = []" v-if="!manual">
+                    <button class="btn btn-outline mb-5" @click="problem = initProblem, gameState = 1, records = [], nextTick(resize)" v-if="!manual">
                         再试一次
                     </button>
                 </div>
@@ -138,7 +140,7 @@
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
 import Shortcut from '@/components/Shortcut.vue';
-import { ref, computed, nextTick, provide, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, provide, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { api, downloadFile as download } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
@@ -161,6 +163,7 @@ const manual = ref(false)
 const gameState = ref(1)
 const percent = ref(null)
 const inputs = ref(null)
+const input_textareas = useTemplateRef("input_textareas")
 const solved_description = ref(null)
 let lastSubmit = null
 const hintr = localStorage.getItem('hints')
@@ -169,6 +172,20 @@ const show_turnstile = ref(false)
 const loading2 = ref(false)
 const gameover = ref(false)
 let onKeydownId = null
+let initProblem = null
+function resize() {
+    function resizeTextarea(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+    if (input_textareas.value.length) {
+        input_textareas.value.forEach(el => {
+            resizeTextarea(el)
+        })
+    } else {
+        resizeTextarea(input_textareas.value)
+    }
+}
 onMounted(() => {
     onKeydownId = window.addEventListener('keydown', (e) => {
         if (gameState.value != 1) return;
@@ -262,6 +279,10 @@ async function setResult(res) {
     if (res.next) next.value = res.next
     if (res.gameover) gameover.value = true
     if (res.percent != undefined && res.percent != null) percent.value = res.percent
+    if (res.content) problem.value = {
+        pid: router.currentRoute.value.params.pid,
+        content: res.content
+    }
     if (res.solved_description) solved_description.value = {
         pid: router.currentRoute.value.params.pid,
         ...res.solved_description
@@ -352,7 +373,7 @@ document.addEventListener('scroll', () => {
     try {
         const res = await api('/api/problem/' + router.currentRoute.value.params.pid)
         title.value = res.name
-        problem.value = {
+        problem.value = initProblem = {
             pid: router.currentRoute.value.params.pid,
             ...res.description
         }

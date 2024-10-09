@@ -63,8 +63,8 @@ const taskManager = new TaskManager();
 
 class Plugins {
     first: string | null;
-    plugins: Record<string, Plugin>;
-    pluginMap: Map<string, Plugin>;
+    plugins: Record<string, Plugin<any>>;
+    pluginMap: Map<string, Plugin<any>>;
     pluginPre: Map<string, Record<string, boolean>>;
     pluginsPath: string;
     gamePercent: Map<string, number>;
@@ -107,10 +107,13 @@ class Plugins {
         });
     }
     async loadPlugin(folder: string) {
-        const pluginPath = path.join(this.pluginsPath, folder, 'index.js');
-        if (fs.existsSync(pluginPath)) {
+        const pluginPath = [
+            path.join(this.pluginsPath, folder, 'index.js'),
+            path.join(this.pluginsPath, folder, 'index.ts')
+        ].find(fs.existsSync);
+        if (pluginPath) {
             try {
-                const plugin = (await import(pluginPath)).default as Plugin;
+                const plugin = (await import(pluginPath)).default as Plugin<any>;
                 if (typeof plugin.checker !== 'string' && typeof plugin.checker !== 'function' && !plugin.manualScores && !plugin.server && plugin.inputs !== false) {
                     console.log(`Failed to load plugin ${folder}: checker is not a string or function`);
                     return
@@ -123,7 +126,7 @@ class Plugins {
                     console.log(`Failed to load plugin ${folder}: invalid points`);
                     return
                 }
-                if ((plugin.points === undefined || (!plugin.checker && !plugin.server)) && !plugin.manualScores && plugin.inputs !== false) {
+                if ((plugin.points === undefined || (plugin.checker === undefined && plugin.server === undefined)) && !plugin.manualScores && plugin.inputs !== false) {
                     console.log(`Failed to load plugin ${folder}: missing points, checker or description`);
                     return
                 }
@@ -243,7 +246,7 @@ const plugins = new Plugins();
 
 let rank = Ranking;
 
-class AI {
+export class AI {
     cloudflare_api_keys: { id: string, key: string }[];
     cloudflare_api_index: number;
     constructor() {
@@ -769,7 +772,7 @@ export default function game(db: Db) {
             };
             return;
         }
-        let msg = '', gameStorage = await ctx.state.gamestorage.game(cur.pid), res = null
+        let msg = '', content = '', gameStorage = await ctx.state.gamestorage.game(cur.pid), res = null
         try {
             if (typeof cur.checker == "string") {
                 throw new Error("checker is string")
@@ -783,7 +786,10 @@ export default function game(db: Db) {
                 jwt,
                 ai: (inputs: any) => ai.run(inputs),
                 msg: (str: string) => {
-                    msg += str;
+                    msg += str + '\n'
+                },
+                content: (str: string) => {
+                    content += str;
                 }
             })
         } catch (error) {
@@ -798,6 +804,7 @@ export default function game(db: Db) {
             time: Date.now(),
             name: cur.name,
             msg,
+            content,
             passed: false,
             points: 0,
             gameover: false
@@ -884,12 +891,14 @@ export default function game(db: Db) {
                 })) : undefined,
                 gameover: cur.gameover,
                 msg,
+                content,
                 solved_description: cur.description.after_solve
             };
         } else {
             record.passed = false;
             ctx.body = {
                 passed: false,
+                content,
                 msg
             };
         }
@@ -918,7 +927,7 @@ export default function game(db: Db) {
         const { path: filePath } = ctx.params;
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
         const cur = await checkPre(ctx);
-        const root = path.join(__dirname, '../game', cur.folder)
+        const root = path.join(__dirname, '../game', cur.folder!)
         const patterns = {
             before_solve: {
                 include: cur?.description?.before_solve?.mdv?.include || [],

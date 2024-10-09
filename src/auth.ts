@@ -9,6 +9,7 @@ import rank from './rank';
 import { notice as noticePublish } from './publish';
 import { GameProcess, GameStorage } from './gameprocess';
 import dotenv from 'dotenv';
+import ejs from 'ejs';
 
 dotenv.config();
 
@@ -25,20 +26,15 @@ export function authRoutes(db: Db) {
     const router = new Router();
     db.collection('banned').find({ banned: true }).toArray().then(x => x.forEach(y => banned[y.username] = true))
     db.collection('config').findOne({ name: 'game-config' }).then(x => Object.assign(gameConfig, x))
-    router.get('/game-config', async ctx => {
-        ctx.body = {
-            endTime: gameConfig.endTime || '3000-01-01 00:00:00',
-            startTime: gameConfig.startTime || '2000-01-01 00:00:00',
-            gamerule: gameConfig.gamerule || '',
-            gameover: gameConfig.gameover || '',
-            about: gameConfig.about || ''
-        }
-    })
 
-    router.get('/game-config/:option', async ctx => {
+    router.get('/game-config/:option', async (ctx, next) => {
         const { option } = ctx.params as { option?: keyof GameConfig };
         if (!option) {
             ctx.throw(400, 'Missing option');
+            return
+        }
+        if (option === 'gameover') {
+            await next();
             return
         }
         if (!gameConfig[option]) {
@@ -161,6 +157,7 @@ export function authRoutes(db: Db) {
             ctx.state.gameprocess = new GameProcess(payload.gameprocess, payload.gameover);
             ctx.state.gamestorage = new GameStorage(db, payload.username);
             ctx.state.admin = payload.admin;
+            ctx.state.gameconfig = gameConfig;
         } catch (err) {
             if (err instanceof jwt.TokenExpiredError) {
                 ctx.body = { error: '登录过期，请重新登陆', action: 'logout' };
@@ -187,7 +184,13 @@ export function authRoutes(db: Db) {
     return compose([
         router.routes(),
         router.allowedMethods(),
-        check_auth
+        check_auth,
+        new Router().get('/game-config/gameover', async ctx => {
+            ctx.body = {
+                gameover: ctx.state.gameconfig.gameover ?
+                    ejs.render(ctx.state.gameconfig.gameover, ctx.state) : ''
+            };
+        }).routes(),
     ]);
 }
 
@@ -230,6 +233,15 @@ export function amdinRoutes(db: Db) {
         }
     });
 
+    router.get('/game-config', async ctx => {
+        ctx.body = {
+            endTime: gameConfig.endTime || '3000-01-01 00:00:00',
+            startTime: gameConfig.startTime || '2000-01-01 00:00:00',
+            gamerule: gameConfig.gamerule || '',
+            gameover: gameConfig.gameover || '',
+            about: gameConfig.about || ''
+        }
+    })
 
     router.put('/game-config', async ctx => {
         await db.collection('config')
