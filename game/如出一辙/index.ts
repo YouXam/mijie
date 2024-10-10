@@ -22,7 +22,7 @@ export default {
 `
         },
     },
-    points: 10,
+    points: 50,
     inputs: [
         { name: '语言', placeholder: 'c / python' },
         { name: '程序', placeholder: '程序源代码' },

@@ -53,6 +53,10 @@ export default {
             description: '帮 PYthok 收集情报 [进入天枢分支]'
         },
         {
+            pid: '再世伏羲',
+            description: '帮 Mioria7 改进卦象 [进入周行 Midoria7 分支]'
+        },
+        {
             pid: "如出一辙",
             description: "感觉没什么意思，不如来点挑战性的 [进入周行 YouXam 分支]"
         },

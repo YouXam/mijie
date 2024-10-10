@@ -14,11 +14,21 @@ export default {
 「我明白了。简单点说，这个密码的规则是要你『提出问题』，并诱导AI做出符合要求的回答。你来试试吧。」`,
         },
     },
-    points: 10,
-    next: [
+    points: 75,
+    inputs: [
         {
-            pid: "寻寻觅觅"
+            name: 'flag',
+            placeholder: 'flag{xxxxxx}'
         }
     ],
-    checker: 'flag{有问必答}'
-} as Plugin<true>;
+    next: [
+        {
+            pid: "心领神会"
+        }
+    ],
+    checker(ans, ctx) {
+        return ans.flag.trim() === 'flag{有问必答}'
+    }
+} as Plugin<[
+    'flag'
+]>;

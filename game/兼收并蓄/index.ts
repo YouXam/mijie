@@ -14,7 +14,7 @@ export default {
 「你要是还想接着干就别废话，来，编写一个程序，其源代码可以同时作为 c 语言和 python 语言运行，输出为 \`Hello World!\`」`
         },
     },
-    points: 10,
+    points: 50,
     next: [
         {
             pid: '殊途同归'

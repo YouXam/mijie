@@ -14,7 +14,7 @@ export default {
 「另外还有一个附加条件：要求 *A*, *B*, *C* 三个文件通过 gzip 压缩后的文件大小大于 *A* 文件通过 gzip 压缩后的文件大小的 2 倍。」`
         }
     },
-    points: 10,
+    points: 300,
     checker: async (ans, ctx) => {
         if (!ans || !ans?.trim()) {
             ctx.msg("未输入任何内容")

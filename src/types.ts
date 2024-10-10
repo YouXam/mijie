@@ -56,7 +56,11 @@ export type Plugin<T extends KeysType> = {
             content?: string
         }
     },
-    checker: string | ((ans: CheckerAnswer<T>, ctx: Context) => boolean | Promise<boolean>),
+    checker: T extends string[] 
+        ? (ans: CheckerAnswer<T>, ctx: Context) => boolean | Promise<boolean>
+        : T extends true
+        ? (ans: string, ctx: Context) => boolean | Promise<boolean>
+        : never,
     points: number,
     manualScores?: boolean,
     inputs?: T extends string[] ? {

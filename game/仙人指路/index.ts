@@ -27,6 +27,21 @@ Rnqcy oauiej, qmrf. Xxatvff umiaaa ucm, hve svam dy gaivdyworn nvlg gxhesduhkki 
 「敢跟我作对，那就让你见识见识我的厉害！」PYthok 微微一笑。`
         }
     },
-    points: 10,
-    checker: 'flag{Brave_onward_hero_Destiny_awaits_you}'
-} as Plugin<true>;
+    inputs: [
+        {
+            name: 'flag',
+            placeholder: 'flag{...}'
+        }
+    ],
+    points: 100,
+    next: [
+        {
+            pid: "顾此失彼"
+        }
+    ],
+    checker(ans, ctx) {
+        return ans.flag.trim() === 'flag{Brave_onward_hero_Destiny_awaits_you}'
+    }
+} as Plugin<[
+    'flag'
+]>;
