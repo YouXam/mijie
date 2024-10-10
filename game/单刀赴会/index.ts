@@ -12,7 +12,15 @@ export default {
 
 「事到如今，就借用一下学校的广播吧。」YouXam 手中盘着你拿回来的狗语翻译器。
 
-没过多久，学校上空响起了一阵阵清脆的狗叫声。`
+没过多久，学校上空响起了一阵阵清脆的狗叫声。
+
+--- 
+
+Midoria7 已经布置好了一个先天八卦阵。在这个阵法中，阿拉斯加的方位会受到阵法影响，呈现出特定的规律。
+
+只要找到这个规律，你就可以预测阿拉斯加的方位，然后就可以抓到阿拉斯加了！
+
+每一回合你需要输入一个范围在 [0, 360) 的浮点数，代表你预测的方位角，单位为角度。`
         },
         after_solve: {
             content: `阿拉斯加比想象中还要强大，我们集多人之力，并用周行的卦象推演之法，居然都奈何不了牠——而且我们感觉牠甚至能预判我们的测算！
@@ -26,7 +34,7 @@ export default {
     },
     points: 10,
     inputs: [
-        { name: '答案编号', placeholder: '答案编号' },
+        { name: '方位角', placeholder: 'x.xx' },
     ],
     next: [
         {
@@ -34,6 +42,21 @@ export default {
         },
     ],
     checker: async (ans, ctx) => {
-        return true
+        const deg = parseFloat(ans.方位角)
+        if (isNaN(deg) || deg < 0 || deg >= 360) {
+            ctx.msg('方位角不合法')
+            return false
+        }
+        const last_n = ctx.gameStorage.get('deg') || Math.floor(Math.random() * 64)
+        console.log(last_n)
+        const now_n = ((last_n << 1) ^ (Math.random() < 0.5 ? 1 : 0)) & 0x3f
+        const now_alpha = now_n * 5.625
+        ctx.gameStorage.set('deg', now_n)
+        if (Math.abs(now_alpha - deg) <= 1) {
+            ctx.msg(`阿拉斯加的方位角为 ${now_alpha.toFixed(3)}°，你的预测正确！`)
+            return true
+        }
+        ctx.msg(`阿拉斯加的方位角为 ${now_alpha.toFixed(3)}°，你的预测错误！`)
+        return false
     }
-} as Plugin<['答案编号']>
+} as Plugin<['方位角']>

@@ -9,7 +9,21 @@ export default {
         }
     },
     points: 90,
+    inputs: [
+        {
+            name: 'A',
+            placeholder: '第一个数字'
+        },
+        {
+            name: 'B',
+            placeholder: '第二个数字'
+        }
+    ],
     async checker(ans, ctx) {
-        return ans.trim() === '102334155 165580141' || ans.trim() === '165580141 102334155'
+        return ans.A.trim() === '102334155' && ans.B.trim() === '165580141' ||
+            ans.A.trim() === '165580141' && ans.B.trim() === '102334155';
     }
-} as Plugin<true>;
+} as Plugin<[
+    'A',
+    'B'
+]>;
