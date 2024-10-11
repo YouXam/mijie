@@ -41,16 +41,12 @@ class TaskManager {
         }, 1000 * 180)
     }
     async run(user: string, token?: string) {
-        if (this.userCount[user] && this.userCount[user] >= 5) {
+        if (this.userCount[user] && this.userCount[user] >= 10) {
             if (!token)
                 return false
             else {
-                if (this.userCount[user] - this.tokens[token] < 3 && this.userCount[user] < 15) {
-                    this.userCount[user] = (this.userCount[user] || 0) + 1
-                    return true
-                }
                 const success = await verify(token)
-                if (success) this.tokens[token] = this.userCount[user]
+                if (success) this.userCount[user] = 0
                 return success
             }
         }

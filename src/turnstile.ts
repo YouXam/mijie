@@ -8,5 +8,5 @@ export async function verify(token: string) {
         method: 'POST',
     });
     const outcome = await result.json();
-    return outcome.success;
+    return outcome.success as boolean;
 }
