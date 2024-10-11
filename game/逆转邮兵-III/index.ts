@@ -9,7 +9,7 @@ export default {
             md: "problem.md",
         },
     },
-    points: 10,
+    points: 5,
     inputs: [
         { name: '答案编号', placeholder: '答案编号' },
     ],

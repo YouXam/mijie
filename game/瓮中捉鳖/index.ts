@@ -8,7 +8,7 @@ export default {
         before_solve: {
             content: `根据去年的经验，我们已经知道了哈士奇喜好 cookies。所以今年 PYthok 打算设置一个陷阱，诱捕哈士奇！
 
-现在 PYthok 已经帮你准备好了 cookies。你可以从已有的道具中选择任意一个，帮助祂完成陷阱。
+现在 PYthok 已经帮你准备好了 cookies。你可以从已有的道具中选择任意一个，帮助他完成陷阱。
 
 1. 比牛津词典还厚的百科全书
 2. 发霉发臭还有股酸味的皮鞋

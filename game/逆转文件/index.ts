@@ -23,7 +23,7 @@ export default {
 「这是一张时间支票，可以让你回到去年哈士奇事件发生的时候。如果你想知道什么的话，就亲自跑一趟吧。」`   
         }
     },
-    points: 10,
+    points: 0,
     inputs: [
         { name: '网址', placeholder: '网址' }
     ],

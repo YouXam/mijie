@@ -18,9 +18,9 @@ export default {
 
 ---
 
-在平面直角坐标系中，玩家初始位置为 (0,0)，萨摩耶随机出现在离玩家距离 2~4 的任何位置。
+在平面直角坐标系的指定范围（$x \\in [-10, 10], y \\in [-10, 10]$）中，玩家初始位置为 (0,0)，萨摩耶随机出现在离玩家距离 2~4 的任何位置。
 
-玩家在每次回合结束时能获知萨摩耶离自己的距离，但不知道方向；萨摩耶总能感知到玩家的位置，并背对着玩家的方向逃跑。
+玩家在每次回合结束时能获知萨摩耶离自己的距离，但不知道方向；萨摩耶总能感知到玩家的位置，并朝着远离玩家的方向逃跑。
 
 在每次回合中，玩家可移动到指定坐标，萨摩耶同时也会逃跑。二者的速度之比为 2:1。
 
@@ -42,7 +42,7 @@ export default {
 现在智能车的YG学姐、周行的 Midoria7 和天枢的 PYthok 分别有了自己的计划，你打算去帮谁呢？`
         }
     },
-    points: 10,
+    points: 50,
     inputs: [
         { name: 'X', placeholder: 'X 坐标' },
         { name: 'Y', placeholder: 'Y 坐标' },
@@ -123,7 +123,7 @@ export default {
         ctx.gameStorage.set('ppos', [nx, ny])
         ctx.gameStorage.set('spos', [sx, sy])
         ctx.msg(`[Round ${round + 1}]`)
-        ctx.msg(`你在这一回合移动了 ${length.toFixed(6)} 单位长度，萨摩耶移动了了 ${(length / 2).toFixed(6)} 单位长度。`)
+        ctx.msg(`你在这一回合移动了 ${length.toFixed(6)} 单位长度，萨摩耶移动了 ${(length / 2).toFixed(6)} 单位长度。`)
         ctx.msg(`萨摩耶离你的距离：${Math.sqrt((sx - nx) ** 2 + (sy - ny) ** 2).toFixed(6)}`)
         ctx.msg(`你的位置：(${nx.toFixed(6)}, ${ny.toFixed(6)})`)
         console.log(`[南辕北辙] <${ctx.username}> [Round ${round + 1}] 萨摩耶: (${sx.toFixed(6)}, ${sy.toFixed(6)}) 玩家: (${nx.toFixed(6)}, ${ny.toFixed(6)})`)

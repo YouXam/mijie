@@ -32,7 +32,7 @@ Midoria7 已经布置好了一个先天八卦阵。在这个阵法中，阿拉�
 「一定是萨摩耶干的！这家伙来无影去无踪，我们上次追牠就追丢了！」Midoria7 恨恨地说。`
         }
     },
-    points: 10,
+    points: 50,
     inputs: [
         { name: '方位角', placeholder: 'x.xx' },
     ],
