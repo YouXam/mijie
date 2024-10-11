@@ -955,7 +955,7 @@ export default function game(db: Db) {
     });
 
     router.get('/record', async (ctx) => {
-        let { pid, user, all, page: pageStr = '1', size: sizeStr = '50', passed } = ctx.query as {
+        let { pid, user, all: allStr, page: pageStr = '1', size: sizeStr = '50', passed } = ctx.query as {
             pid?: string,
             user?: string,
             all?: string,
@@ -963,17 +963,18 @@ export default function game(db: Db) {
             size?: string,
             passed?: string
         }
+        const all = allStr === 'true';
         if (!user) user = ctx.state.username as string;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
         const page = Math.max(1, parseInt(pageStr, 10) || 1);
         const size = Math.min(200, Math.max(1, parseInt(sizeStr, 10) || 50));
         let query: {
-            username: string,
+            username?: string,
             pid?: string,
             passed?: boolean
-        } = { username: user };
-        if (!all) query.username = user;
+        } = { };
+        if (all !== true) query.username = user;
         if (pid) query.pid = pid;
         if (passed !== undefined) query.passed = passed === 'true';
         const [records, total] = await Promise.all([
