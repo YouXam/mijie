@@ -183,17 +183,19 @@ function resize() {
         resizeTextarea(input_textareas.value)
     }
 }
+function onKeydown(e) {
+    if (gameState.value != 1) return;
+    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+        console.log("keydown")
+        e.preventDefault()
+        submit({})
+    }
+}
 onMounted(() => {
-    onKeydownId = window.addEventListener('keydown', (e) => {
-        if (gameState.value != 1) return;
-        if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault()
-            submit({})
-        }
-    })
+    window.addEventListener('keydown', onKeydown)
 })
 onUnmounted(() => {
-    window.removeEventListener('keydown', onKeydownId)
+    window.removeEventListener('keydown', onKeydown)
 })
 if (hintr) {
     try {
@@ -292,9 +294,9 @@ async function setResult(res) {
 
 async function submit({ token }) {
     if (loading.value) return;
+    loading.value = true
     records.value = []
     lastSubmit = new Date()
-    loading.value = true
     showDown.value = false
     try {
         const res = await (manual.value ? 
