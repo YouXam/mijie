@@ -48,9 +48,8 @@ Midoria7 已经布置好了一个先天八卦阵。在这个阵法中，阿拉�
             return false
         }
         const last_n = ctx.gameStorage.get('deg') || Math.floor(Math.random() * 64)
-        console.log(last_n)
         const now_n = ((last_n << 1) ^ (Math.random() < 0.5 ? 1 : 0)) & 0x3f
-        const now_alpha = now_n * 5.625
+        const now_alpha = now_n < 32 ? -now_n * 5.625 : (now_n - 31) * 5.625
         ctx.gameStorage.set('deg', now_n)
         if (Math.abs(now_alpha - deg) <= 1) {
             ctx.msg(`阿拉斯加的方位角为 ${now_alpha.toFixed(3)}°，你的预测正确！`)
