@@ -104,7 +104,7 @@ export default {
                 ctx.gameStorage.delete('spos')
                 return true
             }
-            if (Math.abs(px) > 10 || Math.abs(py) > 10) {
+            if (Math.abs(sx) > 10 || Math.abs(sy) > 10) {
                 ctx.msg(`[Round ${round + 1}] 萨摩耶逃跑成功！`)
                 ctx.msg(`萨摩耶的位置：(${sx.toFixed(6)}, ${sy.toFixed(6)})`)
                 ctx.msg(`你的位置：(${px.toFixed(6)}, ${py.toFixed(6)})`)
