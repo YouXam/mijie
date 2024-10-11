@@ -11,7 +11,9 @@ export default {
 
 「我看一下。」PYthok 扫视了屏幕上一段又一段的规则。
 
-「我明白了。简单点说，这个密码的规则是要你『提出问题』，并诱导AI做出符合要求的回答。你来试试吧。」`,
+「我明白了。简单点说，这个密码的规则是要你『提出问题』，并诱导AI做出符合要求的回答。你来试试吧。」
+
+<a href="https://llm.chouhsing.org/" target="_blank">点我打开题目网站</a>`,
         },
     },
     points: 75,
@@ -27,7 +29,7 @@ export default {
         }
     ],
     checker(ans, ctx) {
-        return ans.flag.trim() === 'flag{有问必答}'
+        return ans.flag.trim() === 'flag{C0ngra75_0n_P4ss1ng_Set_Set_LLM_Cha11eng3!}'
     }
 } as Plugin<[
     'flag'
