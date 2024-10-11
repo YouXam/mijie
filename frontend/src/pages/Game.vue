@@ -46,7 +46,6 @@
                                 v-model="ans"
                                 v-auto-expand
                                 ref="input_textareas"
-                                @keydown.ctrl.enter="submit"
                             ></textarea>
                             <template v-else>
                                 <textarea 
@@ -57,8 +56,6 @@
                                     v-model="answers[index]"
                                     v-auto-expand
                                     ref="input_textareas"
-                                    @keydown.ctrl.enter="submit"
-                                    @keydown.command.enter="submit"
                                 ></textarea>
                             </template>
                         </template>
@@ -294,6 +291,7 @@ async function setResult(res) {
 }
 
 async function submit({ token }) {
+    if (loading.value) return;
     records.value = []
     lastSubmit = new Date()
     loading.value = true

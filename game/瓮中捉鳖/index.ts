@@ -26,7 +26,7 @@ export default {
         }
     ],
     checker: async (ans, ctx) => {
-        const choice = ans['选择的道具'];
+        const choice = ans['选择的道具'].trim()
         const plot = {
             "1": {
                 result: true,
