@@ -98,7 +98,7 @@ export default {
             const direction = Math.atan2(sy - py, sx - px)
             sx += Math.cos(direction) * dd
             sy += Math.sin(direction) * dd
-            if ((sx - px) ** 2 + (sy - py) ** 2 < 0.01) {
+            if ((sx - px) ** 2 + (sy - py) ** 2 < 0.25) {
                 ctx.gameStorage.delete('round')
                 ctx.gameStorage.delete('ppos')
                 ctx.gameStorage.delete('spos')
