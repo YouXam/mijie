@@ -9,7 +9,7 @@
             <label class="label">
                 <span class="label-text">学号</span>
             </label>
-            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID" placeholder="领奖必须"/>
+            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID" placeholder="领奖必需"/>
             <label class="label">
                 <span class="label-text">密码</span>
             </label>
