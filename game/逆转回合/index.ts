@@ -16,7 +16,7 @@ export default {
 
 在南辕北辙的基础上，增加三个限制条件：
 
-1. 限制必须在三个回合内抓住萨摩耶；
+1. 限制必须在四个回合内抓住萨摩耶；
 2. 萨摩耶的初始位置与玩家间的距离为 6~7；
 3. 抓住萨摩耶的判定标准改为:玩家与萨摩耶的距离不超过 0.1。`
         }
@@ -94,8 +94,8 @@ export default {
         ctx.msg(`萨摩耶离你的距离：${Math.sqrt((sx - nx) ** 2 + (sy - ny) ** 2).toFixed(6)}`)
         ctx.msg(`你的位置：(${nx.toFixed(6)}, ${ny.toFixed(6)})`)
         console.log(`[逆转回合] <${ctx.username}> [Round ${round + 1}] 萨摩耶: (${sx.toFixed(6)}, ${sy.toFixed(6)}) 玩家: (${nx.toFixed(6)}, ${ny.toFixed(6)})`)
-        if (round === 2) {
-            ctx.msg('[你没有在三回合内抓住萨摩耶，游戏已重置]')
+        if (round === 3) {
+            ctx.msg('[你没有在四回合内抓住萨摩耶，游戏已重置]')
             ctx.gameStorage.delete('round')
             ctx.gameStorage.delete('ppos')
             ctx.gameStorage.delete('spos')
