@@ -108,6 +108,7 @@ export default {
                 ctx.msg(`[Round ${round + 1}] 萨摩耶逃跑成功！`)
                 ctx.msg(`萨摩耶的位置：(${sx.toFixed(6)}, ${sy.toFixed(6)})`)
                 ctx.msg(`你的位置：(${px.toFixed(6)}, ${py.toFixed(6)})`)
+                ctx.msg('[游戏已重置，玩家恢复到初始位置，萨摩耶重新生成]')
                 ctx.gameStorage.delete('round')
                 ctx.gameStorage.delete('ppos')
                 ctx.gameStorage.delete('spos')
