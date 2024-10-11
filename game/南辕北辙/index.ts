@@ -89,7 +89,7 @@ export default {
         }
         
         const dx = (nx - px) / D, dy = (ny - py) / D
-
+        const length = Math.sqrt((nx - px) ** 2 + (ny - py) ** 2)
         const dd = Math.sqrt((nx - px) ** 2 + (ny - py) ** 2) / D / 2
 
         for (let i = 1; i <= D; i++) {
@@ -119,6 +119,7 @@ export default {
         ctx.gameStorage.set('ppos', [nx, ny])
         ctx.gameStorage.set('spos', [sx, sy])
         ctx.msg(`[Round ${round + 1}]`)
+        ctx.msg(`你在这一回合移动了 ${length.toFixed(6)} 单位长度，萨摩耶移动了了 ${(length / 2).toFixed(6)} 单位长度。`)
         ctx.msg(`萨摩耶离你的距离：${Math.sqrt((sx - nx) ** 2 + (sy - ny) ** 2).toFixed(6)}`)
         ctx.msg(`你的位置：(${nx.toFixed(6)}, ${ny.toFixed(6)})`)
         console.log(`[南辕北辙] <${ctx.username}> [Round ${round + 1}] 萨摩耶: (${sx.toFixed(6)}, ${sy.toFixed(6)}) 玩家: (${nx.toFixed(6)}, ${ny.toFixed(6)})`)
