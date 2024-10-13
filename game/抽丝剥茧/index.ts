@@ -11,7 +11,7 @@ export default {
 
 「我刚修完通信模块，需要你手动解出这段UART数据流的信息，再与实际结果比较。」
 
-「你先算，算完了提交给我就行。」
+「刚刚模块发送了两个字符，你先解算，算完了提交给我就行。」
 
 ----
 
@@ -28,20 +28,12 @@ export default {
         }
     },
     points: 100,
-    inputs: [
-        {
-            name: 'R0中的值',
-            placeholder: '十进制数字'
-        }
-    ],
     next: [
         {
             pid: "按图索骥"
         }
     ],
     checker(ans, ctx) {
-        return ans.R0中的值.trim() === '42'
+        return ans.trim() === '42'
     }
-} as Plugin<[
-    'R0中的值'
-]>;
+} as Plugin<true>;

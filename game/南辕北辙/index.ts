@@ -53,7 +53,7 @@ export default {
             description: '帮 PYthok 收集情报 [进入天枢分支]'
         },
         {
-            pid: "重整旗鼓",
+            pid: "重振旗鼓",
             description: "帮 YG 学姐修智能车 [进入智能车分支]"
         },
         {
