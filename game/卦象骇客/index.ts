@@ -9,6 +9,11 @@ export default {
         }
     },
     points: 90,
+    next: [
+        {
+            pid: "通风报信"
+        }
+    ],
     inputs: [
         {
             name: 'A',

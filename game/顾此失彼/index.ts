@@ -12,7 +12,11 @@ export default {
 
 「细节不重要了。总之，现在哈士奇博客的控制权在我们手里。保险起见，你来给它设置一个强密码吧。」
 
-你觉得「这有什么难的」，便答应了他的要求。`,
+你觉得「这有什么难的」，便答应了他的要求。
+
+---
+
+此题尚未完成，请等待后续更新，不要尝试解答。`
         },
         after_solve: {
             content: `「不是，为什么这个密码有这么多千奇百怪的要求……」你好不容易编出了一个符合全部要求的强密码，然后就忍不住向 PYthok 吐槽。
@@ -25,6 +29,11 @@ export default {
         }
     },
     points: 200,
+    next: [
+        {
+            pid: "通风报信"
+        }
+    ],
     inputs: [
         {
             name: 'flag',
@@ -32,6 +41,7 @@ export default {
         }
     ],
     checker(ans, ctx) {
+        return false
         return ans.flag.trim() === 'flag{顾此失彼}'
     }
 } as Plugin<[

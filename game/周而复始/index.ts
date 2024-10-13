@@ -15,6 +15,11 @@ export default {
         }
     },
     points: 300,
+    next: [
+        {
+            pid: "通风报信"
+        }
+    ],
     checker: async (ans, ctx) => {
         if (!ans || !ans?.trim()) {
             ctx.msg("未输入任何内容")

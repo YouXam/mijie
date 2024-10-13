@@ -53,6 +53,10 @@ export default {
             description: '帮 PYthok 收集情报 [进入天枢分支]'
         },
         {
+            pid: "重整旗鼓",
+            description: "帮 YG 学姐修智能车 [进入智能车分支]"
+        },
+        {
             pid: '再世伏羲',
             description: '帮 Mioria7 改进卦象 [进入周行 Midoria7 分支]'
         },
