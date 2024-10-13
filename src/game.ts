@@ -328,7 +328,7 @@ export default function game(db: Db) {
     })
 
     router.get('/start', async (ctx) => {
-        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now() && !ctx.state.admin) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
         ctx.body = {
@@ -600,11 +600,11 @@ export default function game(db: Db) {
         if (!cur.server) {
             ctx.throw(400, `This problem does not have a server`);
         }
-        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now() && !ctx.state.admin) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
-        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now()) {
-            ctx.throw(400, `游戏已结束`);
+        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now() && !ctx.state.admin) {
+            ctx.throw(400, `游戏已结束，无法提交`);
         }
         const { event, data } = ctx.request.body as {
             event?: string,
@@ -748,10 +748,10 @@ export default function game(db: Db) {
         if (cur.manualScores) {
             ctx.throw(400, `This problem need to be automatically scored.`);
         }
-        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now()) {
+        if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now() && !ctx.state.admin) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
-        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now()) {
+        if (gameConfig.endTime && new Date(gameConfig.endTime).getTime() < Date.now() && !ctx.state.admin) {
             ctx.throw(400, `游戏已结束，无法提交`);
         }
         if (cur.inputs === false) {
