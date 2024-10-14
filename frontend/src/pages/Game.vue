@@ -128,7 +128,6 @@
                 tag="button" 
                 class="btn btn-link text-base-content"
                 :to="`/record/${$route.params.pid}`"
-                v-if="inputs !== false"
             >提交记录</router-link>
         </div>
     </div>
