@@ -13,7 +13,7 @@ p {
 }
 iframe {
     border: none;
-    height: 70vh;
+    height: calc(100vh - 100px);
     width: 100%;
 }
 </style>
