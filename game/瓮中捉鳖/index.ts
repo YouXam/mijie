@@ -6,7 +6,16 @@ export default {
     first: true,
     description: {
         before_solve: {
-            content: `根据去年的经验，我们已经知道了哈士奇喜好 cookies。所以今年 PYthok 打算设置一个陷阱，诱捕哈士奇！
+            content: `
+<a href="https://mp.weixin.qq.com/s?__biz=MzkyNDU4OTcyMQ==&mid=2247484308&idx=1&sn=4940042c969819b601fc112240ab81cd&sharer_shareinfo=87cd5c826144c040557bc295cb59e598&sharer_shareinfo_first=87cd5c826144c040557bc295cb59e598#rd" target="_blank">前情提要</a>
+
+「前方来报：哈士奇今早已从西门混入，正在四处游荡；萨摩耶在南门附近一闪而过，现在位置不明；阿拉斯加……没发现？」
+
+「看来牠们并不是一起行动的。这样也好，我们分头行动，对其逐个击破！」
+
+---
+
+根据去年的经验，我们已经知道了哈士奇喜好 cookies。所以今年 PYthok 打算设置一个陷阱，诱捕哈士奇！
 
 现在 PYthok 已经帮你准备好了 cookies。你可以从已有的道具中选择任意一个，帮助他完成陷阱。
 
