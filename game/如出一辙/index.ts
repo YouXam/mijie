@@ -5,7 +5,7 @@ export default {
     pid: '如出一辙',
     description: {
         before_solve: {
-            content: `嗯？你怎么又来了？」YouXam 看到你过来了，马上又把电脑合起来。
+            content: `「嗯？你怎么来了？」YouXam 看到你过来了，马上把电脑合起来，生怕被你看到什么。
 
 「感觉没什么事，想看看有什么我能做的。」
 
