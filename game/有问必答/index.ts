@@ -5,32 +5,35 @@ export default {
     pid: '有问必答',
     description: {
         before_solve: {
-            content: `「去年天枢通过哈士奇的博客搜集到了十分重要的情报。今年我们也不要落后！」PYthok 看上去斗志满满。
-
-「但是……哈士奇的博客有一个神奇的密码，好像是要回答AI提出的问题……」你有点迷糊，没明白这是什么加密手段。
-
-「我看一下。」PYthok 扫视了屏幕上一段又一段的规则。
-
-「我明白了。简单点说，这个密码的规则是要你『提出问题』，并诱导AI做出符合要求的回答。你来试试吧。」
-
-<a href="https://llm.chouhsing.org/" target="_blank">点我打开题目网站</a>`,
+            mdv: {
+                main: "md/App.vue",
+                include: ["md/App.vue"],
+            }
         },
     },
     points: 75,
-    inputs: [
-        {
-            name: 'flag',
-            placeholder: 'flag{xxxxxx}'
-        }
-    ],
+    inputs: false,
     next: [
         {
             pid: "心领神会"
         }
     ],
-    checker(ans, ctx) {
-        return ans.flag.trim() === 'flag{C0ngra75_0n_P4ss1ng_Set_Set_LLM_Cha11eng3!}'
-    }
-} as Plugin<[
-    'flag'
-]>;
+    server(app) {
+        app.on("pass", async (data, ctx) => {
+            if (!data.token) return
+            if (data.user !== ctx.username) return
+            try {
+                const payload = ctx.jwt.verify(data.token, process.env.JWT_SECRET || 'baituan_secret_key')
+                if (typeof payload !== 'object') return
+                if (payload.success === true) {
+                    ctx.pass('')
+                }
+            } catch (e) {
+                console.log(e)
+            }
+        })
+    },
+} as Plugin<false, {
+    token?: string,
+    user?: string,
+}>;

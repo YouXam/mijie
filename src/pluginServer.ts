@@ -1,16 +1,16 @@
-import { Plugin } from "./types";
+import { KeysType, Plugin, ServerContext } from "./types";
 
-export class PluginServer {
-    private plugin: Plugin;
-    private _handlers: Map<string, (...args: any[]) => any>;
-    constructor(plugin: Plugin) {
+export class PluginServer<T extends KeysType, E> {
+    private plugin: Plugin<T>;
+    private _handlers: Map<string, (data: E, ctx: ServerContext) => any>;
+    constructor(plugin: Plugin<T>) {
         this.plugin = plugin;
         this._handlers = new Map();
     }
     
-    on(event: string, handler: (...args: any[]) => any) {
-        this._handlers.set(event, async (...args) => {
-            const tmp = handler(...args);
+    on(event: string, handler: (data: E, ctx: ServerContext) => any) {
+        this._handlers.set(event, async (data: E, ctx: ServerContext) => {
+            const tmp = handler(data, ctx);
             if (tmp instanceof Promise) {
                 return await tmp;
             }
@@ -18,11 +18,11 @@ export class PluginServer {
         });
     }
 
-    async handle(_event: string, ...args: any[]) {
+    async handle(_event: string, data: E, ctx: ServerContext) {
         const event = this._handlers.get(_event)
         if (!event) {
             throw new Error(`Event ${event} not found`);
         }
-        return await event(...args);
+        return await event(data, ctx);
     }
 }

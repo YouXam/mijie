@@ -1,6 +1,7 @@
 import type { runCode, glot } from './games/glot';
 import type jwt from 'jsonwebtoken';
 import type { GameStorage, GameProcess } from './gameprocess';
+import { PluginServer } from './pluginServer';
 
 export interface GameConfig {
     endTime?: string;
@@ -11,7 +12,7 @@ export interface GameConfig {
 }
 
 type InputItem = { name: string; placeholder: string };
-type KeysType = string[] | boolean;
+export type KeysType = string[] | boolean;
 
 type CheckerAnswer<T extends KeysType> = T extends false
   ? never
@@ -33,15 +34,27 @@ export type Context = {
     content: (str: string) => void
 }
 
-export type Plugin<T extends KeysType> = {
+export type ServerContext = {
+    glot: typeof glot,
+    runCode: typeof runCode,
+    username: string,
+    gameProcess: InstanceType<typeof GameProcess>,
+    gameStorage: Awaited<ReturnType<InstanceType<typeof GameStorage>['game']>>,
+    jwt: typeof jwt,
+    ai: (inputs: any) => any,
+    pass: (str: string) => void,
+    nopass: (str: string) => void
+}
+
+export type Plugin<T extends KeysType, E = never> = {
     pid: string,
     name: string,
     description: {
         before_solve: {
             mdv?: {
                 main: string,
-                include: string[],
-                exclude: string[]
+                include?: string[],
+                exclude?: string[]
             },
             md?: string,
             content?: string
@@ -56,7 +69,7 @@ export type Plugin<T extends KeysType> = {
             content?: string
         }
     },
-    checker: T extends string[] 
+    checker?: T extends string[] 
         ? (ans: CheckerAnswer<T>, ctx: Context) => boolean | Promise<boolean>
         : T extends true
         ? (ans: string, ctx: Context) => boolean | Promise<boolean>
@@ -66,7 +79,7 @@ export type Plugin<T extends KeysType> = {
     inputs?: T extends string[] ? {
         [K in keyof T]: T[K] extends string ? { name: T[K] } & { placeholder: string }: never
     } : false,
-    server?: (serverInstance: any) => any,
+    server?: (serverInstance: PluginServer<T, E>) => any,
     serverInstance?: any,
     next?: Array<{
         pid: string,

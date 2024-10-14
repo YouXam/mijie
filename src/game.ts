@@ -773,7 +773,7 @@ export default function game(db: Db) {
             if (typeof cur.checker == "string") {
                 throw new Error("checker is string")
             }
-            res = await cur.checker(ans, {
+            res = await cur.checker!(ans, {
                 glot,
                 runCode,
                 username: ctx.state.username,
