@@ -8,7 +8,7 @@ export default {
             md: 'problem.md'
         }
     },
-    points: 90,
+    points: 80,
     next: [
         {
             pid: "通风报信"

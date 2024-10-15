@@ -20,12 +20,15 @@ YG学姐启动了智能车，然后看向手中的屏幕。一串串电机控制
             pid: "推陈出新"
         }
     ],
+    inputs: [
+        { name: 'flag', placeholder: 'flag{...}' }
+    ],
     files: [
         {
             filename: "output"
         }
     ],
     checker(ans, ctx) {
-        return ans.trim() === 'flag{this_is_QrGc0de}'
+        return ans.flag.trim() === 'flag{this_is_QrGc0de}'
     }
-} as Plugin<true>;
+} as Plugin<['flag']>;

@@ -37,7 +37,7 @@ export default {
     inputs: [
         {
             name: 'flag',
-            placeholder: 'flag{XXXXXXXXXX}'
+            placeholder: 'flag{...}'
         }
     ],
     checker(ans, ctx) {

@@ -17,7 +17,7 @@ export default {
 你突然觉得背后一凉，但是转过头来，却什么也没有发现。`
         }
     },
-    points: 80,
+    points: 70,
     inputs: [
         {
             name: 'code',

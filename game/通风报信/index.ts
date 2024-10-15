@@ -21,9 +21,9 @@ export default {
     },
     points: 200,
     inputs: [
-        { name: 'flag1', placeholder: 'flag{xxx}' },
-        { name: 'flag2', placeholder: 'flag{xxx}' },
-        { name: 'flag3', placeholder: 'flag{xxx}' },
+        { name: 'flag1', placeholder: 'flag{...}' },
+        { name: 'flag2', placeholder: 'flag{...}' },
+        { name: 'flag3', placeholder: 'flag{...}' },
     ],
     gameover: true,
     checker: async (ans, ctx) => {

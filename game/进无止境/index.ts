@@ -17,7 +17,7 @@ export default {
 可是萨摩耶实在太敏捷了，大家根本抓不住！牠跳上 Midoria7 的办公桌，衔起他的推演结果就溜走了！`
         }
     },
-    points: 100,
+    points: 80,
     inputs: [
         {
             name: 'code',

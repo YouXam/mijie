@@ -31,7 +31,7 @@ PYthok 抱着试试看的心态输入了密码 \`flag{锄禾日当午汗滴禾�
         },
         {
             name: '诗句',
-            placeholder: 'flag{XXXXXXXXXX}'
+            placeholder: 'flag{...}'
         }
     ],
     next: [

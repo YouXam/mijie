@@ -20,10 +20,10 @@ export default {
 现在，你需要按从左往右的顺序依次摆放这20条阴阳鱼，使得在过程中，所有阴阳鱼都能顺利完成调和湮灭。请问，你有多少种摆法能够做到？`
         }
     },
-    points: 70,
+    points: 50,
     next: [
         {
-            pid: "余音绕梁"
+            pid: "数书九章"
         }
     ],
     async checker(ans, ctx) {
