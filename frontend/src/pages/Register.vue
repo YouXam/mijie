@@ -108,6 +108,7 @@ async function register() {
         router.push('/login')
     } catch (err) {
         console.log(err)
+        turnstile.reset()
     } finally {
         loading.value = false
     }
