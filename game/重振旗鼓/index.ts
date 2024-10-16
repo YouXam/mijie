@@ -26,7 +26,7 @@ YG学姐的手指在空中划过，最后停在了你身上。「就决定是你
 在输入框中输入一段最短操作序列，例如 B0 代表设置 B 为 0，C1 代表设置 C 为 1，答案形式类似 \`B0A0C1B1C0B0\`。`,
         },
     },
-    points: 145,
+    points: 80,
     inputs: [
         {
             name: 'ans',
@@ -39,7 +39,7 @@ YG学姐的手指在空中划过，最后停在了你身上。「就决定是你
         }
     ],
     checker(ans, ctx) {
-        return ans.ans.trim() === 'B1C1C0B0'
+        return ans.ans.trim() === 'C1'
     }
 } as Plugin<[
     'ans'
