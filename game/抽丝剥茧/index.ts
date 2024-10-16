@@ -27,7 +27,7 @@ export default {
 「我已经把准备工作全部做完了。现在，跟着我出去抓萨摩耶吧。」`
         }
     },
-    points: 100,
+    points: 110,
     next: [
         {
             pid: "按图索骥"
