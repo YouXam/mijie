@@ -16,7 +16,10 @@ export default {
 
 ---
 
-此题尚未完成，请等待后续更新，不要尝试解答。`
+<a href="https://setsetpassword.vercel.app/" target="_blank">打开题目链接</a>
+
+将通过上述网站后拿到的答案用 \`flag{\` 和 \`}\` 包裹起来。
+`
         },
         after_solve: {
             content: `「不是，为什么这个密码有这么多千奇百怪的要求……」你好不容易编出了一个符合全部要求的强密码，然后就忍不住向 PYthok 吐槽。
@@ -41,8 +44,7 @@ export default {
         }
     ],
     checker(ans, ctx) {
-        return false
-        return ans.flag.trim() === 'flag{顾此失彼}'
+        return ans.flag.trim() === 'flag{Th1s_15_4_St0rNG_P@55w0rd!}'
     }
 } as Plugin<[
     'flag',
