@@ -29,7 +29,7 @@ AND R0, R0, #0xFF
 `,
         },
     },
-    points: 55,
+    points: 60,
     inputs: [
         {
             name: 'R0中的值',
