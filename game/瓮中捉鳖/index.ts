@@ -55,7 +55,7 @@ export default {
             },
             "3":{
                 result: true,
-                content: `你决定用 cookies 作为诱耳，讨好哈士奇，然后趁其不备捉住牠。
+                content: `你决定用 cookies 作为诱饵，讨好哈士奇，然后趁其不备捉住牠。
 
 计划进行得很顺利。在哈士奇摇着尾巴吃你手中的 cookies 时，你猝不及防地把近视眼镜挂在了牠的头上！
 
