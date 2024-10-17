@@ -27,6 +27,7 @@ export default {
         }
 
         const resA = await ctx.glot("c", {
+            "command": "clang main.c -o main && rm main.c && ./main",
             "files": [
                 {
                     "name": "main.c",
@@ -43,6 +44,7 @@ export default {
         ctx.msg(resA.stdout);
         
         const resB = await ctx.glot("c", {
+            "command": "clang main.c -o main && rm main.c && ./main",
             "files": [
                 {
                     "name": "main.c",
@@ -59,6 +61,7 @@ export default {
         ctx.msg(resB.stdout);
 
         const resC = await ctx.glot("c", {
+            "command": "clang main.c -o main && rm main.c && ./main",
             "files": [
                 {
                     "name": "main.c",

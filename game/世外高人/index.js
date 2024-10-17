@@ -36,6 +36,7 @@ YouXam 接过来沉思良久。「原来如此！这样我就有办法对付牠�
         }
 
         const res2 = await ctx.glot("c", {
+            "command": "clang main.c -o main && rm main.c && ./main",
             "files": [
                 {
                     "name": "main.c",
