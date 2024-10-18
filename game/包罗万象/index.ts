@@ -11,7 +11,16 @@ export default {
 
 「包罗万象卦？」你听得有点迷迷糊糊的。
 
-「没错！这就是我的卦文：\`wiskey of bravo: alpha victor 428790736 0220\`。 你能解出来吗？」`
+「没错！这就是我的卦文：\`wiskey of bravo: alpha victor 428790736 0220\`。 你能解出来吗？」
+
+---
+
+「包罗万象」Hint：Midoria7 喜欢玩 Minecraft，于是他用下面的合成表合成了一个东西 
+
+\`\`\`
+木板 木棍 木板
+木板 木棍 木板
+\`\`\``
         }
     },
     points: 100,
