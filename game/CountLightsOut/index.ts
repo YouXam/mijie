@@ -17,7 +17,7 @@ export default {
     server(app) {
         app.on('init', (_, ctx) => {
             const cells = Array.from({ length: 36 }, () => Math.random() > 0.5)
-            ctx.gameStorage.set("cells", Array.from({ length: 36 }, () => Math.random() > 0.5))
+            ctx.gameStorage.set("cells", cells)
             return cells.reduce((acc, cur) => acc + (cur ? 1 : 0), 0)
         })
         app.on('toggle', (index: number, ctx) => {
