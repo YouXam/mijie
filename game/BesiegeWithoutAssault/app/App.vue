@@ -13,7 +13,15 @@
         <p>
             Length: {{ length }}
         </p>
-        <input class="input" type="number" v-model="speedRate" />
+        <div style="display: flex; flex-direction: row; gap: 10px">
+            <span style="align-items: center; margin: auto 0;">SpeedRate: </span>
+            <input class="input" type="number" v-model="speedRate" step="0.000000001" />
+        </div>
+        <div v-if="you" style="display: flex; flex-direction: row; gap: 10px">
+            <span style="align-items: center; margin: auto 0;">Next: </span>
+            <input class="input" type="number" v-model="next_x" step="0.000000001" />
+            <input class="input" type="number" v-model="next_y" step="0.000000001" />
+        </div>
         <div style="display: flex; flex-direction: row; gap: 10px">
             <button class="btn" @click="resetPoints">Reset</button>
             <button v-if="you" class="btn" @click="movePoint">Move</button>
@@ -30,12 +38,17 @@ export default {
         CanvasComponent,
     },
     data: () => ({
-        intention: [],
+        next_x: 0,
+        next_y: 0,
         you: null,
         enemy: new Coordinate(0, 0),
         length: 0,
         speedRate: 0.5,
     }),
+    watch: {
+        next_x() { this.$refs.canvasComponent.intention(1, this.next_x, this.next_y); },
+        next_y() { this.$refs.canvasComponent.intention(1, this.next_x, this.next_y); }
+    },
     methods: {
         handleClick({ x, y }) {
             if (this.you === null) {
@@ -46,8 +59,8 @@ export default {
                 ]);
                 return;
             }
-            this.intention = [x, y]
-            this.$refs.canvasComponent.intention(1, x, y);
+            this.next_x = x;
+            this.next_y = y;
         },
         resetPoints() {
             this.enemy.x = this.enemy.y = 0;
@@ -58,10 +71,7 @@ export default {
             ]);
         },
         async movePoint() {
-            if (this.intention.length === 0) {
-                return;
-            }
-            const data = await move(this.you, this.enemy, this.intention[0], this.intention[1] , async (you, enemy, delta) => {
+            const data = await move(this.you, this.enemy, this.next_x, this.next_y, async (you, enemy, delta) => {
                 this.you = you;
                 this.enemy = enemy;
                 this.$refs.canvasComponent.move(0, enemy.x, enemy.y);
