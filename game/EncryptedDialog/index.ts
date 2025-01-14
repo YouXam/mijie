@@ -18,7 +18,7 @@ export default {
     },
     interval: 10 * 1000,
     async checker(ans, ctx) {
-        const isAscii = (x: string) => x.split('').every(c => c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126)
+        const isAscii = (x: string) => x.split('').every(c => c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126 || c === '\n')
         if (!ans.split('').every(isAscii)) {
             ctx.msg("你的输入中包含了非 ASCII 可打印字符，请重新输入。")
             return false

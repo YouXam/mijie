@@ -58,7 +58,7 @@ export class CloudflareAI implements AI {
 
 export class ZhipuAI implements AI {
     api_key = process.env.ZHIPU_API_KEY || '';
-    async run(inputs: AiInputs) {
+    async run(inputs: AiInputs): Promise<AiResponse>  {
         const API_BASE_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
         const headers = {
             "Content-Type": "application/json",

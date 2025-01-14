@@ -41,7 +41,7 @@ const Content = defineAsyncComponent(() => mdvc(props.description.mdv.main, {
         }
         if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
         let target = join("/api/file/", props.description.pid, path)
-        if (path.endsWith(".vue")) {
+        if (path.endsWith(".vue") || path.endsWith(".ts") || path.endsWith(".js")) {
             const res = await fetch(target, { headers })
             return await res.text()
         }

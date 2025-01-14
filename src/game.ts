@@ -13,7 +13,7 @@ import { gameConfig } from './auth';
 import { Plugin } from './types';
 import { Context } from 'koa';
 import { PluginServer } from './pluginServer';
-import AI from './ai';
+import AI, { AiInputs } from './ai';
 
 function haveCommonKeyValuePair(obj1: Record<string, any>, obj2: Record<string, any>) {
     let smallerObj = obj1, largerObj = obj2;
@@ -746,7 +746,7 @@ export default function game(db: Db) {
                 gameProcess: ctx.state.gameprocess,
                 gameStorage,
                 jwt,
-                ai: (inputs: Array<Record<"role" | "content", string>> ) => ai.run(inputs),
+                ai: async (inputs: AiInputs) => await ai.run(inputs),
                 msg: (str: string) => {
                     msg += str + '\n'
                 },

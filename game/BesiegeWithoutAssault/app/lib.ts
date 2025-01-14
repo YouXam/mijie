@@ -1,0 +1,87 @@
+export const EnemySpeedRate: number = .5;
+export const Goal: number = 32;
+
+export class Coordinate {
+	x: number;
+	y: number;
+	constructor(x: number, y: number) {
+		this.x = x;
+		this.y = y;
+	}
+	add(other: Coordinate): Coordinate {
+		return new Coordinate(this.x + other.x, this.y + other.y);
+	}
+	subtract(other: Coordinate): Coordinate {
+		return new Coordinate(this.x - other.x, this.y - other.y);
+	}
+	multiply(scalar: number): Coordinate {
+		return new Coordinate(this.x * scalar, this.y * scalar);
+	}
+	norm(): number {
+		return Math.sqrt(this.x ** 2 + this.y ** 2);
+	}
+	normalize(): Coordinate {
+		const len: number = this.norm();
+		return len < 1e-10 ? new Coordinate(0, 0) : this.multiply(1 / len);
+	}
+}
+
+export async function move(
+	you: Coordinate, 
+	enemy: Coordinate,
+	nx: number,
+	ny: number,
+	onUpdate?: (you: Coordinate, enemy: Coordinate, delta: number) => Promise<void> | void,
+	speedRate = EnemySpeedRate
+): Promise<{
+	result: 'success' | 'continue' | 'out-of-range' | 'too-close',
+	length: number,
+	you: Coordinate,
+	enemy: Coordinate
+}> {
+	const D = 200
+	const your_dir = new Coordinate(nx, ny).subtract(you);
+	const your_dir_slice = your_dir.multiply(1 / D);
+	const your_dir_slice_len = your_dir_slice.norm();
+	const enemy_dir_slice_len: number = your_dir_slice_len * speedRate;
+	let length = 0
+	if (your_dir_slice_len > 1e-14) {
+		for (let _ = 0; _ < D; _++) {
+			const enemy_dir_slice = enemy.subtract(you).normalize().multiply(enemy_dir_slice_len);
+			you = you.add(your_dir_slice);
+			enemy = enemy.add(enemy_dir_slice);
+			if (onUpdate) await onUpdate(you, enemy, enemy_dir_slice_len)
+			length += enemy_dir_slice_len;
+			if (enemy.subtract(you).norm() < 1) {
+				return {
+					result: 'too-close',
+					length,
+					you,
+					enemy
+				}
+			}
+			if (enemy.norm() > 10) {
+				return {
+					result: 'out-of-range',
+					length,
+					you,
+					enemy
+				}
+			}
+			if (length >= Goal) {
+				return {
+					result: 'success',
+					length,
+					you,
+					enemy
+				}
+			}
+		}
+	}
+	return {
+		result: 'continue',
+		length,
+		you,
+		enemy
+	}
+}

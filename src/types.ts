@@ -30,7 +30,7 @@ export type Context = {
     gameProcess: InstanceType<typeof GameProcess>,
     gameStorage: Awaited<ReturnType<InstanceType<typeof GameStorage>['game']>>,
     jwt: typeof jwt,
-    ai: (inputs: AiInputs) => AiResponse,
+    ai: (inputs: AiInputs) => Promise<AiResponse>,
     msg: (str: string) => void,
     content: (str: string) => void
 }
