@@ -1,8 +1,11 @@
 <template>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
         <CanvasComponent ref="canvasComponent" @move="handleClick" style="margin: 0 auto" />
-        <p>
+        <p v-if="you">
             You: ({{ you.x.toFixed(6) }}, {{ you.y.toFixed(6) }})
+        </p>
+        <p v-else>
+            点击坐标系上的任意位置作为起点
         </p>
         <p>
             Enemy: ({{ enemy.x.toFixed(6) }}, {{ enemy.y.toFixed(6) }})
@@ -13,7 +16,7 @@
         <input class="input" type="number" v-model="speedRate" />
         <div style="display: flex; flex-direction: row; gap: 10px">
             <button class="btn" @click="resetPoints">Reset</button>
-            <button class="btn" @click="movePoint">Move</button>
+            <button v-if="you" class="btn" @click="movePoint">Move</button>
         </div>
     </div>
 </template>
@@ -28,23 +31,30 @@ export default {
     },
     data: () => ({
         intention: [],
-        you: new Coordinate(5, 5),
+        you: null,
         enemy: new Coordinate(0, 0),
         length: 0,
-        speedRate: 2,
+        speedRate: 0.5,
     }),
     methods: {
         handleClick({ x, y }) {
+            if (this.you === null) {
+                this.you = new Coordinate(x, y);
+                this.$refs.canvasComponent.reset([
+                    [this.enemy.x, this.enemy.y],
+                    [this.you.x, this.you.y],
+                ]);
+                return;
+            }
             this.intention = [x, y]
             this.$refs.canvasComponent.intention(1, x, y);
         },
         resetPoints() {
             this.enemy.x = this.enemy.y = 0;
-            this.you.x = this.you.y = 5;
+            this.you = null;
             this.length = 0;
             this.$refs.canvasComponent.reset([
-                [this.enemy.x, this.enemy.y],
-                [this.you.x, this.you.y]
+                [this.enemy.x, this.enemy.y]
             ]);
         },
         async movePoint() {
@@ -59,7 +69,6 @@ export default {
                 this.length += delta
                 await new Promise((resolve) => setTimeout(resolve, delta));
             }, this.speedRate);
-            console.log(data)
         },
     },
     mounted() {
