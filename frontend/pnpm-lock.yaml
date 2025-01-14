@@ -39,8 +39,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       mdvc:
-        specifier: 0.0.7
-        version: 0.0.7
+        specifier: 0.0.13
+        version: 0.0.13
       mermaid:
         specifier: ^11.2.1
         version: 11.2.1
@@ -1113,8 +1113,8 @@ packages:
   mdurl@2.0.0:
     resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
-  mdvc@0.0.7:
-    resolution: {integrity: sha512-7ntQxcSanKYT8QXVZRO/V1AARA7g6lnDlPfHql7RZEOsdvhPlilhMT1zvN3GP5e5ywDHKGkxYa66UZHeicPTHw==}
+  mdvc@0.0.13:
+    resolution: {integrity: sha512-3zI3nHzPdxTN4D/f5CjUJfVqLS3U7zMFlbuGuKp4S+SI6g/2qX1/ZQxTLoOv9mz05Z/YCYOi7AdWqVHPp9qnFg==}
 
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
@@ -1518,8 +1518,8 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
-  vue-sfc-component@0.0.12:
-    resolution: {integrity: sha512-AC9sgWilpXaRdjhyAaVmyOAqP7rJbOaGQZ8WerGxPfzN1dEoW63EwzyKblH7OPW7ndtv5xmZRjzJr9XlSYVTag==}
+  vue-sfc-component@0.0.18:
+    resolution: {integrity: sha512-LUzK7yWGCUyAR12AbiCrHVXxTrsd671LkBRJkQVTIWIAnxc+2N4MouMVxfasPFmaKFVr9t+QIUp9yy/V/1dl9w==}
 
   vue@3.5.8:
     resolution: {integrity: sha512-hvuvuCy51nP/1fSRvrrIqTLSvrSyz2Pq+KQ8S8SXCxTWVE0nMaOnSDnSOxV1eYmGfvK7mqiwvd1C59CEEz7dAQ==}
@@ -2551,10 +2551,10 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  mdvc@0.0.7:
+  mdvc@0.0.13:
     dependencies:
       markdown-it-for-mdvc: 14.1.0
-      vue-sfc-component: 0.0.12
+      vue-sfc-component: 0.0.18
     transitivePeerDependencies:
       - typescript
 
@@ -2945,7 +2945,7 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.8
 
-  vue-sfc-component@0.0.12:
+  vue-sfc-component@0.0.18:
     dependencies:
       '@vue/compiler-sfc': 3.5.8
       hash-sum: 2.0.0

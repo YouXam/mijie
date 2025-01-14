@@ -35,17 +35,17 @@ const props = defineProps(['description'])
 if (!props?.description?.mdv?.main) throw new Error("No main mdv provided")
 if (props.description.mdv.main.endsWith(".md")) markdown.value = true
 const Content = defineAsyncComponent(() => mdvc(props.description.mdv.main, {
-    getFile: async (path) => {
+    async getFile(path) {
         const headers = {
             'Content-Type': 'application/json',
         }
         if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-        let target = join("/api/file/", props.description.pid, join(props.description.mdv.main, ".."), path)
-        if (path === props.description.mdv.main) 
-            target = join("/api/file/", props.description.pid, path)
-        const res = await fetch(target, { headers })
-        const data = await res.text()
-        return data
+        let target = join("/api/file/", props.description.pid, path)
+        if (path.endsWith(".vue")) {
+            const res = await fetch(target, { headers })
+            return await res.text()
+        }
+        return fetch(target, { headers })
     },
     extend: (md) => {
         md.use(hljs).use(latex)

@@ -1,3 +1,4 @@
+import clear from "clear-module";
 import { type Db } from "mongodb";
 
 export class GameProcess {
@@ -43,6 +44,12 @@ export class GameStorage {
             },
             delete(key: string) {
                 delete storage?.[key];
+                changed = true;
+            },
+            clear() {
+                for (const key in storage) {
+                    delete storage[key];
+                }
                 changed = true;
             },
             async save() {

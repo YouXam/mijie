@@ -6,7 +6,6 @@ import path from 'path';
 import compose from 'koa-compose';
 import send from 'koa-send';
 import jwt from 'jsonwebtoken';
-import axios from 'axios';
 import { minimatch } from 'minimatch';
 import { runCode, glot } from './games/glot';
 import { verify }from './turnstile';
@@ -14,6 +13,7 @@ import { gameConfig } from './auth';
 import { Plugin } from './types';
 import { Context } from 'koa';
 import { PluginServer } from './pluginServer';
+import AI from './ai';
 
 function haveCommonKeyValuePair(obj1: Record<string, any>, obj2: Record<string, any>) {
     let smallerObj = obj1, largerObj = obj2;
@@ -242,41 +242,7 @@ const plugins = new Plugins();
 
 let rank = Ranking;
 
-export class AI {
-    cloudflare_api_keys: { id: string, key: string }[];
-    cloudflare_api_index: number;
-    constructor() {
-        const keys = (process.env.CLOUDFLARE_API_KEYS || '').split(',');
-        this.cloudflare_api_keys = keys.filter(key => key.length > 0).map(x => {
-            const [id, key] = x.split(':');
-            return { id, key }
-        })
-        this.cloudflare_api_index = 0;
-    }
-    next_api_key() {
-        this.cloudflare_api_index = (this.cloudflare_api_index + 1) % this.cloudflare_api_keys.length;
-        return this.cloudflare_api_keys[this.cloudflare_api_index];
-    }
-    async run(inputs: string[]) {
-        const key = this.next_api_key()
-        const API_BASE_URL = `https://api.cloudflare.com/client/v4/accounts/${key.id}/ai/run/`;
-        const model = "@cf/meta/llama-2-7b-chat-int8";
-        const headers = {
-            "Authorization": `Bearer ${key.key}`
-        };
 
-        try {
-            const response = await axios.post(`${API_BASE_URL}${model}`, { messages: inputs }, { headers: headers });
-            return response.data;
-        } catch (error : any) {
-            console.error("Error during AI dialogue:", error);
-            if (error.data) {
-                console.error(error.data);
-            }
-            return
-        }
-    }
-}
 
 function checkAllowedFiles(root: string, { include, exclude }: { include: string[], exclude: string[] }, targetPath: string) {
     const absolutePath = path.join(root, targetPath);
@@ -316,7 +282,7 @@ async function insertRecord(db: Db, record: Record<string, any>) {
     return percent
 }
 
-const ai = new AI();
+const ai = AI;
 
 export default function game(db: Db) {
     const router = new Router();
@@ -623,12 +589,12 @@ export default function game(db: Db) {
             gameStorage,
             jwt,
             ai: (inputs: any) => ai.run(inputs),
-            pass: (msg: string) => {
+            pass: (msg?: string) => {
                 passed = true;
-                message += msg;
+                if (msg) message += msg;
             },
-            nopass: (msg: string) => {
-                message += msg;
+            nopass: (msg?: string) => {
+                if (msg) message += msg;
             }
         }
         const eventResponse = await cur.serverInstance.handle(event, data, context);
@@ -780,7 +746,7 @@ export default function game(db: Db) {
                 gameProcess: ctx.state.gameprocess,
                 gameStorage,
                 jwt,
-                ai: (inputs: any) => ai.run(inputs),
+                ai: (inputs: Array<Record<"role" | "content", string>> ) => ai.run(inputs),
                 msg: (str: string) => {
                     msg += str + '\n'
                 },

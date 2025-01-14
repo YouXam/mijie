@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "start": "node src/index.js",
-    "build": "cd frontend && yarn && yarn build",
+    "start": "bun run src/index.js",
+    "build": "cd frontend && pnpm i && pnpm build",
     "dev": "bun run --hot src/index.ts"
   },
   "type": "module",
@@ -37,5 +37,6 @@
     "@types/koa-send": "^4.1.6",
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.0.1"
-  }
+  },
+  "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a"
 }

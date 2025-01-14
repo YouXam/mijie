@@ -2,6 +2,7 @@ import type { runCode, glot } from './games/glot';
 import type jwt from 'jsonwebtoken';
 import type { GameStorage, GameProcess } from './gameprocess';
 import { PluginServer } from './pluginServer';
+import { AiInputs, AiResponse } from './ai';
 
 export interface GameConfig {
     endTime?: string;
@@ -29,7 +30,7 @@ export type Context = {
     gameProcess: InstanceType<typeof GameProcess>,
     gameStorage: Awaited<ReturnType<InstanceType<typeof GameStorage>['game']>>,
     jwt: typeof jwt,
-    ai: (inputs: any) => any,
+    ai: (inputs: AiInputs) => AiResponse,
     msg: (str: string) => void,
     content: (str: string) => void
 }
@@ -42,8 +43,8 @@ export type ServerContext = {
     gameStorage: Awaited<ReturnType<InstanceType<typeof GameStorage>['game']>>,
     jwt: typeof jwt,
     ai: (inputs: any) => any,
-    pass: (str: string) => void,
-    nopass: (str: string) => void
+    pass: (str?: string) => void,
+    nopass: (str?: string) => void
 }
 
 export type Plugin<T extends KeysType, E = never> = {
@@ -79,7 +80,7 @@ export type Plugin<T extends KeysType, E = never> = {
     inputs?: T extends string[] ? {
         [K in keyof T]: T[K] extends string ? { name: T[K] } & { placeholder: string }: never
     } : false,
-    server?: (serverInstance: PluginServer<T, E>) => any,
+    server?: (serverInstance: PluginServer<T>) => any,
     serverInstance?: any,
     next?: Array<{
         pid: string,

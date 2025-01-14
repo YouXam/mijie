@@ -1,14 +1,14 @@
 import { KeysType, Plugin, ServerContext } from "./types";
 
-export class PluginServer<T extends KeysType, E> {
+export class PluginServer<T extends KeysType> {
     private plugin: Plugin<T>;
-    private _handlers: Map<string, (data: E, ctx: ServerContext) => any>;
+    private _handlers: Map<string, (data: any, ctx: ServerContext) => any>;
     constructor(plugin: Plugin<T>) {
         this.plugin = plugin;
         this._handlers = new Map();
     }
     
-    on(event: string, handler: (data: E, ctx: ServerContext) => any) {
+    on<E>(event: string, handler: (data: E, ctx: ServerContext) => any) {
         this._handlers.set(event, async (data: E, ctx: ServerContext) => {
             const tmp = handler(data, ctx);
             if (tmp instanceof Promise) {
@@ -18,7 +18,7 @@ export class PluginServer<T extends KeysType, E> {
         });
     }
 
-    async handle(_event: string, data: E, ctx: ServerContext) {
+    async handle(_event: string, data: any, ctx: ServerContext) {
         const event = this._handlers.get(_event)
         if (!event) {
             throw new Error(`Event ${event} not found`);
