@@ -1,31 +1,28 @@
 <template>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
         <CanvasComponent ref="canvasComponent" @move="handleClick" style="margin: 0 auto" />
-        <p v-if="you">
-            You: ({{ you.x.toFixed(6) }}, {{ you.y.toFixed(6) }})
-        </p>
-        <p v-else>
-            点击坐标系上的任意位置作为起点
-        </p>
-        <p>
-            Enemy: ({{ enemy.x.toFixed(6) }}, {{ enemy.y.toFixed(6) }})
-        </p>
-        <p>
-            Length: {{ length }}
-        </p>
-        <div style="display: flex; flex-direction: row; gap: 10px">
+        
+        <div class="row">
+            <code v-if="you">You: ({{ you.x.toFixed(6) }}, {{ you.y.toFixed(6) }})</code>        
+            <code>Enemy: ({{ enemy.x.toFixed(6) }}, {{ enemy.y.toFixed(6) }})</code>
+            <code>Length: {{ length.toFixed(6) }}</code>
+        </div>
+    
+        <div class="row">
             <span style="align-items: center; margin: auto 0;">SpeedRate: </span>
             <input class="input" type="number" v-model="speedRate" step="0.000000001" />
         </div>
-        <div v-if="you" style="display: flex; flex-direction: row; gap: 10px">
+        <div v-if="you" class="row">
             <span style="align-items: center; margin: auto 0;">Next: </span>
             <input class="input" type="number" v-model="next_x" step="0.000000001" />
             <input class="input" type="number" v-model="next_y" step="0.000000001" />
         </div>
-        <div style="display: flex; flex-direction: row; gap: 10px">
+        <div class="row">
             <button class="btn" @click="resetPoints">Reset</button>
-            <button v-if="you" class="btn" @click="movePoint">Move</button>
+            <button v-if="you && intention" class="btn" @click="movePoint">Move</button>
         </div>
+        <p v-if="!you">点击坐标系上的任意位置作为起点</p>
+        <p v-else-if="!intention">点击坐标系上的任意位置或输入坐标作为下一点</p>
     </div>
 </template>
 
@@ -40,16 +37,21 @@ export default {
     data: () => ({
         next_x: 0,
         next_y: 0,
+        intention: false,
         you: null,
         enemy: new Coordinate(0, 0),
         length: 0,
         speedRate: 0.5,
     }),
     watch: {
-        next_x() { this.$refs.canvasComponent.intention(1, this.next_x, this.next_y); },
-        next_y() { this.$refs.canvasComponent.intention(1, this.next_x, this.next_y); }
+        next_x() { this.updateIntention(); },
+        next_y() { this.updateIntention(); }
     },
     methods: {
+        updateIntention() {
+            this.intention = true;
+            this.$refs.canvasComponent.intention(1, this.next_x, this.next_y);
+        },
         handleClick({ x, y }) {
             if (this.you === null) {
                 this.you = new Coordinate(x, y);
@@ -71,6 +73,7 @@ export default {
             ]);
         },
         async movePoint() {
+            console.log(this.next_x, this.next_y)
             const data = await move(this.you, this.enemy, this.next_x, this.next_y, async (you, enemy, delta) => {
                 this.you = you;
                 this.enemy = enemy;
@@ -79,6 +82,7 @@ export default {
                 this.length += delta
                 await new Promise((resolve) => setTimeout(resolve, delta));
             }, this.speedRate);
+            this.intention = false;
         },
     },
     mounted() {
@@ -86,3 +90,12 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+</style>
