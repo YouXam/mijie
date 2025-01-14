@@ -10,18 +10,24 @@
     
         <div class="row">
             <span style="align-items: center; margin: auto 0;">SpeedRate: </span>
-            <input class="input" type="number" v-model="speedRate" step="0.000000001" />
+            <input class="input" type="number" v-model="speedRate" step="0.001" />
+        </div>
+        <div v-if="!you" class="row">
+            <span style="align-items: center; margin: auto 0;">Start: </span>
+            <input class="input" type="number" v-model="start_x" step="0.001" />
+            <input class="input" type="number" v-model="start_y" step="0.001" />
+            <button class="btn" @click="start">Set</button>
         </div>
         <div v-if="you" class="row">
             <span style="align-items: center; margin: auto 0;">Next: </span>
-            <input class="input" type="number" v-model="next_x" step="0.000000001" />
-            <input class="input" type="number" v-model="next_y" step="0.000000001" />
+            <input class="input" type="number" v-model="next_x" step="0.001" />
+            <input class="input" type="number" v-model="next_y" step="0.001" />
+            <button v-if="you" class="btn" @click="movePoint">Move</button>
         </div>
         <div class="row">
             <button class="btn" @click="resetPoints">Reset</button>
-            <button v-if="you && intention" class="btn" @click="movePoint">Move</button>
         </div>
-        <p v-if="!you">点击坐标系上的任意位置作为起点</p>
+        <p v-if="!you">点击坐标系上的任意位置或输入坐标作为起点</p>
         <p v-else-if="!intention">点击坐标系上的任意位置或输入坐标作为下一点</p>
     </div>
 </template>
@@ -35,6 +41,8 @@ export default {
         CanvasComponent,
     },
     data: () => ({
+        start_x: 0,
+        start_y: 0,
         next_x: 0,
         next_y: 0,
         intention: false,
@@ -48,6 +56,9 @@ export default {
         next_y() { this.updateIntention(); }
     },
     methods: {
+        start() {
+            this.handleClick({ x: this.start_x, y: this.start_y });
+        },
         updateIntention() {
             this.intention = true;
             this.$refs.canvasComponent.intention(1, this.next_x, this.next_y);
@@ -65,15 +76,15 @@ export default {
             this.next_y = y;
         },
         resetPoints() {
-            this.enemy.x = this.enemy.y = 0;
+            this.enemy.x = this.enemy.y = this.start_x = this.start_y = this.next_x = this.next_y = 0;
             this.you = null;
             this.length = 0;
+            this.intention = false;
             this.$refs.canvasComponent.reset([
                 [this.enemy.x, this.enemy.y]
             ]);
         },
         async movePoint() {
-            console.log(this.next_x, this.next_y)
             const data = await move(this.you, this.enemy, this.next_x, this.next_y, async (you, enemy, delta) => {
                 this.you = you;
                 this.enemy = enemy;
