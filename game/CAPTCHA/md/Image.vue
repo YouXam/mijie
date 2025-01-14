@@ -1,6 +1,6 @@
 <template>
   <div class="image-container" :style="containerStyle" @click="handleClick">
-    <img :src="src" alt="Image" class="image" />
+    <img :src="src" class="image" style="aspect-ratio: 1 / 1;" />
   </div>
 </template>
 
@@ -20,9 +20,10 @@ export default {
   computed: {
     containerStyle() {
       return {
-        border: this.selected ? '8px solid rgb(0, 132, 197)' : '1px solid #ccc',
+        border: this.selected ? '8px solid rgb(0, 132, 197)' : '0.5px solid #ccc',
         transform: 'scale(1)',
         transition: 'all 0.2s ease',
+        boxSizing: 'content-box'
       };
     }
   },

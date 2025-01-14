@@ -2,18 +2,12 @@ import { Plugin } from "../../src/types";
 
 
 export default {
-    name: 'CatchGlowworm',
-    pid: 'CatchGlowworm',
+    name: 'BesiegeWithoutAssault',
+    pid: 'BesiegeWithoutAssault',
     description: {
         before_solve: {
             content: `
-在三维空间直角坐标系中，捕虫网的初始位置是 $(0,0,0)$，而萤火虫与捕虫网的初始距离为 $[2,4]$。
-
-捕虫网受你的控制而移动，而与此同时，萤火虫也总是朝着远离捕虫网的方向移动。这种运动过程是连续的。
-
-你的目标是，在萤火虫逃出 $x^{2}+y^{2}+z^{2}<=10$ 的范围之前，抓住萤火虫。
-
-捕虫网与萤火虫的速度之比为 $2:1$；抓住萤火虫的判定标准为：捕虫网与萤火虫的距离不大于 $0.1$。`
+BesiegeWithoutAssault`
         },
     },
     points: 100,
@@ -51,7 +45,7 @@ export default {
         const dx = (nx - px) / D, dy = (ny - py) / D, dz = (nz - pz) / D
         const length = Math.sqrt((nx - px) ** 2 + (ny - py) ** 2 + (nz - pz) ** 2)
         const dd = length / D / 2
-        let minDist = 1e7
+
         for (let i = 1; i <= D; i++) {
             px += dx
             py += dy
@@ -69,7 +63,12 @@ export default {
                 sy += uy * dd
                 sz += uz * dd
             }
-            minDist = Math.min(minDist, (sx - px) ** 2 + (sy - py) ** 2 + (sz - pz) ** 2)
+            if ((sx - px) ** 2 + (sy - py) ** 2 + (sz - pz) ** 2 < 0.1 ** 2) {
+                ctx.gameStorage.delete('round')
+                ctx.gameStorage.delete('ppos')
+                ctx.gameStorage.delete('spos')
+                return true
+            }
             if ((sx ** 2 + sy ** 2 + sz ** 2) > 10 ** 2) {
                 ctx.msg(`[Round ${round + 1}] 萤火虫逃跑成功！`)
                 ctx.msg(`萤火虫的位置：(${sx.toFixed(6)}, ${sy.toFixed(6)}, ${sz.toFixed(6)})`)
@@ -80,14 +79,6 @@ export default {
                 ctx.gameStorage.delete('spos')
                 return false
             }
-        }
-        if (minDist < 0.1 ** 2) {
-            ctx.gameStorage.delete('round')
-            ctx.gameStorage.delete('ppos')
-            ctx.gameStorage.delete('spos')
-            ctx.msg(`[Round ${round + 1}] 你成功抓住了萤火虫！`)
-            ctx.msg(`过程中你与萤火虫的最小距离：${Math.sqrt(minDist).toFixed(6)}`)
-            return true
         }
         ctx.gameStorage.set('round', round + 1)
         ctx.gameStorage.set('ppos', [nx, ny, nz])
