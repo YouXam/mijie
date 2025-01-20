@@ -37,7 +37,7 @@ if (props.description.mdv.main.endsWith(".md")) markdown.value = true
 const Content = defineAsyncComponent(() => mdvc(props.description.mdv.main, {
     async getFile(path) {
         const headers = {
-            'Content-Type': 'application/json',
+            'X-Application-Id': 'mdv',
         }
         if (localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
         let target = join("/api/file/", props.description.pid, path)

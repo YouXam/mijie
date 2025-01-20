@@ -892,6 +892,7 @@ export default function game(db: Db) {
         const cur = await checkPre(ctx);
         const root = path.join(__dirname, '../game', cur.folder!)
         const absolutePath = path.join(root, filePath);
+        const ext = path.extname(absolutePath);
         const patterns = {
             before_solve: {
                 include: cur?.description?.before_solve?.mdv?.include || [],
@@ -902,9 +903,14 @@ export default function game(db: Db) {
                 exclude: cur?.description?.after_solve?.mdv?.exclude || []
             }
         }
+        function setHeaders(res: typeof ctx.res) {
+            if (ctx.req.headers['x-application-id'] === 'mdv' && ['.md', '.js', '.ts', '.vue'].includes(ext)) {
+                res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            }
+        }
         if (checkAllowedFiles(root, patterns.before_solve, filePath)
             || checkAllowedFiles(root, patterns.after_solve, filePath)) {
-            await send(ctx, filePath, { root });
+            await send(ctx, filePath, { root, setHeaders });
             compressBrotli(absolutePath);
             return
         }
@@ -916,7 +922,7 @@ export default function game(db: Db) {
         ) {
             ctx.throw(403, `Access denied`)
         }
-        await send(ctx, filePath, { root });
+        await send(ctx, filePath, { root, setHeaders });
         compressBrotli(absolutePath);
     });
 
