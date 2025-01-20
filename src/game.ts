@@ -14,6 +14,7 @@ import { Plugin } from './types';
 import { Context } from 'koa';
 import { PluginServer } from './pluginServer';
 import AI, { AiInputs } from './ai';
+import { compressBrotli } from './compress';
 
 function haveCommonKeyValuePair(obj1: Record<string, any>, obj2: Record<string, any>) {
     let smallerObj = obj1, largerObj = obj2;
@@ -890,6 +891,7 @@ export default function game(db: Db) {
         if (!filePath || !filePath?.length) ctx.throw(403, `Access denied`)
         const cur = await checkPre(ctx);
         const root = path.join(__dirname, '../game', cur.folder!)
+        const absolutePath = path.join(root, filePath);
         const patterns = {
             before_solve: {
                 include: cur?.description?.before_solve?.mdv?.include || [],
@@ -903,6 +905,7 @@ export default function game(db: Db) {
         if (checkAllowedFiles(root, patterns.before_solve, filePath)
             || checkAllowedFiles(root, patterns.after_solve, filePath)) {
             await send(ctx, filePath, { root });
+            compressBrotli(absolutePath);
             return
         }
         if (!cur.files?.length
@@ -914,6 +917,7 @@ export default function game(db: Db) {
             ctx.throw(403, `Access denied`)
         }
         await send(ctx, filePath, { root });
+        compressBrotli(absolutePath);
     });
 
     router.get('/record', async (ctx) => {
