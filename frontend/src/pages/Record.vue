@@ -143,7 +143,7 @@ const router = useRouter()
 const content = ref('')
 const selected = ref(router.currentRoute.value.query.passed === undefined ? '全部' : 
 router.currentRoute.value.query.passed === 'true' ? '正确' : '错误')
-const problemSelect = ref(router.currentRoute.value.params.pid === undefined? '' : router.currentRoute.value.params.pid)
+const problemSelect = ref(router.currentRoute.value.params.pid === undefined? '' : router.currentRoute.value.params.pid.toLowerCase())
 const showall = ref(router.currentRoute.value.query.all !== undefined)
 const username = ref(router.currentRoute.value.query.user === undefined? user.username.value : router.currentRoute.value.query.user)
 function formatDate(date) {
