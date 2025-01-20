@@ -6,7 +6,8 @@
   "scripts": {
     "start": "bun run src/index.js",
     "build": "cd frontend && pnpm i && pnpm build",
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "zl": "zellij --layout dev.kdl"
   },
   "type": "module",
   "dependencies": {

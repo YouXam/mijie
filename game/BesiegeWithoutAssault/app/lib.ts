@@ -1,5 +1,6 @@
-export const EnemySpeedRate: number = .5;
-export const Goal: number = 32;
+export const EnemySpeedRate: number = .95;
+export const Goal: number = 95;
+export const Step = 300
 
 export class Coordinate {
 	x: number;
@@ -31,26 +32,24 @@ export async function move(
 	enemy: Coordinate,
 	nx: number,
 	ny: number,
-	onUpdate?: (you: Coordinate, enemy: Coordinate, delta: number) => Promise<void> | void,
-	speedRate = EnemySpeedRate
+	onUpdate?: (you: Coordinate, enemy: Coordinate, delta: number, progress: number) => Promise<void> | void
 ): Promise<{
 	result: 'success' | 'continue' | 'out-of-range' | 'too-close',
 	length: number,
 	you: Coordinate,
 	enemy: Coordinate
 }> {
-	const D = 200
 	const your_dir = new Coordinate(nx, ny).subtract(you);
-	const your_dir_slice = your_dir.multiply(1 / D);
+	const your_dir_slice = your_dir.multiply(1 / Step);
 	const your_dir_slice_len = your_dir_slice.norm();
-	const enemy_dir_slice_len: number = your_dir_slice_len * speedRate;
+	const enemy_dir_slice_len: number = your_dir_slice_len * EnemySpeedRate;
 	let length = 0
 	if (your_dir_slice_len > 1e-14) {
-		for (let _ = 0; _ < D; _++) {
+		for (let _ = 0; _ < Step; _++) {
 			const enemy_dir_slice = enemy.subtract(you).normalize().multiply(enemy_dir_slice_len);
 			you = you.add(your_dir_slice);
 			enemy = enemy.add(enemy_dir_slice);
-			if (onUpdate) await onUpdate(you, enemy, enemy_dir_slice_len)
+			if (onUpdate) await onUpdate(you, enemy, enemy_dir_slice_len, _ / Step);
 			length += enemy_dir_slice_len;
 			if (enemy.subtract(you).norm() < 1) {
 				return {

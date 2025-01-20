@@ -35,8 +35,8 @@ export class GameStorage {
         const storage = user?.gamestorage?.[name] || {};
         let changed = false;
         return {
-            get(key: string) {
-                return storage?.[key] || null;
+            get<T = any>(key: string) {
+                return storage?.[key] as T || null;
             },
             set(key: string, value: any) {
                 storage[key] = value;

@@ -363,6 +363,9 @@ async function pluginApi(event, data) {
     return result.res
 }
 provide("api", pluginApi)
+provide("reset", () => {
+    records.value = []
+})
 
 document.addEventListener('scroll', () => {
     if (checkIfResultInViewport()) showDown.value = false

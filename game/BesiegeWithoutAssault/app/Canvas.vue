@@ -18,6 +18,7 @@ export default {
             bufferCtx: null,
             scale: 5,
             size: 500,
+            handler: null
         };
     },
     methods: {
@@ -173,16 +174,26 @@ export default {
             const y = 10 - ((event.clientY - rect.top) / rect.height) * 20;
             this.$emit('move', { x, y });
         },
+        updateHieght() {
+            this.$refs.canvas.style.height = `${this.$refs.canvas.getBoundingClientRect().width}px`;
+        }
     },
     mounted() {
         this.initBuffer();
         this.drawMainCanvas();
+        this.updateHieght();
+        this.handler = window.addEventListener('resize', this.updateHieght);
     },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.handler);
+    }
 };
 </script>
 
 <style scoped>
 canvas {
     border: 1px solid #ccc;
+    max-width: 100%;
+    height: auto;
 }
 </style>

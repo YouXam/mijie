@@ -1,0 +1,17 @@
+layout {
+    pane split_direction="vertical" {
+        pane {
+            name "backend"
+            command "bash"
+            args "-c" "pnpm dev"
+        }
+        pane {
+            name "frontend"
+            command "bash"
+            args "-c" "cd frontend && pnpm dev"
+        }
+    }
+    pane size=1 borderless=true {
+        plugin location="status-bar"
+    }
+}
