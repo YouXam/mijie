@@ -6,6 +6,9 @@
             空
         </div>
     </TitleCard>
+    <footer class="text-center text-gray-400 text-xs absolute -bottom-8 w-full font-mono">
+        &copy; {{ new Date().getFullYear() }} Website developed by <a href="https://github.com/YouXam" target="_blank" class="link">YouXam</a>
+    </footer>
 </template>
   
 <script>
