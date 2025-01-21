@@ -352,6 +352,10 @@ export default function game(db: Db) {
         problems.forEach(e => {
             problemsMap[e._id] = e.count
         })
+        const hiddenRecordMap = plugins.hiddenRecord.reduce((acc, cur) => {
+            acc.set(cur, true)
+            return acc
+        }, new Map<string, boolean>());
         const res = {
             submitted_problems: problems.filter(res => plugins.pluginMap.has(res._id)).map(res => {
                 const cur = plugins.pluginMap.get(res._id)!;
@@ -359,7 +363,7 @@ export default function game(db: Db) {
                     pid: cur.pid,
                     name: cur.name,
                     manualScores: cur.manualScores,
-                    count: res.count
+                    count: hiddenRecordMap.has(cur.pid) ? 0 : res.count
                 }
             })
         }
@@ -368,7 +372,7 @@ export default function game(db: Db) {
                 pid: cur.pid,
                 name: cur.name,
                 manualScores: cur.manualScores,
-                count: problemsMap[cur.pid] || 0
+                count: ctx.state.admin >= 2 || !hiddenRecordMap.has(cur.pid) ? (problemsMap[cur.pid] || 0) : 0 
             }))
         }
         ctx.body = res;
