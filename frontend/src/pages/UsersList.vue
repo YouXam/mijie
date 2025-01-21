@@ -7,7 +7,7 @@
                     <button class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</button>
                     <router-link class="btn btn-link flex text-base-content" to="/record?all">提交记录</router-link>
                     <div class="dropdown">
-                        <div tabindex="0" role="button" class="btn btn-link text-base-content">导出</div>
+                        <div tabindex="0" role="button" class="btn btn-link text-base-content">导出数据</div>
                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                             <li><a @click="download('xlsx')">Excel 格式</a></li>
                             <li><a @click="download('csv')">csv 格式</a></li>
@@ -96,7 +96,7 @@
             </div>
         </div>
         <button :disabled="loading2" v-if="!loading"
-            class="btn btn-circle btn-success refresh shadow-lg fixed bottom-3 right-5" @click="refresh(false)"
+            class="btn btn-circle btn-success refresh text-white shadow-lg fixed bottom-3 right-5" @click="refresh(false)"
             :class="{ rotate: loading2 }">
             <font-awesome-icon :icon="['fas', 'arrows-rotate']" />
         </button>
@@ -149,7 +149,7 @@
                                 <router-link :to="'/record?user=' + encodeURIComponent(drawerUser.username)">全部提交记录</router-link>
                             </li>
                             <li v-for="problem in problems" :key="problem.pid">
-                                <router-link :to="'/record/' + problem.pid + '?user=' + encodeURIComponent(drawerUser.username)">{{ problem.name }}  <span v-if="drawerUser.gameprocess?.[problem.pid]">({{drawerUser.gameprocess[problem.pid]}} pts)</span></router-link>
+                                <router-link :to="'/record/' + problem.pid + '?user=' + encodeURIComponent(drawerUser.username)">{{ problem.name }}  <span v-if="drawerUser.gameprocess?.[problem.pid] !== undefined">({{drawerUser.gameprocess[problem.pid]}} pts)</span></router-link>
                             </li>
                         </ul>
                     </div>

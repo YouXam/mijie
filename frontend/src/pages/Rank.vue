@@ -70,7 +70,7 @@
     <button
       :disabled="loading2"
       v-if="!loading"
-      class="btn btn-circle btn-success refresh shadow-lg fixed bottom-3 right-5"
+      class="btn btn-circle btn-success text-white refresh shadow-lg fixed bottom-3 right-5"
       @click="refresh"
       :class="{rotate: loading2}"
     >

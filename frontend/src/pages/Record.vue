@@ -125,7 +125,7 @@
         <h1 v-if="!records.length && loading" class="mt-10">Loading...</h1>
         <Pagination v-if="records.length && totalPages > 1" class="mt-5" :totalPages="totalPages" :currentPage="page"
             @pageChange="onPageChange" />
-        <button :disabled="loading" class="btn btn-circle btn-success refresh shadow-lg fixed bottom-3 right-5"
+        <button :disabled="loading" class="btn btn-circle text-white btn-success refresh shadow-lg fixed bottom-3 right-5"
             @click="update" :class="{ rotate: loading }">
             <font-awesome-icon :icon="['fas', 'arrows-rotate']" />
         </button>
