@@ -86,6 +86,7 @@ export type Plugin<T extends KeysType, E = never> = {
         pid: string,
         description?: string
     }>,
+    record?: boolean,
     first?: boolean,
     gameover?: boolean,
     folder?: string,

@@ -14,7 +14,7 @@ export default {
     },
     points: 0,
     inputs: false,
-    next: [{ pid: 'entrance' }],
+    next: [{ pid: 'WhatHappened' }],
     server(app) {
         app.on('refresh', (_, ctx) => {
             const passed = [

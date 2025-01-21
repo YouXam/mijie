@@ -938,9 +938,15 @@ export default function game(db: Db) {
             passed?: string
         }
         const all = allStr === 'true';
+        if (!pid) return ctx.throw(400, `Missing problem name`);
         if (!user) user = ctx.state.username as string;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
+        ctx.params.name = pid;
+        const cur = await checkPre(ctx);
+        if (cur.record === false && (!ctx.state.admin || isNaN(ctx.state.admin) || ctx.state.admin < 2)) {
+            ctx.throw(403, '此题目不允许查看提交记录');
+        }
         const page = Math.max(1, parseInt(pageStr, 10) || 1);
         const size = Math.min(200, Math.max(1, parseInt(sizeStr, 10) || 50));
         let query: {
