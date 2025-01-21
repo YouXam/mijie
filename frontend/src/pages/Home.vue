@@ -3,7 +3,7 @@
         <img src="/logo.png" alt="" class="sm:w-1/3 md:w-1/4 lg:w-1/6 mx-auto w-1/3">
         <div class="mt-10 relative">
             <h1 class="text-6xl sm:text-7xl font-extrabold tracking-tight gradient-text mb-10">
-                哈士奇的复仇
+                2025 年礼解谜
             </h1>
             <div class="background w-full h-full absolute">
             </div>
@@ -35,8 +35,8 @@ function start() {
 <style scoped>
 .background {
     position: absolute;
-    background-image: linear-gradient(-45deg, #f06b069f 50%, #f200ff9f 50%);
-    filter: blur(90px);
+    background-image: linear-gradient(-45deg, #f06b066f 50%, #f200ff6f 50%);
+    filter: blur(100px);
     top: 0;
     z-index: -1;
 }

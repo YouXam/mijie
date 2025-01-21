@@ -18,7 +18,15 @@ export default {
         }
     },
     points: 100,
+    first: true,
     inputs: false,
+    next: [
+        { pid: 'CountLightsOut' },
+        { pid: 'CatchGlowworm' },
+        { pid: 'EncryptedDialog' },
+        { pid: 'BesiegeWithoutAssault' },
+        { pid: 'DigitalCircuit' }
+    ],
     server(app) {
         const problems = [
             { name: 'bug', ans: 41058, ele: 'bug'},

@@ -63,8 +63,8 @@ export type Plugin<T extends KeysType, E = never> = {
         after_solve?: {
             mdv?: {
                 main: string,
-                include: string[],
-                exclude: string[]
+                include?: string[],
+                exclude?: string[]
             },
             md?: string,
             content?: string

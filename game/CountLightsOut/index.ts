@@ -14,6 +14,7 @@ export default {
     },
     points: 100,
     inputs: false,
+    next: [{ pid: 'entrance' }],
     server(app) {
         app.on('init', (_, ctx) => {
             const cells = Array.from({ length: 36 }, () => Math.random() > 0.5)
@@ -21,7 +22,8 @@ export default {
             return cells.reduce((acc, cur) => acc + (cur ? 1 : 0), 0)
         })
         app.on('toggle', (index: number, ctx) => {
-            const cells: Array<boolean> = ctx.gameStorage.get("cells")
+            const cells = ctx.gameStorage.get<Array<boolean>>("cells")
+            if (!cells) return
             const row = Math.floor(index / 6), col = index % 6;
             [
                 [row, col],

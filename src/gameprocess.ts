@@ -2,7 +2,7 @@ import clear from "clear-module";
 import { type Db } from "mongodb";
 
 export class GameProcess {
-    passed;
+    passed: Record<string, number> = {};
     changed = false;
     gameover = false;
     constructor(data: any, gameover: boolean) {

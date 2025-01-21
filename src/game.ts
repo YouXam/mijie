@@ -545,7 +545,7 @@ export default function game(db: Db) {
 
     router.get('/skipProblem/:name', async (ctx) => {
         const cur = await checkPre(ctx);
-        if (!ctx.state.gameprocess.passed[ctx.params.name]) {
+        if (ctx.state.gameprocess.passed[ctx.params.name] === undefined) {
             ctx.throw(400, `You have not passed this problem`);
         }
         const record = await db.collection('records').find({ pid: cur.pid, passed: true, username: ctx.state.username }).sort({ time: -1 }).limit(1).toArray()

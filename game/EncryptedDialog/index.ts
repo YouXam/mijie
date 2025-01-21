@@ -17,6 +17,7 @@ export default {
         },
     },
     interval: 10 * 1000,
+    next: [{ pid: 'entrance' }],
     async checker(ans, ctx) {
         const isAscii = (x: string) => x.split('').every(c => c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126 || c === '\n')
         if (!ans.split('').every(isAscii)) {
@@ -31,6 +32,8 @@ export default {
         ])
         if (res.success) {
             const reply = res?.response || ''
+            console.log('<-', input)
+            console.log('->', reply)
             const output = reply.split('').map((c: any) => isAscii(c) ? ((outputMap as any)[c] || c) : '□').join('')
             ctx.msg(output)
             return output.toLowerCase() === target.toLowerCase()

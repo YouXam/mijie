@@ -64,7 +64,7 @@
                         <font-awesome-icon :icon="['fas', 'circle-info']" />
                         此题为现场题，您必须在现场完成任务后由管理员手动评分，然后刷新状态以更新分数和排行榜。 
                     </div>
-
+                    
                     <div class="flex flex-col mx-auto" v-if="show_turnstile">
                         <div id="cfTurnstile" class="cf-turnstile mt-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="submit_problem"></div>
                     </div>
@@ -74,7 +74,7 @@
                             {{ manual ? '刷新状态' : '提交' }}
                             <Shortcut :disabled="loading"/>
                         </button>
-                        <button v-if="user.gameprocess[$route.params.pid]" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
+                        <button v-if="user.gameprocess[$route.params.pid] !== undefined" class="submit btn btn-outline mb-5" @click="skip" :disabled="loading2" style="border-color: hsl(var(--bc) / 0.2)">
                             <span class="loading loading-dots loading-xs" v-if="loading2"></span>
                             跳过
                         </button>

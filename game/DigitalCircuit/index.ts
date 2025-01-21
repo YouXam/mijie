@@ -35,6 +35,7 @@ export default {
         },
     },
     points: 100,
+    next: [{ pid: 'entrance' }],
     checker: async (ans, ctx) => {
         const last = ctx.gameStorage.get('last') || new Array(8).fill(false);
         const input = ans.split('').filter(c => c === '0' || c === '1').map(c => c === '1');

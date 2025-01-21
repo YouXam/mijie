@@ -15,6 +15,7 @@ export default {
     },
     points: 100,
     inputs: false,
+    next: [{ pid: 'entrance' }],
     server(app) {
         app.on<{ x: number, y: number }>('start', (data, ctx) => {
             if (isNaN(data.x) || isNaN(data.y)) return

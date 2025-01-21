@@ -17,6 +17,7 @@ export default {
         },
     },
     points: 100,
+    next: [{ pid: 'entrance' }],
     inputs: [
         { name: 'X', placeholder: 'X 坐标' },
         { name: 'Y', placeholder: 'Y 坐标' },
