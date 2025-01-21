@@ -64,7 +64,7 @@ export default {
 这里本来应该是另一道题目，但是因为████████，迫不得已换成了这题。`
         },
     },
-    points: 100,
+    points: Infinity,
     record: false,
     checker: async (ans, ctx) => {
         const round = ctx.gameStorage.get<number>('round') || 0

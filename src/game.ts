@@ -65,6 +65,7 @@ class Plugins {
     pluginPre: Map<string, Record<string, boolean>>;
     pluginsPath: string;
     gamePercent: Map<string, number>;
+    hiddenRecord: Array<string> = [];
     hints: Map<string, {
         content: string,
         pid: string,
@@ -136,6 +137,7 @@ class Plugins {
                     return
                 }
                 plugin.pid = plugin.pid.toLowerCase()
+                if (plugin.record === false) this.hiddenRecord.push(plugin.pid)
                 if (plugin.next && typeof plugin.next == "object" && plugin.next.length) {
                     for (const value of plugin.next) {
                         if (!value.pid) {
@@ -408,7 +410,7 @@ export default function game(db: Db) {
         }
         ctx.body = {
             name: cur.name,
-            points: cur.points,
+            points: cur.points === Infinity ? '∞' : cur.points,
             description: cur.description.before_solve,
             manualScores: cur.manualScores,
             files: cur.files,
@@ -938,24 +940,20 @@ export default function game(db: Db) {
             passed?: string
         }
         const all = allStr === 'true';
-        if (!pid) return ctx.throw(400, `Missing problem name`);
         if (!user) user = ctx.state.username as string;
         if ((user != ctx.state.username || all) && !ctx.state.admin)
             ctx.throw(403, `Access denied`)
-        ctx.params.name = pid;
-        const cur = await checkPre(ctx);
-        if (cur.record === false && (!ctx.state.admin || isNaN(ctx.state.admin) || ctx.state.admin < 2)) {
-            ctx.throw(403, '此题目不允许查看提交记录');
-        }
         const page = Math.max(1, parseInt(pageStr, 10) || 1);
         const size = Math.min(200, Math.max(1, parseInt(sizeStr, 10) || 50));
+        const canViewHidden = ctx.state.admin && ctx.state.admin >= 2;
         let query: {
             username?: string,
-            pid?: string,
+            pid: Record<string, any>,
             passed?: boolean
-        } = { };
+        } = { pid: {} };
         if (all !== true) query.username = user;
-        if (pid) query.pid = pid;
+        if (pid) query.pid.$eq = pid;
+        if (!canViewHidden) query.pid.$nin = plugins.hiddenRecord;
         if (passed !== undefined) query.passed = passed === 'true';
         const [records, total] = await Promise.all([
             db.collection('records')
