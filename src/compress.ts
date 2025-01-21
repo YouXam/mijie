@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs'
-import { exists, rename, writeFile } from 'node:fs/promises'
+import { exists, rename, stat, unlink } from 'node:fs/promises'
 import { createBrotliCompress, constants as ZLIB } from 'node:zlib'
 import { pipeline } from 'node:stream/promises'
 
@@ -10,12 +10,18 @@ const opts = {
 	},
 }
 
+export async function checkBrotli(path: string) {
+	const brPath = `${path}.br`
+	if (await exists(brPath) && (await stat(brPath)).mtimeMs < (await stat(path)).mtimeMs) {
+		await unlink(brPath)
+	}
+}
+
 export async function compressBrotli(path: string) {
     const brPath = `${path}.br`
     const tmpPath = `${brPath}.tmp`
-    if (await exists(brPath) || await exists(tmpPath)) {
-        return
-    }
+    if (await exists(tmpPath)) return
+	if (await exists(brPath) && (await stat(brPath)).mtimeMs > (await stat(path)).mtimeMs) return
 	await pipeline(
 		createReadStream(path),
 		createBrotliCompress(opts),

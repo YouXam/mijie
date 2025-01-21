@@ -32,6 +32,7 @@ export async function move(
 	enemy: Coordinate,
 	nx: number,
 	ny: number,
+	length: number,
 	onUpdate?: (you: Coordinate, enemy: Coordinate, delta: number, progress: number) => Promise<void> | void
 ): Promise<{
 	result: 'success' | 'continue' | 'out-of-range' | 'too-close',
@@ -43,7 +44,6 @@ export async function move(
 	const your_dir_slice = your_dir.multiply(1 / Step);
 	const your_dir_slice_len = your_dir_slice.norm();
 	const enemy_dir_slice_len: number = your_dir_slice_len * EnemySpeedRate;
-	let length = 0
 	if (your_dir_slice_len > 1e-14) {
 		for (let _ = 0; _ < Step; _++) {
 			const enemy_dir_slice = enemy.subtract(you).normalize().multiply(enemy_dir_slice_len);

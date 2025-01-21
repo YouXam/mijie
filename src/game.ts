@@ -14,7 +14,7 @@ import { Plugin } from './types';
 import { Context } from 'koa';
 import { PluginServer } from './pluginServer';
 import AI, { AiInputs } from './ai';
-import { compressBrotli } from './compress';
+import { checkBrotli, compressBrotli } from './compress';
 
 function haveCommonKeyValuePair(obj1: Record<string, any>, obj2: Record<string, any>) {
     let smallerObj = obj1, largerObj = obj2;
@@ -910,6 +910,7 @@ export default function game(db: Db) {
         }
         if (checkAllowedFiles(root, patterns.before_solve, filePath)
             || checkAllowedFiles(root, patterns.after_solve, filePath)) {
+            await checkBrotli(absolutePath);
             await send(ctx, filePath, { root, setHeaders });
             compressBrotli(absolutePath);
             return
@@ -922,6 +923,7 @@ export default function game(db: Db) {
         ) {
             ctx.throw(403, `Access denied`)
         }
+        await checkBrotli(absolutePath);
         await send(ctx, filePath, { root, setHeaders });
         compressBrotli(absolutePath);
     });

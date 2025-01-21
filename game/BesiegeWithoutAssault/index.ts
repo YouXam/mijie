@@ -21,17 +21,20 @@ export default {
             ctx.gameStorage.set('player', { x: data.x, y: data.y });
             ctx.gameStorage.set('enemy', { x: 0, y: 0 });
             ctx.gameStorage.delete('end')
+            ctx.gameStorage.set('length', 0)
         })
         app.on<{ x: number, y: number }>('move', async (data, ctx) => {
             const player = ctx.gameStorage.get<{ x: number, y: number }>('player');
             const enemy = ctx.gameStorage.get<{ x: number, y: number }>('enemy');
+            const length = ctx.gameStorage.get<number>('length') ?? 0
             const end = ctx.gameStorage.get<boolean>('end')
             if (end) return
             if (!player || !enemy || isNaN(data.x) || isNaN(data.y)) return;
             const result = await move(
                 new Coordinate(player.x, player.y),
                 new Coordinate(enemy.x, enemy.y),
-                data.x, data.y
+                data.x, data.y,
+                length,
             )
             if (result.result === 'success') {
                 ctx.pass(`敌军累计路程：${result.length}`)
@@ -42,6 +45,7 @@ export default {
             } else {
                 ctx.gameStorage.set('player', { x: result.you.x, y: result.you.y });
                 ctx.gameStorage.set('enemy', { x: result.enemy.x, y: result.enemy.y });
+                ctx.gameStorage.set('length', result.length)
             }
         })
     }

@@ -99,15 +99,22 @@ export default {
             this.reset_problem();
         },
         async movePoint() {
-            const data = await move(this.you, this.enemy, this.next_x, this.next_y, async (you, enemy, delta, progress) => {
-                this.you = you;
-                this.enemy = enemy;
-                this.$refs.canvasComponent.move(0, enemy.x, enemy.y);
-                this.$refs.canvasComponent.move(1, you.x, you.y);
-                this.length += delta
-                this.moving = progress;
-                await new Promise((resolve) => setTimeout(resolve, 1));
-            });
+            const data = await move(
+                this.you,
+                this.enemy,
+                this.next_x,
+                this.next_y,
+                this.length,
+                async (you, enemy, delta, progress) => {
+                    this.you = you;
+                    this.enemy = enemy;
+                    this.$refs.canvasComponent.move(0, enemy.x, enemy.y);
+                    this.$refs.canvasComponent.move(1, you.x, you.y);
+                    this.length += delta
+                    this.moving = progress;
+                    await new Promise((resolve) => setTimeout(resolve, 1));
+                }
+            );
             this.api("move", { x: this.next_x, y: this.next_y });
             if (data.result !== 'continue') {
                 this.result = data.result;
