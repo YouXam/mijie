@@ -290,6 +290,17 @@ const ai = AI;
 export default function game(db: Db) {
     const router = new Router();
     rank.setDB(db);
+
+    router.post('/cleanRecords', async ctx => {
+        if (!ctx.state.admin) {
+            ctx.throw(403, `Access denied`)
+        }
+        db.collection('records').drop();
+        db.collection('problems').updateMany({}, { $unset: { percent: 1 } });
+        plugins.gamePercent.clear();
+        ctx.body = { message: '清除成功' };
+    })
+
     router.get('/rank', async (ctx) => {
         ctx.body = {
             rank: await rank.getRank()
@@ -586,7 +597,7 @@ export default function game(db: Db) {
             ctx.throw(400, `Missing event`);
         }
         const gameStorage = await ctx.state.gamestorage.game(cur.pid);
-        let passed = false, message = '';
+        let passed = undefined, message = '';
         const context = {
             glot,
             runCode,
@@ -600,6 +611,7 @@ export default function game(db: Db) {
                 if (msg) message += msg;
             },
             nopass: (msg?: string) => {
+                passed = false;
                 if (msg) message += msg;
             }
         }
@@ -631,7 +643,7 @@ export default function game(db: Db) {
             points: 0,
             gameover: false
         }
-        if (passed) {
+        if (passed === true) {
             const passedinfo: Record<string, any> = {};
             passedinfo.msg = message
             passedinfo.passed = record.passed = true;
@@ -713,7 +725,7 @@ export default function game(db: Db) {
             passedinfo.solved_description = cur.description.after_solve;
             passedinfo.percent = await insertRecord(db, record);
             res.problem = passedinfo;
-        } else if (message.length) {
+        } else if (passed === false) {
             res.problem = {
                 passed: false,
                 msg: message

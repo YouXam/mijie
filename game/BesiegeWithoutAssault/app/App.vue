@@ -12,7 +12,7 @@
             <span v-else>你输了：距离敌军太近了</span>
         </p>
         <p v-else-if="!you">点击坐标系上的任意位置 或 输入坐标并点击“确定”按钮 以确定你的起点</p>
-        <p v-else-if="!intention">点击坐标系上的任意位置或点击“移动”作为下一点</p>
+        <p v-else-if="!intention">点击坐标系上的任意位置 或 输入坐标作为下一点</p>
         <p v-else-if="moving != 0">正在移动... ({{ (moving * 100).toFixed(2) }}%)</p>
         <p v-else>点击“移动”按钮以移动到下一点</p>
         <div v-if="!you && !result" class="row">

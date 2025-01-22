@@ -383,6 +383,7 @@ async function pluginApi(event, data, admin) {
     if (result.problem) {
         await setResult(result.problem)
     }
+    if (result.percent != undefined && result.percent != null) percent.value = result.percent
     return result.res
 }
 provide("api", (event, data) => pluginApi(event, data, false))

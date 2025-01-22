@@ -47,7 +47,10 @@ export default {
             if (result === problem?.ans) {
                 ctx.pass()
                 return true
-            } else return false
+            } else {
+                ctx.nopass()
+                return false
+            }
         })
     }
 } as Plugin<false>;
