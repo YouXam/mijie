@@ -117,7 +117,7 @@ router.beforeEach((to, from, next) => {
         next({ path: '/404', replace: true,  })
         return
     }
-    document.title = to.meta.title ? to.meta.title + ' | 2025 年礼解谜' : '2025 年礼解谜'
+    document.title = to.meta.title ? to.meta.title + ' | 2025解谜末班车' : '2025解谜末班车'
     NProgress.start()
     next();
 });
