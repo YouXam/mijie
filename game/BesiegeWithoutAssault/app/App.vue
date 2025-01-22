@@ -99,11 +99,12 @@ export default {
             this.reset_problem();
         },
         async movePoint() {
+            const nx = this.next_x, ny = this.next_y;
             const data = await move(
                 this.you,
                 this.enemy,
-                this.next_x,
-                this.next_y,
+                nx,
+                ny,
                 this.length,
                 async (you, enemy, delta, progress) => {
                     this.you = you;
@@ -115,7 +116,7 @@ export default {
                     await new Promise((resolve) => setTimeout(resolve, 1));
                 }
             );
-            this.api("move", { x: this.next_x, y: this.next_y });
+            this.api("move", { x: nx, y: ny });
             if (data.result !== 'continue') {
                 this.result = data.result;
             }

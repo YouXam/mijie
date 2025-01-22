@@ -83,7 +83,7 @@
             </div>
             <transition-group name="list">
                 <template v-for="(record, index) in records" v-key="index">
-                    <div class="container alert alert-error text-white result rounded-lg" v-if="!record.passed">
+                    <div class="container alert alert-error text-white mt-5 result rounded-lg" v-if="!record.passed">
                         <div>
                             <h2 class="font-bold">
                                 <font-awesome-icon  :icon="['fas', 'circle-xmark']" />
