@@ -416,6 +416,7 @@ export default function game(db: Db) {
             name: cur.name,
             points: cur.points === Infinity ? '∞' : cur.points,
             description: cur.description.before_solve,
+            admin: ctx.state.admin ? cur.description.admin : undefined,
             manualScores: cur.manualScores,
             files: cur.files,
             inputs: cur.inputs,
@@ -570,9 +571,7 @@ export default function game(db: Db) {
 
     router.post('/problem/:name/server', async (ctx) => {
         const cur = await checkPre(ctx);
-        if (!cur.server) {
-            ctx.throw(400, `This problem does not have a server`);
-        }
+        const adminApi = ctx.state.admin && ctx.query.admin === 'true';
         if (gameConfig.startTime && new Date(gameConfig.startTime).getTime() > Date.now() && !ctx.state.admin) {
             ctx.throw(400, `游戏未开始，请参阅游戏规则。`);
         }
@@ -604,7 +603,15 @@ export default function game(db: Db) {
                 if (msg) message += msg;
             }
         }
-        const eventResponse = await cur.serverInstance.handle(event, data, context);
+        if (!cur.server && (!adminApi || event !== '__admin_bypass')) {
+            ctx.throw(400, `This problem does not have a server`);
+        }
+        const eventResponse = adminApi && event === '__admin_bypass' ?
+            context.pass('Admin bypass') : (
+                adminApi ? 
+                    await cur.serverInstance.adminHandle(event, data, context) : 
+                    await cur.serverInstance.handle(event, data, context)
+            )
         await gameStorage.save();
         const res = {
             res: eventResponse
@@ -904,9 +911,19 @@ export default function game(db: Db) {
                 include: cur?.description?.before_solve?.mdv?.include || [],
                 exclude: cur?.description?.before_solve?.mdv?.exclude || []
             },
-            after_solve: {
+            after_solve: ctx.state.gameprocess.passed[cur.pid] ? {
                 include: cur?.description?.after_solve?.mdv?.include || [],
                 exclude: cur?.description?.after_solve?.mdv?.exclude || []
+            } : {
+                include: [],
+                exclude: []
+            },
+            admin: ctx.state.admin ? {
+                include: cur?.description?.admin?.include || [],
+                exclude: cur?.description?.admin?.exclude || []
+            } : {
+                include: [],
+                exclude: []
             }
         }
         function setHeaders(res: typeof ctx.res) {
@@ -915,7 +932,8 @@ export default function game(db: Db) {
             }
         }
         if (checkAllowedFiles(root, patterns.before_solve, filePath)
-            || checkAllowedFiles(root, patterns.after_solve, filePath)) {
+            || checkAllowedFiles(root, patterns.after_solve, filePath)
+            || checkAllowedFiles(root, patterns.admin, filePath)) {
             await checkBrotli(absolutePath);
             await send(ctx, filePath, { root, setHeaders });
             compressBrotli(absolutePath);

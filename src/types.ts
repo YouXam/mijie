@@ -68,6 +68,11 @@ export type Plugin<T extends KeysType, E = never> = {
             },
             md?: string,
             content?: string
+        },
+        admin?: {
+            main: string,
+            include?: string[],
+            exclude?: string[]
         }
     },
     checker?: T extends string[] 
@@ -80,7 +85,7 @@ export type Plugin<T extends KeysType, E = never> = {
     inputs?: T extends string[] ? {
         [K in keyof T]: T[K] extends string ? { name: T[K] } & { placeholder: string }: never
     } : false,
-    server?: (serverInstance: PluginServer<T>) => any,
+    server?: (serverInstance: Omit<PluginServer<T>, 'handle' | 'adminHandle'>) => any,
     serverInstance?: any,
     next?: Array<{
         pid: string,

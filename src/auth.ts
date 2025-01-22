@@ -332,6 +332,12 @@ export function amdinRoutes(db: Db) {
         ctx.body = { message: "已重新计算", uuid };
     })
 
+    router.post('/cleanRecords', async ctx => {
+        db.collection('records').drop();
+        db.collection('problems').updateMany({}, { $unset: { percent: 1 } });
+        ctx.body = { message: '清除成功' };
+    })
+
     return compose([
         router.routes(),
         router.allowedMethods()

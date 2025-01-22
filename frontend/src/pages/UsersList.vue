@@ -5,6 +5,7 @@
                 <h1 class="text-5xl font-extrabold tracking-tight mb-5 leading-tight">用户列表</h1>
                 <div class="flex flex-row">
                     <button class="btn-link btn text-base-content" @click="recalculate">重新计算排行榜</button>
+                    <button class="btn-link btn text-base-content" @click="cleanRecords">清除提交记录</button>
                     <router-link class="btn btn-link flex text-base-content" to="/record?all">提交记录</router-link>
                     <div class="dropdown">
                         <div tabindex="0" role="button" class="btn btn-link text-base-content">导出数据</div>
@@ -194,7 +195,7 @@
 <script setup>
 import TableExport from 'tableexport'
 import { computed, reactive, ref, watch, onUnmounted } from 'vue'
-import { api, apiPut } from '@/tools/api'
+import { api, apiPut, apiMethod } from '@/tools/api'
 import { user, rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router';
 import notificationManager from '@/tools/notification.js'
@@ -223,6 +224,12 @@ function openDrawer(user) {
 }
 function recalculate() {
     api("/api/recalculate")
+}
+
+function cleanRecords() {
+    if (confirm("此操作将会清除所有用户的提交记录，删除所有题目的通过比率，并且无法恢复，确定要继续吗？")) {
+        apiMethod("POST", "/api/cleanRecords")
+    }
 }
 const drawerUser = computed(() => {
     return refDrawerUser.value || {}
