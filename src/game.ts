@@ -558,14 +558,14 @@ export default function game(db: Db) {
         const record = await db.collection('records').find({ pid: cur.pid, passed: true, username: ctx.state.username }).sort({ time: -1 }).limit(1).toArray()
         ctx.body = {
             passed: true,
-            msg: record[0].msg || '',
-            gameover: record[0].gameover || false,
+            msg: record?.[0]?.msg || '',
+            gameover: record?.[0]?.gameover || false,
             next: cur.next ? cur.next.map(n => ({
                 ...n,
                 name: plugins.pluginMap.get(n.pid)?.name
             })) : undefined,
             solved_description: cur.description.after_solve,
-            points: record[0].points
+            points: record?.[0]?.points || 'Unknown'
         };
     })
 
