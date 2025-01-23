@@ -7,7 +7,7 @@ export default {
         before_solve: {
             mdv: {
                 main: "main.vue",
-                include: ["main.vue"]
+                include: ["main.vue", "cafontVF.ttf"]
             }
         },
         admin: {
