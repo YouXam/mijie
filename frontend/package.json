@@ -18,7 +18,7 @@
     "markdown-it-for-mdvc": "^14.0.0",
     "markdown-it-highlightjs": "^4.0.1",
     "markdown-it-katex": "^2.0.3",
-    "mdvc": "0.0.14",
+    "mdvc": "0.0.16",
     "mermaid": "^11.2.1",
     "nprogress": "^0.2.0",
     "tableexport": "^5.2.0",
