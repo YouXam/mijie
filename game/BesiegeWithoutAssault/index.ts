@@ -1,6 +1,7 @@
 import { Plugin } from "../../src/types";
 import { Coordinate, move } from "./app/lib";
 
+type Point = { x: number, y: number }
 
 export default {
     name: 'BesiegeWithoutAssault',
@@ -24,17 +25,22 @@ export default {
             ctx.gameStorage.delete('end')
             ctx.gameStorage.set('length', 0)
         })
-        app.on<{ x: number, y: number }>('move', async (data, ctx) => {
-            const player = ctx.gameStorage.get<{ x: number, y: number }>('player');
-            const enemy = ctx.gameStorage.get<{ x: number, y: number }>('enemy');
+        app.on<Record<'next' | 'player' | 'enemy', Point>>('move', async (data, ctx) => {
+            const player_p = ctx.gameStorage.get<{ x: number, y: number }>('player');
+            const enemy_p = ctx.gameStorage.get<{ x: number, y: number }>('enemy');
             const length = ctx.gameStorage.get<number>('length') ?? 0
             const end = ctx.gameStorage.get<boolean>('end')
-            if (end) return
-            if (!player || !enemy || isNaN(data.x) || isNaN(data.y)) return;
+            if (end) return 'Error: 游戏已结束'
+            if (!player_p || !enemy_p) return 'Error: 游戏为开始'
+            if (isNaN(data.next.x) || isNaN(data.next.y)) return 'Error: 无效的坐标'
+            const player = new Coordinate(player_p.x, player_p.y)
+            const enemy = new Coordinate(enemy_p.x, enemy_p.y)
+            if (!player.equal(new Coordinate(data.player.x, data.player.y))) return 'Error: 玩家位置不正确'
+            if (!enemy.equal(new Coordinate(data.enemy.x, data.enemy.y))) return 'Error: 敌军位置不正确'
             const result = await move(
-                new Coordinate(player.x, player.y),
-                new Coordinate(enemy.x, enemy.y),
-                data.x, data.y,
+                player,
+                enemy,
+                data.next.x, data.next.y,
                 length,
             )
             if (result.result === 'success') {

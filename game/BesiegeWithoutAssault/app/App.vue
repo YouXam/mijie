@@ -1,7 +1,7 @@
 <template>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
         <CanvasComponent ref="canvasComponent" @move="handleClick" style="margin: 0 auto" />
-        <div class="status" :style="{ gridTemplateColumns: '1fr'}">
+        <div class="status" :style="{ gridTemplateColumns: '1fr' }">
             <code v-if="you">你的位置: ({{ you.x.toFixed(6) }}, {{ you.y.toFixed(6) }})</code>
             <code>敌军位置: ({{ enemy.x.toFixed(6) }}, {{ enemy.y.toFixed(6) }})</code>
             <code>敌军累计路程: {{ length.toFixed(6) }}</code>
@@ -13,7 +13,7 @@
         </p>
         <p v-else-if="!you">点击坐标系上的任意位置 或 输入坐标并点击“确定”按钮 以确定你的起点</p>
         <p v-else-if="!intention">点击坐标系上的任意位置 或 输入坐标作为下一点</p>
-        <p v-else-if="moving != 0">正在移动... ({{ (moving * 100).toFixed(2) }}%)</p>
+        <p v-else-if="moving">正在移动... ({{ (progress * 100).toFixed(2) }}%)</p>
         <p v-else>点击“移动”按钮以移动到下一点</p>
         <div v-if="!you && !result" class="row">
             <span>起点: </span>
@@ -25,7 +25,7 @@
             <span>下一点: </span>
             <input class="input" style="width: 30%" type="number" v-model="next_x" step="0.001" />
             <input class="input" style="width: 30%" type="number" v-model="next_y" step="0.001" />
-            <button v-if="you" class="btn" @click="movePoint">移动</button>
+            <button v-if="you" class="btn" @click="movePoint" :disabled="moving || !intention">移动</button>
         </div>
         <div class="row">
             <button class="btn" :class="{ 'btn-ghost': !result }" @click="resetPoints"
@@ -52,7 +52,8 @@ export default {
         next_x: 0,
         next_y: 0,
         intention: false,
-        moving: 0,
+        progress: 0,
+        moving: false,
         you: null,
         enemy: new Coordinate(0, 0),
         length: 0,
@@ -89,7 +90,7 @@ export default {
             this.you = null;
             this.result = null;
             this.length = 0;
-            this.moving = 0;
+            this.progress = 0;
             this.$refs.canvasComponent.reset([
                 [this.enemy.x, this.enemy.y]
             ]);
@@ -99,7 +100,14 @@ export default {
             this.reset_problem();
         },
         async movePoint() {
+            if (this.moving || !this.intention) return;
+            this.moving = true;
             const nx = this.next_x, ny = this.next_y;
+            const report = { 
+                next: { x: nx, y: ny },
+                player: { x: this.you.x, y: this.you.y },
+                enemy: { x: this.enemy.x, y: this.enemy.y }
+            }
             const data = await move(
                 this.you,
                 this.enemy,
@@ -112,15 +120,20 @@ export default {
                     this.$refs.canvasComponent.move(0, enemy.x, enemy.y);
                     this.$refs.canvasComponent.move(1, you.x, you.y);
                     this.length += delta
-                    this.moving = progress;
+                    this.progress = progress;
                     await new Promise((resolve) => setTimeout(resolve, 1));
                 }
             );
-            this.api("move", { x: nx, y: ny });
+            this.api("move", report).then(err => {
+                if (err && err.length > 0) {
+                    alert(err + '\n请尝试重置游戏');
+                }
+            })
             if (data.result !== 'continue') {
                 this.result = data.result;
             }
-            this.moving = 0;
+            this.progress = 0;
+            this.moving = false;
             this.intention = false;
         },
     },
@@ -138,23 +151,29 @@ export default {
     justify-content: center;
     gap: 10px;
 }
+
 p {
     margin: 0;
 }
+
 div.status {
     display: grid;
     gap: 10px 50px;
 }
+
 .desktop {
     display: none;
 }
+
 .mobile {
     display: initial;
 }
+
 @media (min-width: 768px) {
     .desktop {
         display: initial;
     }
+
     .mobile {
         display: none !important;
     }

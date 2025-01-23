@@ -1,4 +1,4 @@
-export const EnemySpeedRate: number = .95;
+export const EnemySpeedRate: number = .5;
 export const Goal: number = 95;
 export const Step = 300
 
@@ -11,6 +11,9 @@ export class Coordinate {
 	}
 	add(other: Coordinate): Coordinate {
 		return new Coordinate(this.x + other.x, this.y + other.y);
+	}
+	equal(other: Coordinate): boolean {
+		return (this.subtract(other).norm() < 1e-10);
 	}
 	subtract(other: Coordinate): Coordinate {
 		return new Coordinate(this.x - other.x, this.y - other.y);
