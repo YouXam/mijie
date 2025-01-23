@@ -75,6 +75,7 @@ export type Plugin<T extends KeysType, E = never> = {
             exclude?: string[]
         }
     },
+    captcha?: boolean,
     checker?: T extends string[] 
         ? (ans: CheckerAnswer<T>, ctx: Context) => boolean | Promise<boolean>
         : T extends true

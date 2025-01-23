@@ -19,6 +19,7 @@ export default {
     },
     points: Infinity,
     record: false,
+    captcha: false,
     server: app => {
         app.adminOn('reset', (_, ctx) => {
             ctx.gameStorage.delete("round");
