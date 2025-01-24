@@ -1,6 +1,5 @@
 import { Plugin } from "../../src/types";
-import inputMap from './input.json'
-import outputMap from './output.json'
+import { generateShuffleMap } from "./lib";
 
 export default {
     name: 'EncryptedDialog',
@@ -23,6 +22,14 @@ export default {
         if (!ans.split('').every(isAscii)) {
             ctx.msg("你的输入中包含了非 ASCII 可打印字符，请重新输入。")
             return false
+        }
+        let inputMap = ctx.gameStorage.get('inputMap')
+        let outputMap = ctx.gameStorage.get('outputMap')
+        if (!inputMap || !outputMap) {
+            inputMap = generateShuffleMap()
+            outputMap = generateShuffleMap()
+            ctx.gameStorage.set('inputMap', inputMap)
+            ctx.gameStorage.set('outputMap', outputMap)
         }
         const target = "The quick brown fox jumps over the lazy dog."
         const input = ans.split('').map(c => (inputMap as any)[c] || c).join('')

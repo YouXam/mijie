@@ -1,5 +1,5 @@
 export const EnemySpeedRate: number = .95;
-export const Goal: number = 500;
+export const Goal: number = 95;
 export const Step = 300
 
 export class Coordinate {
