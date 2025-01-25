@@ -43,7 +43,7 @@ export default {
             console.log('->', reply)
             const output = reply.split('').map((c: any) => isAscii(c) ? ((outputMap as any)[c] || c) : '□').join('')
             ctx.msg(output)
-            return output.toLowerCase() === target.toLowerCase()
+            return output === target
         }
         ctx.msg("AI 响应出现异常，请稍后重试。如果多次出现此问题，请联系管理员。")
         return false
