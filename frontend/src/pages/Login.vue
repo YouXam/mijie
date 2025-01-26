@@ -11,7 +11,7 @@
             </label>
             <input type="password" class="input input-bordered w-full max-w-xs" autocomplete="current-password" v-model="password"/>
             <div id="cfTurnstile" class="cf-turnstile mt-5 ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="login"></div>
-            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8 || token.length == 0 || loading">
+            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8 || loading">
                 <span class="loading loading-dots loading-xs" v-if="loading"></span>
                 登录
             </button>
@@ -38,16 +38,16 @@ if (user.login.value) {
     router.replace(history.state?.back?.path || '/')
 }
 const token = ref('')
-;(async () => {
-    await loader.wait();
-    turnstile.remove();
-    turnstile.render('#cfTurnstile', {
-        sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
-        callback: (tk) => {
-            token.value = tk;
-        }
-    });
-})();
+// ;(async () => {
+//     await loader.wait();
+//     turnstile.remove();
+//     turnstile.render('#cfTurnstile', {
+//         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+//         callback: (tk) => {
+//             token.value = tk;
+//         }
+//     });
+// })();
 const username = ref('')
 const password = ref('')
 async function login() {
