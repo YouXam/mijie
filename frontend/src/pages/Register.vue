@@ -34,7 +34,7 @@
             </label>
             <div id="cfTurnstile" class="cf-turnstile ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="register"></div>
             <button class="btn btn-accent mt-5" @click="register"
-                :disabled="token.length === 0 || loading || error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">
+                :disabled="loading || error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">
                 <span class="loading loading-dots loading-xs" v-if="loading"></span>
                 注册 
             </button>
@@ -59,16 +59,16 @@ const password2 = ref('')
 const error = ref('')
 const token = ref('')
 const loading = ref(false)
-;(async () => {
-    await loader.wait();
-    console.log(window.turnstile);
-    turnstile.render('#cfTurnstile', {
-        sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
-        callback: (tk) => {
-            token.value = tk;
-        }
-    });
-})();
+// ;(async () => {
+//     await loader.wait();
+//     console.log(window.turnstile);
+//     turnstile.render('#cfTurnstile', {
+//         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+//         callback: (tk) => {
+//             token.value = tk;
+//         }
+//     });
+// })();
 if (user.login.value) {
     notificationManager.add({
         message: '您已登录',
