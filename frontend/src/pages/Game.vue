@@ -207,7 +207,6 @@ function resize() {
 function onKeydown(e) {
     if (gameState.value != 1) return;
     if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
-        console.log("keydown")
         e.preventDefault()
         submit({})
     }

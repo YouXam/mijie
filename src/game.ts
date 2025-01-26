@@ -992,7 +992,6 @@ export default function game(db: Db) {
             query.pid.$nin = plugins.hiddenRecord;
         }
         if (passed !== undefined) query.passed = passed === 'true';
-        console.log(query)
         const [records, total] = await Promise.all([
             db.collection('records')
                 .find(query)
