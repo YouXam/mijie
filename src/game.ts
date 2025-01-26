@@ -982,13 +982,17 @@ export default function game(db: Db) {
         const canViewHidden = ctx.state.admin && ctx.state.admin >= 2;
         let query: {
             username?: string,
-            pid: Record<string, any>,
+            pid?: Record<string, any>,
             passed?: boolean
-        } = { pid: {} };
+        } = { };
         if (all !== true) query.username = user;
-        if (pid) query.pid.$eq = pid;
-        if (!canViewHidden) query.pid.$nin = plugins.hiddenRecord;
+        if (pid) query.pid = { $eq: pid };
+        if (!canViewHidden) {
+            if (!query.pid) query.pid = {};
+            query.pid.$nin = plugins.hiddenRecord;
+        }
         if (passed !== undefined) query.passed = passed === 'true';
+        console.log(query)
         const [records, total] = await Promise.all([
             db.collection('records')
                 .find(query)

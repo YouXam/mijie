@@ -45,10 +45,10 @@ export default {
         app.on('submit', async ({ name, result }: { name: string, result: number }, ctx) => {
             const problem = problems.find(p => p.name === name)
             if (result === problem?.ans) {
-                ctx.pass()
+                ctx.pass(`恭喜你通过了 ${name} 验证！`)
                 return true
             } else {
-                ctx.nopass()
+                ctx.nopass(`你没有通过 ${name} 验证。`)
                 return false
             }
         })
