@@ -1,4 +1,4 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 
 function xor(a: boolean, b: boolean) {
     return a !== b;
@@ -20,7 +20,7 @@ function signal(input: boolean[], last: boolean[]): boolean[] {
     return output;
 }
 
-export default {
+export default createPlugin({
     name: 'DigitalCircuit',
     pid: 'DigitalCircuit',
     description: {
@@ -49,4 +49,4 @@ export default {
         ctx.gameStorage.set('last', output);
         return output.every(Boolean);
     }
-} as Plugin<true>
+})

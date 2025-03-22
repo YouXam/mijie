@@ -1,7 +1,7 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 import { generateShuffleMap } from "./lib";
 
-export default {
+export default createPlugin({
     name: 'EncryptedDialog',
     pid: "EncryptedDialog",
     description: {
@@ -49,5 +49,5 @@ export default {
         return false
     },
     points: 100
-} as Plugin<true>;
+})
 

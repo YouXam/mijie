@@ -1,7 +1,7 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 
 
-export default {
+export default createPlugin({
     name: 'CountLightsOut',
     pid: 'CountLightsOut',
     description: {
@@ -43,4 +43,4 @@ export default {
             return cells.reduce((acc, cur) => acc + (cur ? 1 : 0), 0)
         })
     }
-} as Plugin<false>
+})

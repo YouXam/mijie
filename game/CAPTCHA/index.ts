@@ -1,6 +1,6 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 
-export default {
+export default createPlugin({
     name: 'CAPTCHA',
     pid: 'captcha',
     description: {
@@ -37,7 +37,7 @@ export default {
             { name: 'math', ans: 37888, ele: '大于2的数学常数' },
             { name: 'chordate', ans: 48250, ele: '脊索动物' }
         ]
-        app.on("update", async (data: { name?: string }, ctx) => {
+        app.on<{ name: string }>("update", async (data, ctx) => {
             const next = problems.filter(p => p.name !== data.name)
             const { name, ele } = next[Math.floor(Math.random() * next.length)]
             return { name, ele, ans: Math.random() * 40000 | 0 }
@@ -53,4 +53,4 @@ export default {
             }
         })
     }
-} as Plugin<false>;
+})

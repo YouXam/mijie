@@ -1,8 +1,8 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 
 const qqgid = '996708581'.split('')
 
-export default {
+export default createPlugin({
     name: "WhatHappened",
     pid: "WhatHappened",
     description: {
@@ -178,4 +178,4 @@ export default {
         ctx.gameStorage.set("round", round + 1);
         return false;
     }
-} as Plugin<true>;
+})

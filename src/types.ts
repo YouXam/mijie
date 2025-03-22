@@ -12,8 +12,7 @@ export interface GameConfig {
     about?: string;
 }
 
-type InputItem = { name: string; placeholder: string };
-export type KeysType = string[] | boolean;
+export type KeysType = readonly string[] | true | false | undefined;
 
 type CheckerAnswer<T extends KeysType> = T extends false
   ? never
@@ -47,7 +46,7 @@ export type ServerContext = {
     nopass: (str?: string) => void
 }
 
-export type Plugin<T extends KeysType, E = never> = {
+export type Plugin<T extends KeysType> = {
     pid: string,
     name: string,
     description: {
@@ -78,20 +77,21 @@ export type Plugin<T extends KeysType, E = never> = {
     captcha?: boolean,
     checker?: T extends string[] 
         ? (ans: CheckerAnswer<T>, ctx: Context) => boolean | Promise<boolean>
-        : T extends true
+        : T extends true | undefined
         ? (ans: string, ctx: Context) => boolean | Promise<boolean>
-        : never,
+        : T extends false ? undefined : never,
     points: number,
     manualScores?: boolean,
-    inputs?: T extends string[] ? {
-        [K in keyof T]: T[K] extends string ? { name: T[K] } & { placeholder: string }: never
-    } : false,
+    inputs?: T extends undefined ? undefined : T extends string[] ? {
+        [K in keyof T]: T[K] extends string ? { name: T[K], placeholder: string }: never
+    } : boolean,
     server?: (serverInstance: Omit<PluginServer<T>, 'handle' | 'adminHandle'>) => any,
     serverInstance?: any,
     next?: Array<{
         pid: string,
         description?: string
     }>,
+    interval?: number,
     record?: boolean,
     first?: boolean,
     gameover?: boolean,
@@ -104,4 +104,28 @@ export type Plugin<T extends KeysType, E = never> = {
         filename: string,
         info: string
     }>
+}
+
+type ExtractNames<T extends readonly { name: string }[]> = {
+    [K in keyof T]: T[K] extends { name: infer N extends string } ? N : never
+};
+
+type AutoPlugin<H> = Plugin<H extends undefined ? undefined
+    : H extends any[]
+    ? ExtractNames<H>
+    : H extends true
+    ? true
+    : false
+>
+
+
+export function createPlugin<
+  const H extends readonly { name: string; placeholder: string }[] | true | false = true
+>(
+  plugin: Omit<AutoPlugin<H>, 'pid'> & {
+    pid: string;
+    inputs?: H;
+  }
+): AutoPlugin<H> {
+  return plugin as any;
 }

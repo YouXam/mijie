@@ -1,7 +1,7 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 
 
-export default {
+export default createPlugin({
     name: 'Entrance',
     pid: 'Entrance',
     description: {
@@ -35,4 +35,4 @@ export default {
             return [passed, false]
         })
     }
-} as Plugin<false>
+})

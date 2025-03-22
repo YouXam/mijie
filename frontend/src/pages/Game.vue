@@ -323,8 +323,11 @@ async function submit({ token }) {
             api('/api/problemManual/' + router.currentRoute.value.params.pid) :
             api('/api/problem/' + router.currentRoute.value.params.pid, {
                 ans: inputs.value
-                    ? Object.fromEntries(inputs.value.map((input, index) => [input.name, answers.value[index]]))
-                    : ans.value,
+                    ? (
+                        inputs.value === true ?
+                            ans.value :
+                            Object.fromEntries(inputs.value.map((input, index) => [input.name, answers.value[index]]))
+                    ): ans.value,
                 token: token || cf_token
             })
         )

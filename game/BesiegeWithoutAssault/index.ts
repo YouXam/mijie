@@ -1,9 +1,9 @@
-import { Plugin } from "../../src/types";
+import { createPlugin } from "../../src/types";
 import { Coordinate, move } from "./app/lib";
 
 type Point = { x: number, y: number }
 
-export default {
+export default createPlugin({
     name: 'BesiegeWithoutAssault',
     pid: 'BesiegeWithoutAssault',
     description: {
@@ -56,4 +56,4 @@ export default {
             }
         })
     }
-} as Plugin<false>
+})
