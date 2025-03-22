@@ -10,9 +10,9 @@ Mijie 是一个网络解谜游戏网站，提供了非常多样的游戏形式�
 
 基础的提交答案类题目：
 
-![basic](./images/problem2.png)
+![basic](./images/problem_1.png)
 
 也可以使用 Vue.js 来编写题面：
 
-![captcha](./images/problem1.png)
+![captcha](./images/problem_2.png)
 
