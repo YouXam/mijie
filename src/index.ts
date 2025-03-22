@@ -11,11 +11,17 @@ dotenv.config();
 function httpServer(db: Db) {
     const app = new Koa();
     const beforeAuth = new Router();
-    const afterAuth = new Router();
 
     beforeAuth.get('/ping', async (ctx) => {
         ctx.body = 'pong';
     });
+
+    beforeAuth.get("/keys", async (ctx) => {
+        ctx.body = {
+            ably: process.env.ABLY_PUBLIC_KEY,
+            turnstile: process.env.TURNSTILE_KEY
+        }
+    })
 
     app.use(bodyParser());
     app.use(beforeAuth.routes());

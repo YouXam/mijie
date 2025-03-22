@@ -32,9 +32,9 @@
                     'opacity-100': password2.length && password2 != password
                 }">密码不匹配</span>
             </label>
-            <div id="cfTurnstile" class="cf-turnstile ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="register"></div>
+            <div id="cfTurnstile" class="cf-turnstile ml-2" data-action="register" v-show="show_turnstile"></div>
             <button class="btn btn-accent mt-5" @click="register"
-                :disabled="loading || error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2">
+                :disabled="loading || error.length || !username.length  || (studentID.length > 0 && studentID.length != 10) || !password.length || !password2.length || password != password2 || show_turnstile && token.length == 0">
                 <span class="loading loading-dots loading-xs" v-if="loading"></span>
                 注册 
             </button>
@@ -50,6 +50,7 @@ import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
+import { getKeys } from '@/tools/keys'
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 const username = ref('')
@@ -59,16 +60,23 @@ const password2 = ref('')
 const error = ref('')
 const token = ref('')
 const loading = ref(false)
-// ;(async () => {
-//     await loader.wait();
-//     console.log(window.turnstile);
-//     turnstile.render('#cfTurnstile', {
-//         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
-//         callback: (tk) => {
-//             token.value = tk;
-//         }
-//     });
-// })();
+const show_turnstile = ref(false)
+
+
+;(async () => {
+    const key = await getKeys();
+    if (!key.turnstile) return;
+    show_turnstile.value = true
+    await loader.wait();
+    turnstile.remove();
+    turnstile.render('#cfTurnstile', {
+        sitekey: key.turnstile,
+        callback: (tk) => {
+            token.value = tk;
+        }
+    });
+})();
+
 if (user.login.value) {
     notificationManager.add({
         message: '您已登录',

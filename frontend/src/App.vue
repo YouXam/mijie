@@ -125,7 +125,7 @@ import NotificationContainer from '@/components/NotificationContainer.vue'
 import notificationManager from '@/tools/notification.js'
 import { user, noticeEventListener, rankEventListener } from '@/tools/bus'
 import { useRouter } from 'vue-router'
-import { notice, rank } from './tools/subscribe'
+import { subscribe } from './tools/subscribe'
 const router = useRouter()
 const setAfterLogin = () => {
   localStorage.setItem('afterLogin', router.currentRoute.value.fullPath)
@@ -139,12 +139,12 @@ function logout() {
   })
   router.push('/')
 }
-rank.subscribe('update', function (message) {
+subscribe('rank', function (message) {
   rankEventListener.dispatchEvent(new CustomEvent('update', {
     detail: message.data
   }))
 });
-notice.subscribe('update', function (message) {
+subscribe('notice', function (message) {
   notificationManager.add({
     message: message.data.content ? ('点击查看新公告: ' + message.data.content) : '有新公告，点击查看',
     type: 'success',

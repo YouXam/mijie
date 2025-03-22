@@ -30,7 +30,7 @@ export default createPlugin({
             return '重置成功'
         })
     },
-    checker: async (input, ctx) => {
+    async checker(input, ctx) {
         const round = ctx.gameStorage.get<number>("round") || 1;
         const cursor = ctx.gameStorage.get<number>("cursor") || 0;
         const correctCount = ctx.gameStorage.get<number>("correctCount") || 0;

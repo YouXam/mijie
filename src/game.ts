@@ -753,7 +753,7 @@ export default function game(db: Db) {
             ans?: any,
             token?: string
         };
-        if (cur.captcha !== false && !await taskManager.run(ctx.state.username, token)) {
+        if (process.env.TURNSTILE_SECRET && cur.captcha !== false && !await taskManager.run(ctx.state.username, token)) {
             ctx.body = {
                 passed: false,
                 turnstile: true

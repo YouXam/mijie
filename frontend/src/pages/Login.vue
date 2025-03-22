@@ -10,8 +10,8 @@
                 <span class="label-text">密码</span>
             </label>
             <input type="password" class="input input-bordered w-full max-w-xs" autocomplete="current-password" v-model="password"/>
-            <div id="cfTurnstile" class="cf-turnstile mt-5 ml-2" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir" data-action="login"></div>
-            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8 || loading">
+            <div id="cfTurnstile" class="cf-turnstile mt-5 ml-2" data-action="login" v-show="show_turnstile"></div>
+            <button class="btn btn-accent mt-8" @click="login" :disabled="username.length == 0 || password.length < 8 || loading || show_turnstile && token.length == 0">
                 <span class="loading loading-dots loading-xs" v-if="loading"></span>
                 登录
             </button>
@@ -27,6 +27,8 @@ import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { user } from '@/tools/bus'
 import { useRouter } from 'vue-router'
+import { getKeys } from '@/tools/keys'
+
 import notificationManager from '@/tools/notification.js'
 const router = useRouter()
 const loading = ref(false)
@@ -38,16 +40,22 @@ if (user.login.value) {
     router.replace(history.state?.back?.path || '/')
 }
 const token = ref('')
-// ;(async () => {
-//     await loader.wait();
-//     turnstile.remove();
-//     turnstile.render('#cfTurnstile', {
-//         sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
-//         callback: (tk) => {
-//             token.value = tk;
-//         }
-//     });
-// })();
+const show_turnstile = ref(false)
+
+;(async () => {
+    const key = await getKeys()
+    if (!key.turnstile) return;
+    show_turnstile.value = true
+    await loader.wait();
+    turnstile.remove();
+    turnstile.render('#cfTurnstile', {
+        sitekey: key.turnstile,
+        callback: (tk) => {
+            token.value = tk;
+        }
+    });
+})();
+
 const username = ref('')
 const password = ref('')
 async function login() {

@@ -57,9 +57,9 @@ export function authRoutes(db: Db) {
             studentID?: string,
             token?: string
         }
-        // if (!token || !await verify(token)) {
-        //     ctx.throw(401, '验证失败');
-        // }
+        if (!await verify(token)) {
+            ctx.throw(401, '验证失败');
+        }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password or studentID');
             return
@@ -88,9 +88,9 @@ export function authRoutes(db: Db) {
             password?: string,
             token?: string
         }
-        // if (!cftoken || !await verify(cftoken)) {
-        //     ctx.throw(401, '验证失败');
-        // }
+        if (!await verify(cftoken)) {
+            ctx.throw(401, '验证失败');
+        }
         if (!username || !password) {
             ctx.throw(400, 'Missing username or password');
             return

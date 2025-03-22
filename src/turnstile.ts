@@ -1,6 +1,8 @@
-export async function verify(token: string) {
+export async function verify(token: string | undefined) {
+    if (!process.env.TURNSTILE_SECRET) return true;
+    if (!token) return false;
     let formData = new FormData();
-    formData.append('secret', '0x4AAAAAAAQoQSmFu6ODCX7wqVw6lsnI8lI');
+    formData.append('secret', process.env.TURNSTILE_SECRET);
     formData.append('response', token);
     const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
     const result = await fetch(url, {

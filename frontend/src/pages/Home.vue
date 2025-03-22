@@ -1,9 +1,9 @@
 <template>
     <div class="container mx-auto text-center h-[500px] min-h-[calc(100vh-72px)] flex flex-col items-center justify-center">
-        <img src="/logo.png" alt="" class="sm:w-1/3 md:w-1/4 lg:w-1/6 mx-auto w-1/3">
+        <img :src="'/logo.png'" alt="" class="sm:w-1/3 md:w-1/4 lg:w-1/6 mx-auto w-1/3">
         <div class="mt-10 relative">
-            <h1 class="text-6xl sm:text-7xl font-extrabold tracking-tight gradient-text mb-10">
-                2025解谜末班车
+            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight gradient-text mb-10">
+                {{ title }}
             </h1>
             <div class="background w-full h-full absolute">
             </div>
@@ -20,6 +20,8 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { api } from '@/tools/api'
+import { title } from '@/constants'
 const router = useRouter()
 const continued = ref('')
 if (localStorage.getItem('continue')) {
@@ -29,7 +31,6 @@ function start() {
     if (localStorage.getItem('hasReadRule') !== null) router.push('/start');
     else router.push('/gamerule?start');
 }
-
 </script>
   
 <style scoped>

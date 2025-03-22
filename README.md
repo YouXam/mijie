@@ -16,3 +16,15 @@ Mijie 是一个网络解谜游戏网站，提供了非常多样的游戏形式�
 
 ![captcha](./images/problem_2.png)
 
+## 环境变量
+
+1. `MONGODB_URI`：MongoDB 连接 URL
+2. `JWT_SECRET`：JWT 密钥
+3. `API_PORT`：API 服务端口
+4. `GLOT_IO_API_KEY`：Glot.io API 密钥
+5. `ABLY_ADMIN_KEY`：Ably Admin 密钥
+6. `ABLY_PUBLIC_KEY`：Ably Public 密钥
+7. `ZHIPU_API_KEY`：智谱 API 密钥
+8. `CLOUDFLARE_API_KEYS`：Cloudflare API 密钥，用于调用 Cloudflare AI
+9. `TURNSTILE_KEY`：Turnstile Key
+10. `TURNSTILE_SECRET`：Turnstile Secret

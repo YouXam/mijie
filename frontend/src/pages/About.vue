@@ -7,7 +7,7 @@
         </div>
     </TitleCard>
     <footer class="text-center text-gray-400 text-xs absolute -bottom-8 w-full font-mono">
-        &copy; {{ new Date().getFullYear() }} Website developed by <a href="https://github.com/YouXam" target="_blank" class="link">YouXam</a>
+        &copy; {{ new Date().getFullYear() }} <a href="https://github.com/YouXam/mijie" target="_blank" class="link">Mijie</a>
     </footer>
 </template>
   

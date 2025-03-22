@@ -75,8 +75,7 @@
                     </div>
 
                     <div class="flex flex-col mx-auto" v-if="show_turnstile">
-                        <div id="cfTurnstile" class="cf-turnstile mt-5" data-sitekey="0x4AAAAAAAQoQYZbX4vkrZir"
-                            data-action="submit_problem"></div>
+                        <div id="cfTurnstile" class="cf-turnstile mt-5" data-action="submit_problem"></div>
                     </div>
                     <div class="grid gap-4 mt-5"
                         :class="{ 'grid-cols-2': user.gameprocess[$route.params.pid] && inputs !== false, 'grid-cols-1': !user.gameprocess[$route.params.pid] || inputs === false }">
@@ -164,6 +163,7 @@ import { user } from '@/tools/bus'
 import Problem from '@/components/Problem.vue'
 import FileList from '@/components/FileList.vue'
 import NextList from '@/components/NextList.vue'
+import { getKeys } from '@/tools/keys'
 
 const Mdv = defineAsyncComponent(() => import('@/components/Mdv.vue'))
 const answers = ref([])
@@ -244,9 +244,9 @@ function toggle_turnstile(cb) {
     if (show_turnstile.value) return;
     show_turnstile.value = true;
     loading.value = true;
-    nextTick(() => {
+    nextTick(async () => {
         turnstile.render('#cfTurnstile', {
-            sitekey: '0x4AAAAAAAQoQYZbX4vkrZir',
+            sitekey: (await getKeys()).turnstile,
             callback: (token) => {
                 cf_token = token;
                 loading.value = false;
