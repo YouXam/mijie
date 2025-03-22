@@ -77,4 +77,4 @@ export class ZhipuAI implements AI {
     }
 }
 
-export default new ZhipuAI()
+export default (process.env.CLOUDFLARE_API_KEYS ? new CloudflareAI() : new ZhipuAI()) as AI;
