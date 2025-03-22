@@ -1,7 +1,7 @@
 import Ably from 'ably';
 import { getKeys } from './keys';
 
-const realtime = (async function() {    
+const client = (async function() {    
     const keys = await getKeys();
     if (!keys.ably) {
         console.error("No Ably key found");
@@ -14,6 +14,8 @@ const realtime = (async function() {
 })();
 
 export async function subscribe(channel, callback) {
-    (await realtime)?.channels?.get(channel)?.subscribe("update", callback);
+    const realtime = await client;
+    if (!realtime) return
+    realtime.channels.get(channel).subscribe("update", callback);
     console.log(`Subscribed to ${channel}`);
 }

@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import { rank as rankPublish } from './publish';
+import { publish } from './publish';
 
 
 class Ranking {
@@ -86,7 +86,7 @@ class Ranking {
             }))
         }
         if (uuid) {
-            await rankPublish.publish('update', { uuid });
+            publish('rank', { uuid });
         }
         this.updated = true;
     }

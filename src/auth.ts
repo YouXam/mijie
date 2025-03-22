@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { type GameConfig } from './types';
 import { verify } from './turnstile';
 import rank from './rank';
-import { notice as noticePublish } from './publish';
+import { publish } from './publish';
 import { GameProcess, GameStorage } from './gameprocess';
 import dotenv from 'dotenv';
 import ejs from 'ejs';
@@ -262,7 +262,7 @@ export function amdinRoutes(db: Db) {
         }
         await db.collection('notices').insertOne({ content, time: new Date(), author: ctx.state.username });
         const minimalContent = content.length > 20 ? content.slice(0, 20) + '...' : content;
-        await noticePublish.publish('update', {
+        publish('notice', {
             content: minimalContent
         });
         ctx.body = { message: '发布成功' };

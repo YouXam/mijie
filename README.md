@@ -22,7 +22,7 @@ Mijie 是一个网络解谜游戏网站，提供了非常多样的游戏形式�
 2. `JWT_SECRET`：JWT 密钥
 3. `API_PORT`：API 服务端口
 4. `GLOT_IO_API_KEY`：Glot.io API 密钥
-5. `ABLY_ADMIN_KEY`：Ably Admin 密钥
+5. `ABLY_ADMIN_KEY`：Ably Admin 密钥。若为空，则无法显示公告提醒、自动刷新排行榜
 6. `ABLY_PUBLIC_KEY`：Ably Public 密钥
 7. `CLOUDFLARE_API_KEYS`：Cloudflare API 密钥，用于调用 Cloudflare AI
 8. `ZHIPU_API_KEY`：智谱 API 密钥，用于调用智谱 AI。当 `CLOUDFLARE_API_KEYS` 不为空时，此项无效，会优先使用 Cloudflare AI
