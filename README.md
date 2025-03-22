@@ -27,4 +27,4 @@ Mijie 是一个网络解谜游戏网站，提供了非常多样的游戏形式�
 7. `CLOUDFLARE_API_KEYS`：Cloudflare API 密钥，用于调用 Cloudflare AI
 8. `ZHIPU_API_KEY`：智谱 API 密钥，用于调用智谱 AI。当 `CLOUDFLARE_API_KEYS` 不为空时，此项无效，会优先使用 Cloudflare AI
 9. `TURNSTILE_KEY`：Turnstile Key
-10. `TURNSTILE_SECRET`：Turnstile Secret
+10. `TURNSTILE_SECRET`：Turnstile Secret。若为空，则不启用 Turnstile
