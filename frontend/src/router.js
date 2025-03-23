@@ -2,6 +2,7 @@ import * as VueRouter from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { user } from '@/tools/bus'
+import { title } from '@/constants'
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
@@ -117,7 +118,7 @@ router.beforeEach((to, from, next) => {
         next({ path: '/404', replace: true,  })
         return
     }
-    document.title = to.meta.title
+    document.title = to.meta.title + " | " + title 
     NProgress.start()
     next();
 });

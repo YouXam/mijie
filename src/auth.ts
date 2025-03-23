@@ -10,6 +10,7 @@ import { publish } from './publish';
 import { GameProcess, GameStorage } from './gameprocess';
 import dotenv from 'dotenv';
 import ejs from 'ejs';
+import { plugins } from './game';
 
 dotenv.config();
 
@@ -76,7 +77,11 @@ export function authRoutes(db: Db) {
                 ctx.throw(409, '该学号已经被使用');
             }
         }
-        const newUser = { username, password, studentID };
+        const newUser: any = { username, password, studentID };
+        const count = await db.collection('users').countDocuments();
+        if (count === 0) {
+            newUser.admin = 2;
+        }
         await db.collection('users').insertOne(newUser);
         rank.update()
         ctx.body = { message: '注册成功' };
@@ -186,9 +191,14 @@ export function authRoutes(db: Db) {
         router.allowedMethods(),
         check_auth,
         new Router().get('/game-config/gameover', async ctx => {
+            if (!ctx.state.gameconfig.gameover) return ctx.body = { gameover: '' };
             ctx.body = {
                 gameover: ctx.state.gameconfig.gameover ?
-                    ejs.render(ctx.state.gameconfig.gameover, ctx.state) : ''
+                    ejs.render(ctx.state.gameconfig.gameover, {
+                        username: ctx.state.username,
+                        passed: ctx.state.gameprocess.passed,
+                        plugins: plugins.pluginMap
+                    }) : ''
             };
         }).routes(),
     ]);

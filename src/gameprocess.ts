@@ -1,9 +1,17 @@
 import { type Db } from "mongodb";
 
 export class GameProcess {
-    passed: Record<string, number> = {};
-    changed = false;
-    gameover = false;
+    /**
+     * `passed` 是一个对象，记录了用户通过的题目和得分。
+     * ```json
+     * {
+     *   "level1": 100, // pid 为 level1 的题目通过了，且得分 100
+     *   "level2": 50, // pid 为 level2 的题目通过了，且得分 50
+     * }
+     * ```
+     */
+    readonly passed: Record<string, number> = {};
+    readonly gameover: boolean;
     constructor(data: any, gameover: boolean) {
         this.passed = {}
         this.gameover = gameover || false;
@@ -11,14 +19,7 @@ export class GameProcess {
             this.passed = data;
         }
     }
-    pass(level: string, points: number) {
-        this.passed[level] = points;
-        this.changed = true;
-    }
-    setGameover() {
-        this.gameover = true;
-        this.changed = true;
-    }
+    
 }
 
 export class GameStorage {

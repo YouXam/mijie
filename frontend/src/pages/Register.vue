@@ -6,10 +6,12 @@
                 <span class="label-text">用户名</span>
             </label>
             <input type="text" class="input input-bordered w-full max-w-xs" autocomplete="username" v-model="username"/>
-            <!-- <label class="label">
-                <span class="label-text">学号</span>
-            </label>
-            <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID" placeholder="领奖必需"/> -->
+            <template v-if="school_id.enabled">
+                <label class="label">
+                    <span class="label-text">学号</span>
+                </label>
+                <input type="text" class="input input-bordered w-full max-w-xs" v-model="studentID" :placeholder="school_id.placeholder"/>
+            </template>
             <label class="label">
                 <span class="label-text">密码</span>
             </label>
@@ -45,13 +47,14 @@
   
 <script setup>
 import TitleCard from '@/components/TitleCard.vue';
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch } from 'vue'
 import { encryptPassword } from '@/tools/crypto'
 import { api } from '@/tools/api'
 import { useRouter } from 'vue-router'
 import { user } from '@/tools/bus'
 import { getKeys } from '@/tools/keys'
 import notificationManager from '@/tools/notification.js'
+import { school_id } from '@/constants'
 const router = useRouter()
 const username = ref('')
 const studentID = ref('')

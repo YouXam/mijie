@@ -194,22 +194,10 @@ class Plugins {
                 if (plugin.first) this.first = plugin.pid
                 if (typeof plugin.checker == "string") plugin.checker = ((ans: string) => (res: any) => res === ans)(plugin.checker);
                 this.plugins[folder] = plugin;
+                this.pluginMap.set(plugin.pid, plugin);
                 this.computePre();
-                this.loaded(folder);
             } catch (error) {
                 console.error(`Failed to load plugin ${folder}:`, error);
-            }
-        }
-    }
-    unloadPlugin(folder: string) {
-        const pluginPath = path.join(this.pluginsPath, folder, 'index.js');
-        if (fs.existsSync(pluginPath) && this.plugins[folder]) {
-            try {
-                delete this.plugins[folder];
-                this.computePre();
-                this.unloaded(folder);
-            } catch (error) {
-                console.error(`Failed to unload plugin ${folder}:`, error);
             }
         }
     }
@@ -228,20 +216,9 @@ class Plugins {
             }
         });
     }
-
-    loaded(folder: string) {
-        if (this.pluginMap.get(this.plugins[folder].pid))
-            console.log(`Plugin "${this.plugins[folder].name}" has been reloaded`);
-        this.pluginMap.set(this.plugins[folder].pid, this.plugins[folder]);
-    }
-
-    unloaded(folder: string) {
-        console.log(`Plugin "${folder}" has been unloaded`);
-        this.pluginMap.delete(folder);
-    }
 }
 
-const plugins = new Plugins();
+export const plugins = new Plugins();
 
 let rank = Ranking;
 

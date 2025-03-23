@@ -101,7 +101,7 @@ export type Plugin<T extends KeysType> = {
     }>
     files?: Array<{
         filename: string,
-        info: string
+        info?: string
     }>
 }
 

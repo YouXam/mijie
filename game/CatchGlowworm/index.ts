@@ -28,7 +28,6 @@ export default createPlugin({
         { name: 'Z', placeholder: 'Z 坐标' }
     ],
     checker: async (ans, ctx) => {
-        console.log(ans)
         const D = 1000
         const [nx, ny, nz] = [ans.X, ans.Y, ans.Z].map(x => parseFloat(x))
         if (isNaN(nx) || isNaN(ny) || isNaN(nz)) {

@@ -3,7 +3,7 @@ layout {
         pane {
             name "backend"
             command "bash"
-            args "-c" "pnpm dev"
+            args "-c" "PORT=3001 pnpm dev"
         }
         pane {
             name "frontend"
