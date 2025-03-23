@@ -5,17 +5,30 @@ import { MongoClient, type Db } from 'mongodb';
 import { authRoutes, afterAuthRoutes, amdinRoutes } from './auth';
 import game from './game';
 import dotenv from 'dotenv';
+import send from 'koa-send';
 
 dotenv.config();
 
 function httpServer(db: Db) {
     const app = new Koa();
-    const beforeAuth = new Router();
+    app.use(async (ctx, next) => {
+        if (ctx.path.startsWith('/api')) {
+            ctx.path = ctx.path.slice(4);
+            return await next();
+        }
+        try {
+            await send(ctx, ctx.path, { root: __dirname + '/public', index: "index.html" });
+        } catch (err) {
+            if (ctx.status === 404) {
+                await send(ctx, '/index.html', { root: __dirname + '/public' });
+            }
+        }
+    })
 
+    const beforeAuth = new Router();
     beforeAuth.get('/ping', async (ctx) => {
         ctx.body = 'pong';
     });
-
     beforeAuth.get("/keys", async (ctx) => {
         ctx.body = {
             ably: process.env.ABLY_PUBLIC_KEY,
@@ -23,14 +36,14 @@ function httpServer(db: Db) {
         }
     })
 
-    app.use(bodyParser());
     app.use(beforeAuth.routes());
+    app.use(bodyParser());
     app.use(authRoutes(db));
     app.use(afterAuthRoutes(db));
     app.use(game(db));
     app.use(amdinRoutes(db));
 
-    const port = process.env.API_PORT || 5000;
+    const port = process.env.PORT || 5000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
 }
 if (!process.env.MONGODB_URI) {

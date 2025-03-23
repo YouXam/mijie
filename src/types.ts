@@ -91,7 +91,6 @@ export type Plugin<T extends KeysType> = {
         pid: string,
         description?: string
     }>,
-    interval?: number,
     record?: boolean,
     first?: boolean,
     gameover?: boolean,

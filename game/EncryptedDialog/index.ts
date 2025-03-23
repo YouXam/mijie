@@ -15,7 +15,6 @@ export default createPlugin({
 你的目标是让 AI 输出一字不差的 \`The quick brown fox jumps over the lazy dog.\`（注意这里的输出是最终显示到你屏幕上的输出）`
         },
     },
-    interval: 10 * 1000,
     next: [{ pid: 'entrance' }],
     async checker(ans, ctx) {
         const isAscii = (x: string) => x.split('').every(c => c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126 || c === '\n')

@@ -1,4 +1,3 @@
-import clear from "clear-module";
 import { type Db } from "mongodb";
 
 export class GameProcess {

@@ -16,11 +16,35 @@ Mijie 是一个网络解谜游戏网站，提供了非常多样的游戏形式�
 
 ![captcha](./images/problem_2.png)
 
-## 环境变量
+## 部署
+
+1. Clone 本项目
+2. 安装 [Bun](https://bun.sh/), [Node.js](https://nodejs.org)
+3. 安装后端依赖
+    ```bash
+    bun install
+    ```
+4. 安装前端依赖
+    ```bash
+    cd frontend && pnpm install
+    ```
+5. 修改前端配置文件 `frontend/src/constants.js`
+6. 构建前端
+    ```bash
+    pnpm run build
+    ```
+7. 创建 `.env` 文件，填入环境变量，见[环境变量](#环境变量)
+8. 启动
+    ```bash
+    bun start
+    ```
+9. 访问 `http://localhost:3000`
+
+### 环境变量
 
 1. `MONGODB_URI`：MongoDB 连接 URL
 2. `JWT_SECRET`：JWT 密钥
-3. `API_PORT`：API 服务端口
+3. `PORT`：监听端口
 4. `GLOT_IO_API_KEY`：Glot.io API 密钥
 5. `ABLY_ADMIN_KEY`：Ably Admin 密钥。若为空，则无法显示公告提醒、自动刷新排行榜
 6. `ABLY_PUBLIC_KEY`：Ably Public 密钥
