@@ -272,6 +272,9 @@ async function insertRecord(db: Db, record: Record<string, any>) {
             }
         }
     ]).toArray();
+    if (!stat[0]) {
+        return undefined;
+    }
     const { passed, total } = stat[0];
     const percent = Math.round(passed / total * 10000) / 100;
     plugins.setPercent(record.pid, percent, db)
