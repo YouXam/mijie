@@ -315,7 +315,10 @@ export async function recalculateAllPercents(db: Db) {
         if (stat.length > 0) {
             const { passed, total } = stat[0];
             const percent = Math.round(passed / total * 10000) / 100;
-            plugins.setPercent(pid, percent, db);
+            await plugins.setPercent(pid, percent, db);
+        } else {
+            plugins.gamePercent.delete(pid);
+            await db.collection('problems').updateOne({ pid }, { $unset: { percent: 1 } });
         }
     }
 }
