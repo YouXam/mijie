@@ -92,6 +92,7 @@ export type Plugin<T extends KeysType> = {
         description?: string
     }>,
     record?: boolean,
+    showPercent?: boolean,
     first?: boolean,
     gameover?: boolean,
     folder?: string,
