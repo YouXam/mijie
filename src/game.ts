@@ -249,6 +249,22 @@ async function insertRecord(db: Db, record: Record<string, any>) {
         { $match: { pid: record.pid } },
         { $group: { _id: "$username", passed: { $max: "$passed" } } },
         {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "username",
+                as: "user"
+            }
+        },
+        {
+            $match: {
+                $and: [
+                    { $or: [{ "user.hidden": { $ne: true } }, { "user.hidden": { $exists: false } }] },
+                    { $or: [{ "user.banned": { $ne: true } }, { "user.banned": { $exists: false } }] }
+                ]
+            }
+        },
+        {
             $group: {
                 _id: null,
                 total: { $sum: 1 },
@@ -260,6 +276,48 @@ async function insertRecord(db: Db, record: Record<string, any>) {
     const percent = Math.round(passed / total * 10000) / 100;
     plugins.setPercent(record.pid, percent, db)
     return percent
+}
+
+export async function recalculateAllPercents(db: Db) {
+    const pids = await db.collection("records").distinct("pid");
+    
+    plugins.gamePercent.clear();
+    
+    for (const pid of pids) {
+        const stat = await db.collection("records").aggregate([
+            { $match: { pid } },
+            { $group: { _id: "$username", passed: { $max: "$passed" } } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "username",
+                    as: "user"
+                }
+            },
+            {
+                $match: {
+                    $and: [
+                        { $or: [{ "user.hidden": { $ne: true } }, { "user.hidden": { $exists: false } }] },
+                        { $or: [{ "user.banned": { $ne: true } }, { "user.banned": { $exists: false } }] }
+                    ]
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    passed: { $sum: { $cond: ["$passed", 1, 0] } }
+                }
+            }
+        ]).toArray();
+        
+        if (stat.length > 0) {
+            const { passed, total } = stat[0];
+            const percent = Math.round(passed / total * 10000) / 100;
+            plugins.setPercent(pid, percent, db);
+        }
+    }
 }
 
 const ai = AI;
@@ -408,7 +466,7 @@ export default function game(db: Db) {
             manualScores: cur.manualScores,
             files: cur.files,
             inputs: cur.inputs,
-            percent: await plugins.getPercent(cur.pid, db)
+            percent: cur.showPercent === false ? undefined : await plugins.getPercent(cur.pid, db)
         };
     });
 

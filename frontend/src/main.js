@@ -3,6 +3,7 @@ import App from './App.vue';
 import './app.css';
 import router from './router';
 import VueMermaid from "@/tools/mermaid/index";
+import { title } from './constants';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -12,6 +13,12 @@ import {
     faAnglesDown, faArrowsRotate, faXmark, faAddressBook, faNoteSticky, faTrash, faChalkboard, 
     faTrophy
 } from '@fortawesome/free-solid-svg-icons';
+
+const currentGame = localStorage.getItem('currentGame');
+if (currentGame !== title) {
+    localStorage.clear();
+    localStorage.setItem('currentGame', title);
+}
 
 [
     faRankingStar,

@@ -26,7 +26,7 @@ Mijie（谜界）是一个专为解谜游戏设计的网络平台，支持高度
     ```bash
     cd frontend && pnpm install
     ```
-5. 修改前端配置文件 `frontend/src/constants.js`
+5. 修改前端配置文件 `frontend/src/constants.js`。注意不同的游戏 title 不能相同，否则可能会导致数据不能正确刷新。
 6. 构建前端
     ```bash
     pnpm run build
@@ -254,6 +254,19 @@ export default createPlugin({
 #### `record`
 
 `record` 是一个布尔值，表示是否允许用户查看提交记录。无论是否允许查看提交记录，管理员都可以查看。
+
+#### `showPercent`
+
+`showPercent` 是一个布尔值，表示是否在题目页面显示通过率。默认为 `true`。
+
+```typescript
+export default createPlugin({
+    showPercent: false, // 不显示通过率
+    // ...
+})
+```
+
+注意：通过率的计算会自动排除被隐藏和被封禁的用户。当管理员修改用户的隐藏或封禁状态后，可以使用"重新计算排行榜"功能来更新所有题目的通过率。
 
 #### `inputs` 和 `checker`
 

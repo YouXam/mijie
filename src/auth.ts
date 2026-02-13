@@ -10,7 +10,7 @@ import { publish } from './publish';
 import { GameProcess, GameStorage } from './gameprocess';
 import dotenv from 'dotenv';
 import ejs from 'ejs';
-import { plugins } from './game';
+import { plugins, recalculateAllPercents } from './game';
 
 dotenv.config();
 
@@ -339,6 +339,7 @@ export function amdinRoutes(db: Db) {
     router.get('/recalculate', async ctx => {
         const uuid = uuidv4();
         rank.update(uuid);
+        await recalculateAllPercents(db);
         ctx.body = { message: "已重新计算", uuid };
     })
 
